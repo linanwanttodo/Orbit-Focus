@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="build/icon.png" alt="Orbit Focus Logo" width="128" height="128">
+  <img src="assets/icon.png" alt="Orbit Focus Logo" width="128" height="128">
   <h1>Orbit Focus</h1>
   <p><strong>一款专为极客与开发者打造的跨平台桌面番茄钟应用</strong></p>
 
