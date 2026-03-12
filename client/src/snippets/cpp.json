@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "SmartPointer",
+        "category": "data-structure",
+        "code": "template<typename T>\nclass SmartPtr {\n    T* ptr;\npublic:\n    explicit SmartPtr(T* p = nullptr) : ptr(p) {}\n    ~SmartPtr() { delete ptr; }\n    T& operator*() { return *ptr; }\n    T* operator->() { return ptr; }\n    SmartPtr(const SmartPtr&) = delete;\n    SmartPtr& operator=(const SmartPtr&) = delete;\n};"
+    },
+    {
+        "id": 2,
+        "title": "Vector",
+        "category": "data-structure",
+        "code": "template<typename T>\nclass Vector {\n    T* data;\n    size_t capacity;\n    size_t size;\npublic:\n    Vector() : data(nullptr), capacity(0), size(0) {}\n    ~Vector() { delete[] data; }\n    void push_back(const T& value) {\n        if (size >= capacity) {\n            resize(capacity == 0 ? 1 : capacity * 2);\n        }\n        data[size++] = value;\n    }\n    void resize(size_t new_cap) {\n        T* new_data = new T[new_cap];\n        for (size_t i = 0; i < size; ++i) {\n            new_data[i] = std::move(data[i]);\n        }\n        delete[] data;\n        data = new_data;\n        capacity = new_cap;\n    }\n};"
+    },
+    {
+        "id": 3,
+        "title": "quickSort",
+        "category": "algorithm",
+        "code": "template<typename T>\nvoid quickSort(std::vector<T>& arr, int low, int high) {\n    if (low < high) {\n        T pivot = arr[high];\n        int i = low - 1;\n        for (int j = low; j < high; j++) {\n            if (arr[j] < pivot) {\n                std::swap(arr[++i], arr[j]);\n            }\n        }\n        std::swap(arr[i + 1], arr[high]);\n        int pi = i + 1;\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}"
+    },
+    {
+        "id": 4,
+        "title": "lambda",
+        "category": "function",
+        "code": "auto filter_and_transform = [](const std::vector<int>& nums) {\n    std::vector<int> result;\n    std::copy_if(nums.begin(), nums.end(),\n        std::back_inserter(result),\n        [](int n) { return n % 2 == 0; });\n    std::transform(result.begin(), result.end(),\n        result.begin(),\n        [](int n) { return n * n; });\n    return result;\n};"
+    },
+    {
+        "id": 5,
+        "title": "Singleton",
+        "category": "function",
+        "code": "class Singleton {\n    static Singleton* instance;\n    Singleton() {}\npublic:\n    static Singleton* getInstance() {\n        if (instance == nullptr) {\n            instance = new Singleton();\n        }\n        return instance;\n    }\n    Singleton(const Singleton&) = delete;\n    Singleton& operator=(const Singleton&) = delete;\n};\n\nSingleton* Singleton::instance = nullptr;"
+    }
+]

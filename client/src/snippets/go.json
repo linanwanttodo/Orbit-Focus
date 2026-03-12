@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "goroutine",
+        "category": "function",
+        "code": "func worker(id int, jobs <-chan int, results chan<- int) {\n    for j := range jobs {\n        fmt.Printf(\"worker %d started job %d\\n\", id, j)\n        time.Sleep(time.Second)\n        fmt.Printf(\"worker %d finished job %d\\n\", id, j)\n        results <- j * 2\n    }\n}"
+    },
+    {
+        "id": 2,
+        "title": "error handling",
+        "category": "function",
+        "code": "func divide(a, b float64) (float64, error) {\n    if b == 0 {\n        return 0, fmt.Errorf(\"division by zero\")\n    }\n    return a / b, nil\n}\n\nfunc main() {\n    result, err := divide(10, 2)\n    if err != nil {\n        log.Fatal(err)\n    }\n    fmt.Println(result)\n}"
+    },
+    {
+        "id": 3,
+        "title": "struct methods",
+        "category": "data-structure",
+        "code": "type Rectangle struct {\n    Width  float64\n    Height float64\n}\n\nfunc (r Rectangle) Area() float64 {\n    return r.Width * r.Height\n}\n\nfunc (r *Rectangle) Scale(factor float64) {\n    r.Width *= factor\n    r.Height *= factor\n}"
+    },
+    {
+        "id": 4,
+        "title": "interface",
+        "category": "data-structure",
+        "code": "type Shape interface {\n    Area() float64\n    Perimeter() float64\n}\n\ntype Circle struct {\n    Radius float64\n}\n\nfunc (c Circle) Area() float64 {\n    return math.Pi * c.Radius * c.Radius\n}\n\nfunc (c Circle) Perimeter() float64 {\n    return 2 * math.Pi * c.Radius\n}"
+    },
+    {
+        "id": 5,
+        "title": "slice operations",
+        "category": "algorithm",
+        "code": "func filterEven(nums []int) []int {\n    result := make([]int, 0)\n    for _, n := range nums {\n        if n%2 == 0 {\n            result = append(result, n)\n        }\n    }\n    return result\n}\n\nfunc main() {\n    numbers := []int{1, 2, 3, 4, 5, 6}\n    even := filterEven(numbers)\n    fmt.Println(even)\n}"
+    }
+]

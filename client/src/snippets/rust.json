@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "Result enum",
+        "category": "data-structure",
+        "code": "fn divide(a: f64, b: f64) -> Result<f64, String> {\n    if b == 0.0 {\n        Err(String::from(\"Division by zero\"))\n    } else {\n        Ok(a / b)\n    }\n}\n\nfn main() {\n    match divide(10.0, 2.0) {\n        Ok(result) => println!(\"Result: {}\", result),\n        Err(e) => println!(\"Error: {}\", e),\n    }\n}"
+    },
+    {
+        "id": 2,
+        "title": "Vec operations",
+        "category": "data-structure",
+        "code": "fn filter_and_transform(nums: Vec<i32>) -> Vec<i32> {\n    nums.iter()\n        .filter(|&x| x % 2 == 0)\n        .map(|x| x * x)\n        .collect()\n}\n\nfn main() {\n    let numbers = vec![1, 2, 3, 4, 5, 6];\n    let result = filter_and_transform(numbers);\n    println!(\"{:?}\", result);\n}"
+    },
+    {
+        "id": 3,
+        "title": "Struct impl",
+        "category": "data-structure",
+        "code": "struct Rectangle {\n    width: u32,\n    height: u32,\n}\n\nimpl Rectangle {\n    fn new(width: u32, height: u32) -> Self {\n        Rectangle { width, height }\n    }\n\n    fn area(&self) -> u32 {\n        self.width * self.height\n    }\n\n    fn can_hold(&self, other: &Rectangle) -> bool {\n        self.width > other.width && self.height > other.height\n    }\n}"
+    },
+    {
+        "id": 4,
+        "title": "Option handling",
+        "category": "function",
+        "code": "fn find_element(arr: &[i32], target: i32) -> Option<usize> {\n    for (i, &item) in arr.iter().enumerate() {\n        if item == target {\n            return Some(i);\n        }\n    }\n    None\n}\n\nfn main() {\n    let numbers = [1, 2, 3, 4, 5];\n    if let Some(index) = find_element(&numbers, 3) {\n        println!(\"Found at index: {}\", index);\n    }\n}"
+    },
+    {
+        "id": 5,
+        "title": "trait impl",
+        "category": "function",
+        "code": "trait Summary {\n    fn summarize(&self) -> String;\n}\n\nstruct Article {\n    title: String,\n    author: String,\n    content: String,\n}\n\nimpl Summary for Article {\n    fn summarize(&self) -> String {\n        format!(\"{} by {}\", self.title, self.author)\n    }\n}"
+    }
+]

@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "ArrayList",
+        "category": "data-structure",
+        "code": "public class ArrayList<T> {\n    private Object[] elements;\n    private int size = 0;\n\n    public ArrayList(int capacity) {\n        elements = new Object[capacity];\n    }\n\n    public void add(T element) {\n        if (size == elements.length) {\n            resize();\n        }\n        elements[size++] = element;\n    }\n\n    private void resize() {\n        Object[] newElements = new Object[elements.length * 2];\n        System.arraycopy(elements, 0, newElements, 0, size);\n        elements = newElements;\n    }\n}"
+    },
+    {
+        "id": 2,
+        "title": "binarySearch",
+        "category": "algorithm",
+        "code": "public static int binarySearch(int[] arr, int target) {\n    int left = 0;\n    int right = arr.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (arr[mid] == target) {\n            return mid;\n        } else if (arr[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return -1;\n}"
+    },
+    {
+        "id": 3,
+        "title": "Singleton",
+        "category": "function",
+        "code": "public class Singleton {\n    private static volatile Singleton instance;\n    private Singleton() {}\n\n    public static Singleton getInstance() {\n        if (instance == null) {\n            synchronized (Singleton.class) {\n                if (instance == null) {\n                    instance = new Singleton();\n                }\n            }\n        }\n        return instance;\n    }\n}"
+    },
+    {
+        "id": 4,
+        "title": "quickSort",
+        "category": "algorithm",
+        "code": "public static void quickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}\n\nprivate static int partition(int[] arr, int low, int high) {\n    int pivot = arr[high];\n    int i = low - 1;\n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            int temp = arr[i];\n            arr[i] = arr[j];\n            arr[j] = temp;\n        }\n    }\n    int temp = arr[i + 1];\n    arr[i + 1] = arr[high];\n    arr[high] = temp;\n    return i + 1;\n}"
+    },
+    {
+        "id": 5,
+        "title": "Stream API",
+        "category": "function",
+        "code": "public List<String> filterAndTransform(List<String> items) {\n    return items.stream()\n        .filter(item -> item.length() > 3)\n        .map(String::toUpperCase)\n        .sorted()\n        .collect(Collectors.toList());\n}"
+    }
+]

@@ -1,0 +1,2165 @@
+const deepClone = <T>(obj: T): T => {
+  if (obj === null || typeof obj !== 'object') return obj
+  if (Array.isArray(obj)) return obj.map(item => deepClone(item)) as T
+  const cloned = {} as T
+  for (const key in obj) cloned[key] = deepClone(obj[key])
+  return cloned
+}
+
+
+
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
+
+
+function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle = false
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args)
+      inThrottle = true
+      setTimeout(() => (inThrottle = false), limit)
+    }
+  }
+}
+
+
+
+function memoize<T extends (...args: any[]) => any>(fn: T): T {
+  const cache = new Map<string, ReturnType<T>>()
+  return ((...args: Parameters<T>) => {
+    const key = JSON.stringify(args)
+    if (cache.has(key)) return cache.get(key)!
+    const result = fn(...args)
+    cache.set(key, result)
+    return result
+  }) as T
+}
+
+
+
+function curry<T extends (...args: any[]) => any>(fn: T) {
+  return function curried(...args: any[]): any {
+    if (args.length >= fn.length) {
+      return fn(...args)
+    }
+    return (...args2: any[]) => curried(...args, ...args2)
+  }
+}
+
+
+
+const compose = <T>(...fns: Array<(arg: T) => T>) => {
+  return (x: T): T => fns.reduceRight((acc, fn) => fn(acc), x)
+}
+
+
+
+const pipe = <T>(...fns: Array<(arg: T) => T>) => {
+  return (x: T): T => fns.reduce((acc, fn) => fn(acc), x)
+}
+
+
+
+interface User {
+  id: number
+  name: string
+  email: string
+  createdAt: Date
+  roles: string[]
+  profile?: UserProfile
+}
+
+interface UserProfile {
+  bio: string
+  avatar: string
+  social: {
+    twitter?: string
+    github?: string
+  }
+}
+
+
+
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+
+
+
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+}
+
+
+
+type Nullable<T> = T | null | undefined
+
+
+
+type RequireAtLeastOne<T> = {
+  [K in keyof T]-?: Required<Pick<T, K>> & Partial<Omit<T, K>>
+}[keyof T]
+
+
+
+type UnionToIntersection<U> = (
+  U extends any ? (x: U) => void : never
+) extends (x: infer I) => void
+  ? I
+  : never
+
+
+
+type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
+
+
+
+class Stack<T> {
+  private items: T[] = []
+
+  push(item: T): void {
+    this.items.push(item)
+  }
+
+  pop(): T | undefined {
+    return this.items.pop()
+  }
+
+  peek(): T | undefined {
+    return this.items[this.items.length - 1]
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0
+  }
+
+  size(): number {
+    return this.items.length
+  }
+}
+
+
+
+class Queue<T> {
+  private items: T[] = []
+
+  enqueue(item: T): void {
+    this.items.push(item)
+  }
+
+  dequeue(): T | undefined {
+    return this.items.shift()
+  }
+
+  front(): T | undefined {
+    return this.items[0]
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0
+  }
+
+  size(): number {
+    return this.items.length
+  }
+}
+
+
+
+class LinkedListNode<T> {
+  constructor(
+    public value: T,
+    public next: LinkedListNode<T> | null = null
+  ) {}
+}
+
+class LinkedList<T> {
+  private head: LinkedListNode<T> | null = null
+  private _size = 0
+
+  add(value: T): void {
+    const node = new LinkedListNode(value)
+    if (!this.head) {
+      this.head = node
+    } else {
+      let current = this.head
+      while (current.next) current = current.next
+      current.next = node
+    }
+    this._size++
+  }
+
+  remove(value: T): boolean {
+    if (!this.head) return false
+    if (this.head.value === value) {
+      this.head = this.head.next
+      this._size--
+      return true
+    }
+    let current = this.head
+    while (current.next) {
+      if (current.next.value === value) {
+        current.next = current.next.next
+        this._size--
+        return true
+      }
+      current = current.next
+    }
+    return false
+  }
+
+  get size(): number {
+    return this._size
+  }
+}
+
+
+
+class BinarySearchTree<T> {
+  private root: TreeNode<T> | null = null
+
+  insert(value: T): void {
+    const node = new TreeNode(value)
+    if (!this.root) {
+      this.root = node
+      return
+    }
+    let current = this.root
+    while (true) {
+      if (value < current.value) {
+        if (!current.left) {
+          current.left = node
+          return
+        }
+        current = current.left
+      } else {
+        if (!current.right) {
+          current.right = node
+          return
+        }
+        current = current.right
+      }
+    }
+  }
+
+  search(value: T): boolean {
+    let current = this.root
+    while (current) {
+      if (value === current.value) return true
+      current = value < current.value ? current.left : current.right
+    }
+    return false
+  }
+}
+
+class TreeNode<T> {
+  constructor(
+    public value: T,
+    public left: TreeNode<T> | null = null,
+    public right: TreeNode<T> | null = null
+  ) {}
+}
+
+
+
+class MinHeap<T> {
+  private heap: T[] = []
+
+  insert(val: T): void {
+    this.heap.push(val)
+    this.bubbleUp()
+  }
+
+  extract(): T | undefined {
+    if (this.heap.length === 0) return undefined
+    if (this.heap.length === 1) return this.heap.pop()
+    const root = this.heap[0]
+    this.heap[0] = this.heap.pop()!
+    this.bubbleDown()
+    return root
+  }
+
+  private bubbleUp(): void {
+    let idx = this.heap.length - 1
+    while (idx > 0) {
+      const parentIdx = Math.floor((idx - 1) / 2)
+      if (this.heap[parentIdx] <= this.heap[idx]) break
+      ;[this.heap[parentIdx], this.heap[idx]] = [this.heap[idx], this.heap[parentIdx]]
+      idx = parentIdx
+    }
+  }
+
+  private bubbleDown(): void {
+    let idx = 0
+    const n = this.heap.length
+    while (true) {
+      let smallest = idx
+      const left = 2 * idx + 1
+      const right = 2 * idx + 2
+      if (left < n && this.heap[left] < this.heap[smallest]) smallest = left
+      if (right < n && this.heap[right] < this.heap[smallest]) smallest = right
+      if (smallest === idx) break
+      ;[this.heap[idx], this.heap[smallest]] = [this.heap[smallest], this.heap[idx]]
+      idx = smallest
+    }
+  }
+}
+
+
+
+class HashMap<K, V> {
+  private buckets: Array<Array<[K, V]>>
+  private _size = 0
+
+  constructor(private capacity = 53) {
+    this.buckets = new Array(capacity).fill(null).map(() => [])
+  }
+
+  private hash(key: K): number {
+    const str = String(key)
+    let total = 0
+    const PRIME = 31
+    for (let i = 0; i < Math.min(str.length, 100); i++) {
+      const char = str[i]
+      const value = char.charCodeAt(0) - 96
+      total = (total * PRIME + value) % this.capacity
+    }
+    return total
+  }
+
+  set(key: K, value: V): void {
+    const index = this.hash(key)
+    const bucket = this.buckets[index]
+    const existing = bucket.find(([k]) => k === key)
+    if (existing) {
+      existing[1] = value
+    } else {
+      bucket.push([key, value])
+      this._size++
+    }
+  }
+
+  get(key: K): V | undefined {
+    const index = this.hash(key)
+    const bucket = this.buckets[index]
+    const pair = bucket.find(([k]) => k === key)
+    return pair?.[1]
+  }
+
+  get size(): number {
+    return this._size
+  }
+}
+
+
+
+function quickSort<T>(arr: T[]): T[] {
+  if (arr.length <= 1) return arr
+  const pivot = arr[Math.floor(arr.length / 2)]
+  const left = arr.filter(x => x < pivot)
+  const middle = arr.filter(x => x === pivot)
+  const right = arr.filter(x => x > pivot)
+  return [...quickSort(left), ...middle, ...quickSort(right)]
+}
+
+
+
+function mergeSort<T>(arr: T[]): T[] {
+  if (arr.length <= 1) return arr
+  const mid = Math.floor(arr.length / 2)
+  const left = mergeSort(arr.slice(0, mid))
+  const right = mergeSort(arr.slice(mid))
+  return merge(left, right)
+}
+
+function merge<T>(left: T[], right: T[]): T[] {
+  const result: T[] = []
+  while (left.length && right.length) {
+    result.push(left[0] <= right[0] ? left.shift()! : right.shift()!)
+  }
+  return [...result, ...left, ...right]
+}
+
+
+
+function binarySearch<T>(arr: T[], target: T): number {
+  let left = 0
+  let right = arr.length - 1
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2)
+    if (arr[mid] === target) return mid
+    if (arr[mid] < target) left = mid + 1
+    else right = mid - 1
+  }
+  return -1
+}
+
+
+
+async function retry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn()
+    } catch (error) {
+      if (i === retries - 1) throw error
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error('All retries failed')
+}
+
+
+
+async function fetchWithTimeout(
+  url: string,
+  timeout = 5000
+): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeout)
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+    clearTimeout(id)
+    return response
+  } catch (error) {
+    clearTimeout(id)
+    throw error
+  }
+}
+
+
+
+async function parallel<T>(
+  tasks: Array<() => Promise<T>>,
+  limit: number
+): Promise<T[]> {
+  const results: T[] = []
+  const executing: Promise<void>[] = []
+  
+  for (const task of tasks) {
+    const p = Promise.resolve().then(() => task()).then(result => {
+      results.push(result)
+    })
+    executing.push(p)
+    
+    if (executing.length >= limit) {
+      await Promise.race(executing)
+      executing.splice(executing.findIndex(e => e === p), 1)
+    }
+  }
+  
+  await Promise.all(executing)
+  return results
+}
+
+
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size))
+  }
+  return result
+}
+
+
+
+function groupBy<T, K extends string | number>(
+  arr: T[],
+  fn: (item: T) => K
+): Record<K, T[]> {
+  return arr.reduce((acc, item) => {
+    const key = fn(item)
+    if (!acc[key]) acc[key] = []
+    acc[key].push(item)
+    return acc
+  }, {} as Record<K, T[]>)
+}
+
+
+
+function partition<T>(
+  arr: T[],
+  predicate: (item: T) => boolean
+): [T[], T[]] {
+  return arr.reduce<[T[], T[]]>(
+    (acc, item) => {
+      acc[predicate(item) ? 0 : 1].push(item)
+      return acc
+    },
+    [[], []]
+  )
+}
+
+
+
+function pick<T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[]
+): Pick<T, K> {
+  return keys.reduce((acc, key) => {
+    if (key in obj) acc[key] = obj[key]
+    return acc
+  }, {} as Pick<T, K>)
+}
+
+
+
+function omit<T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[]
+): Omit<T, K> {
+  return (Object.keys(obj) as Array<keyof T>).reduce((acc, key) => {
+    if (!keys.includes(key as K)) acc[key] = obj[key]
+    return acc
+  }, {} as any)
+}
+
+
+
+function get<T>(
+  obj: Record<string, any>,
+  path: string,
+  defaultValue?: T
+): T | undefined {
+  const keys = path.split('.')
+  let result: any = obj
+  for (const key of keys) {
+    result = result?.[key]
+    if (result === undefined) return defaultValue
+  }
+  return result
+}
+
+
+
+function set<T extends Record<string, any>>(
+  obj: T,
+  path: string,
+  value: any
+): T {
+  const keys = path.split('.')
+  let current: any = obj
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!(keys[i] in current)) current[keys[i]] = {}
+    current = current[keys[i]]
+  }
+  current[keys[keys.length - 1]] = value
+  return obj
+}
+
+
+
+function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true
+  if (typeof a !== 'object' || typeof b !== 'object') return false
+  if (a === null || b === null) return false
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  if (keysA.length !== keysB.length) return false
+  return keysA.every(key => deepEqual(a[key], b[key]))
+}
+
+
+
+function once<T extends (...args: any[]) => any>(fn: T): T {
+  let called = false
+  let result: ReturnType<T>
+  return ((...args: Parameters<T>) => {
+    if (!called) {
+      called = true
+      result = fn(...args)
+    }
+    return result
+  }) as T
+}
+
+
+
+function range(start: number, end: number, step = 1): number[] {
+  const result: number[] = []
+  for (let i = start; i < end; i += step) {
+    result.push(i)
+  }
+  return result
+}
+
+
+
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+
+
+function sample<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+
+
+function sampleSize<T>(arr: T[], n: number): T[] {
+  return shuffle(arr).slice(0, n)
+}
+
+
+
+function uniq<T>(arr: T[]): T[] {
+  return [...new Set(arr)]
+}
+
+
+
+function uniqBy<T, K>(arr: T[], fn: (item: T) => K): T[] {
+  const seen = new Set<K>()
+  return arr.filter(item => {
+    const key = fn(item)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+
+
+function intersection<T>(arr1: T[], arr2: T[]): T[] {
+  const set = new Set(arr2)
+  return arr1.filter(item => set.has(item))
+}
+
+
+
+function difference<T>(arr1: T[], arr2: T[]): T[] {
+  const set = new Set(arr2)
+  return arr1.filter(item => !set.has(item))
+}
+
+
+
+function zip<A, B>(arr1: A[], arr2: B[]): [A, B][] {
+  return arr1.map((item, i) => [item, arr2[i]])
+}
+
+
+
+function flatten<T>(arr: T[][], depth = 1): T[] {
+  return depth > 0
+    ? arr.reduce((acc, val) =>
+        acc.concat(Array.isArray(val) ? flatten(val as any, depth - 1) : val), [])
+    : arr.slice() as unknown as T[]
+}
+
+
+
+function countBy<T>(arr: T[], fn: (item: T) => string): Record<string, number> {
+  return arr.reduce((acc, item) => {
+    const key = fn(item)
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+}
+
+
+
+function maxBy<T>(arr: T[], fn: (item: T) => number): T | undefined {
+  return arr.reduce((max, item) =>
+    fn(item) > fn(max) ? item : max
+  )
+}
+
+
+
+function minBy<T>(arr: T[], fn: (item: T) => number): T | undefined {
+  return arr.reduce((min, item) =>
+    fn(item) < fn(min) ? item : min
+  )
+}
+
+
+
+function sumBy<T>(arr: T[], fn: (item: T) => number): number {
+  return arr.reduce((sum, item) => sum + fn(item), 0)
+}
+
+
+
+function isEmpty(value: any): boolean {
+  if (value == null) return true
+  if (Array.isArray(value) || typeof value === 'string') return value.length === 0
+  if (typeof value === 'object') return Object.keys(value).length === 0
+  return false
+}
+
+
+
+function clamp(num: number, min: number, max: number): number {
+  return Math.min(Math.max(num, min), max)
+}
+
+
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return Object.prototype.toString.call(value) === '[object Object]'
+}
+
+
+
+function isPromise<T = any>(value: unknown): value is Promise<T> {
+  return value instanceof Promise || (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as any).then === 'function'
+  )
+}
+
+
+
+function assert(condition: unknown, message?: string): asserts condition {
+  if (!condition) {
+    throw new Error(message || 'Assertion failed')
+  }
+}
+
+
+
+function assertNever(value: never): never {
+  throw new Error(`Unexpected value: ${value}`)
+}
+
+
+
+type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E }
+
+function ok<T>(value: T): Result<T, never> {
+  return { ok: true, value }
+}
+
+function err<E>(error: E): Result<never, E> {
+  return { ok: false, error }
+}
+
+function isOk<T, E>(result: Result<T, E>): result is { ok: true; value: T } {
+  return result.ok
+}
+
+function isErr<T, E>(result: Result<T, E>): result is { ok: false; error: E } {
+  return !result.ok
+}
+
+
+
+class EventEmitter<T extends Record<string, any[]>> {
+  private events = new Map<keyof T, Set<(...args: any[]) => void>>()
+
+  on<K extends keyof T>(event: K, listener: (...args: T[K]) => void): void {
+    if (!this.events.has(event)) {
+      this.events.set(event, new Set())
+    }
+    this.events.get(event)!.add(listener)
+  }
+
+  off<K extends keyof T>(event: K, listener: (...args: T[K]) => void): void {
+    this.events.get(event)?.delete(listener)
+  }
+
+  emit<K extends keyof T>(event: K, ...args: T[K]): void {
+    this.events.get(event)?.forEach(listener => listener(...args))
+  }
+}
+
+
+
+class LRUCache<K, V> {
+  private cache = new Map<K, V>()
+
+  constructor(private capacity: number) {}
+
+  get(key: K): V | undefined {
+    if (!this.cache.has(key)) return undefined
+    const value = this.cache.get(key)!
+    this.cache.delete(key)
+    this.cache.set(key, value)
+    return value
+  }
+
+  put(key: K, value: V): void {
+    if (this.cache.has(key)) this.cache.delete(key)
+    else if (this.cache.size >= this.capacity) {
+      this.cache.delete(this.cache.keys().next().value)
+    }
+    this.cache.set(key, value)
+  }
+}
+
+
+
+class Trie {
+  private root: Record<string, any> = {}
+
+  insert(word: string): void {
+    let node = this.root
+    for (const char of word) {
+      if (!node[char]) node[char] = {}
+      node = node[char]
+    }
+    node.isEnd = true
+  }
+
+  search(word: string): boolean {
+    let node = this.root
+    for (const char of word) {
+      if (!node[char]) return false
+      node = node[char]
+    }
+    return !!node.isEnd
+  }
+
+  startsWith(prefix: string): boolean {
+    let node = this.root
+    for (const char of prefix) {
+      if (!node[char]) return false
+      node = node[char]
+    }
+    return true
+  }
+}
+
+
+
+class UnionFind {
+  private parent: number[]
+  private rank: number[]
+
+  constructor(n: number) {
+    this.parent = Array.from({ length: n }, (_, i) => i)
+    this.rank = new Array(n).fill(0)
+  }
+
+  find(x: number): number {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x])
+    }
+    return this.parent[x]
+  }
+
+  union(x: number, y: number): boolean {
+    const rootX = this.find(x)
+    const rootY = this.find(y)
+    if (rootX === rootY) return false
+    if (this.rank[rootX] < this.rank[rootY]) {
+      this.parent[rootX] = rootY
+    } else if (this.rank[rootX] > this.rank[rootY]) {
+      this.parent[rootY] = rootX
+    } else {
+      this.parent[rootY] = rootX
+      this.rank[rootX]++
+    }
+    return true
+  }
+}
+
+
+
+type ExtractReturnType<T> = T extends (...args: any[]) => infer R ? R : never
+
+
+
+type ExtractPromiseType<T> = T extends Promise<infer R> ? R : T
+
+
+
+type Awaited<T> = T extends Promise<infer U> ? Awaited<U> : T
+
+
+
+type NonNullableKeys<T> = {
+  [K in keyof T]-?: undefined extends T[K] ? never : null extends T[K] ? never : K
+}[keyof T]
+
+
+
+type PickByType<T, U> = {
+  [K in keyof T as T[K] extends U ? K : never]: T[K]
+}
+
+
+
+type OmitByType<T, U> = {
+  [K in keyof T as T[K] extends U ? never : K]: T[K]
+}
+
+
+
+type Mutable<T> = {
+  -readonly [K in keyof T]: T[K]
+}
+
+
+
+type RecursivePartial<T> = {
+  [K in keyof T]?: T[K] extends object ? RecursivePartial<T[K]> : T[K]
+}
+
+
+
+type RecursiveRequired<T> = {
+  [K in keyof T]-?: T[K] extends object ? RecursiveRequired<T[K]> : T[K]
+}
+
+
+
+type StringKeys<T> = Extract<keyof T, string>
+
+
+
+type NumberKeys<T> = Extract<keyof T, number>
+
+
+
+type FunctionKeys<T> = {
+  [K in keyof T]: T[K] extends Function ? K : never
+}[keyof T]
+
+
+
+type NonFunctionKeys<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K
+}[keyof T]
+
+
+
+type TupleToUnion<T extends readonly any[]> = T[number]
+
+
+
+type UnionToTuple<T> = (
+  (T extends any ? (t: T) => T : never) extends (t: infer U) => any ? U : never
+) extends infer R ? [...UnionToTuple<Exclude<T, R>>, R] : []
+
+
+
+type Head<T extends any[]> = T extends [infer H, ...any[]] ? H : never
+
+
+
+type Tail<T extends any[]> = T extends [any, ...infer R] ? R : []
+
+
+
+type Last<T extends any[]> = T extends [...any[], infer L] ? L : never
+
+
+
+type Length<T extends any[]> = T['length']
+
+
+
+type Concat<T extends any[], U extends any[]> = [...T, ...U]
+
+
+
+type Push<T extends any[], V> = [...T, V]
+
+
+
+type Unshift<T extends any[], V> = [V, ...T]
+
+
+
+type Includes<T extends any[], V> = V extends T[number] ? true : false
+
+
+
+type Filter<T extends any[], F> = T extends [infer Head, ...infer Tail]
+  ? Head extends F
+    ? [Head, ...Filter<Tail, F>]
+    : Filter<Tail, F>
+  : []
+
+
+
+type Flatten<T extends any[]> = T extends [infer Head, ...infer Tail]
+  ? Head extends any[]
+    ? [...Flatten<Head>, ...Flatten<Tail>]
+    : [Head, ...Flatten<Tail>]
+  : []
+
+
+
+type Join<T extends string[], D extends string> = T extends []
+  ? ''
+  : T extends [infer F]
+  ? F extends string ? F : never
+  : T extends [infer F, ...infer R]
+  ? F extends string
+    ? R extends string[]
+      ? `${F}${D}${Join<R, D>}`
+      : never
+    : never
+  : never
+
+
+
+type Split<S extends string, D extends string> = S extends `${infer Head}${D}${infer Tail}`
+  ? [Head, ...Split<Tail, D>]
+  : S extends ''
+  ? []
+  : [S]
+
+
+
+type Replace<S extends string, From extends string, To extends string> = 
+  From extends ''
+    ? S
+    : S extends `${infer Before}${From}${infer After}`
+    ? `${Before}${To}${After}`
+    : S
+
+
+
+type ReplaceAll<S extends string, From extends string, To extends string> =
+  From extends ''
+    ? S
+    : S extends `${infer Before}${From}${infer After}`
+    ? ReplaceAll<`${Before}${To}${After}`, From, To>
+    : S
+
+
+
+type TrimLeft<S extends string> = S extends ` ${infer R}` ? TrimLeft<R> : S
+
+
+
+type TrimRight<S extends string> = S extends `${infer R} ` ? TrimRight<R> : S
+
+
+
+type Trim<S extends string> = TrimLeft<TrimRight<S>>
+
+
+
+type Uppercase<S extends string> = Intrinsic
+
+
+
+type Lowercase<S extends string> = Intrinsic
+
+
+
+type Capitalize<S extends string> = S extends `${infer F}${infer R}` ? `${Uppercase<F>}${R}` : S
+
+
+
+type Uncapitalize<S extends string> = S extends `${infer F}${infer R}` ? `${Lowercase<F>}${R}` : S
+
+
+
+type KebabCase<S extends string> = S extends `${infer C}${infer Rest}`
+  ? C extends Uppercase<C>
+    ? `-${Lowercase<C>}${KebabCase<Rest>}`
+    : `${C}${KebabCase<Rest>}`
+  : S
+
+
+
+type CamelCase<S extends string> = S extends `${infer P1}_${infer P2}${infer P3}`
+  ? `${P1}${Uppercase<P2>}${CamelCase<P3>}`
+  : S
+
+
+
+type SnakeCase<S extends string> = S extends `${infer C}${infer Rest}`
+  ? C extends Uppercase<C>
+    ? `_${Lowercase<C>}${SnakeCase<Rest>}`
+    : `${C}${SnakeCase<Rest>}`
+  : S
+
+
+
+class DoublyLinkedList<T> {
+  private head: DoublyNode<T> | null = null
+  private tail: DoublyNode<T> | null = null
+  private _size = 0
+
+  addFirst(value: T): void {
+    const node = new DoublyNode(value)
+    if (!this.head) {
+      this.head = this.tail = node
+    } else {
+      node.next = this.head
+      this.head.prev = node
+      this.head = node
+    }
+    this._size++
+  }
+
+  addLast(value: T): void {
+    const node = new DoublyNode(value)
+    if (!this.tail) {
+      this.head = this.tail = node
+    } else {
+      node.prev = this.tail
+      this.tail.next = node
+      this.tail = node
+    }
+    this._size++
+  }
+
+  removeFirst(): T | undefined {
+    if (!this.head) return undefined
+    const value = this.head.value
+    this.head = this.head.next
+    if (this.head) this.head.prev = null
+    else this.tail = null
+    this._size--
+    return value
+  }
+
+  removeLast(): T | undefined {
+    if (!this.tail) return undefined
+    const value = this.tail.value
+    this.tail = this.tail.prev
+    if (this.tail) this.tail.next = null
+    else this.head = null
+    this._size--
+    return value
+  }
+
+  get size(): number {
+    return this._size
+  }
+}
+
+class DoublyNode<T> {
+  constructor(
+    public value: T,
+    public prev: DoublyNode<T> | null = null,
+    public next: DoublyNode<T> | null = null
+  ) {}
+}
+
+
+
+class PriorityQueue<T> {
+  private heap: Array<{ value: T; priority: number }> = []
+
+  enqueue(value: T, priority: number): void {
+    this.heap.push({ value, priority })
+    this.bubbleUp(this.heap.length - 1)
+  }
+
+  dequeue(): T | undefined {
+    if (this.heap.length === 0) return undefined
+    const min = this.heap[0]
+    const last = this.heap.pop()!
+    if (this.heap.length > 0) {
+      this.heap[0] = last
+      this.bubbleDown(0)
+    }
+    return min.value
+  }
+
+  private bubbleUp(idx: number): void {
+    while (idx > 0) {
+      const parent = Math.floor((idx - 1) / 2)
+      if (this.heap[parent].priority <= this.heap[idx].priority) break
+      ;[this.heap[parent], this.heap[idx]] = [this.heap[idx], this.heap[parent]]
+      idx = parent
+    }
+  }
+
+  private bubbleDown(idx: number): void {
+    const n = this.heap.length
+    while (true) {
+      let smallest = idx
+      const left = 2 * idx + 1
+      const right = 2 * idx + 2
+      if (left < n && this.heap[left].priority < this.heap[smallest].priority) smallest = left
+      if (right < n && this.heap[right].priority < this.heap[smallest].priority) smallest = right
+      if (smallest === idx) break
+      ;[this.heap[idx], this.heap[smallest]] = [this.heap[smallest], this.heap[idx]]
+      idx = smallest
+    }
+  }
+
+  get length(): number {
+    return this.heap.length
+  }
+}
+
+
+
+class CircularBuffer<T> {
+  private buffer: T[]
+  private head = 0
+  private tail = 0
+  private _size = 0
+
+  constructor(private capacity: number) {
+    this.buffer = new Array(capacity)
+  }
+
+  push(value: T): void {
+    this.buffer[this.tail] = value
+    this.tail = (this.tail + 1) % this.capacity
+    if (this._size < this.capacity) this._size++
+    else this.head = (this.head + 1) % this.capacity
+  }
+
+  pop(): T | undefined {
+    if (this._size === 0) return undefined
+    this.tail = (this.tail - 1 + this.capacity) % this.capacity
+    const value = this.buffer[this.tail]
+    this._size--
+    return value
+  }
+
+  get size(): number {
+    return this._size
+  }
+}
+
+
+
+class Deque<T> {
+  private items: T[] = []
+
+  addFront(item: T): void { this.items.unshift(item) }
+  addBack(item: T): void { this.items.push(item) }
+  removeFront(): T | undefined { return this.items.shift() }
+  removeBack(): T | undefined { return this.items.pop() }
+  peekFront(): T | undefined { return this.items[0] }
+  peekBack(): T | undefined { return this.items[this.items.length - 1] }
+  isEmpty(): boolean { return this.items.length === 0 }
+  get size(): number { return this.items.length }
+}
+
+
+
+class Graph<T> {
+  private adjacencyList = new Map<T, T[]>()
+
+  addVertex(vertex: T): void {
+    if (!this.adjacencyList.has(vertex)) {
+      this.adjacencyList.set(vertex, [])
+    }
+  }
+
+  addEdge(v1: T, v2: T): void {
+    this.adjacencyList.get(v1)?.push(v2)
+    this.adjacencyList.get(v2)?.push(v1)
+  }
+
+  bfs(start: T): T[] {
+    const visited = new Set<T>()
+    const result: T[] = []
+    const queue: T[] = [start]
+    visited.add(start)
+    while (queue.length) {
+      const vertex = queue.shift()!
+      result.push(vertex)
+      for (const neighbor of this.adjacencyList.get(vertex) || []) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor)
+          queue.push(neighbor)
+        }
+      }
+    }
+    return result
+  }
+
+  dfs(start: T): T[] {
+    const visited = new Set<T>()
+    const result: T[] = []
+    const traverse = (vertex: T): void => {
+      visited.add(vertex)
+      result.push(vertex)
+      for (const neighbor of this.adjacencyList.get(vertex) || []) {
+        if (!visited.has(neighbor)) traverse(neighbor)
+      }
+    }
+    traverse(start)
+    return result
+  }
+}
+
+
+
+function dijkstra<T>(
+  graph: Map<T, Array<{ node: T; weight: number }>>,
+  start: T
+): Map<T, number> {
+  const distances = new Map<T, number>()
+  const visited = new Set<T>()
+  const pq: Array<{ node: T; dist: number }> = [{ node: start, dist: 0 }]
+
+  for (const node of graph.keys()) {
+    distances.set(node, Infinity)
+  }
+  distances.set(start, 0)
+
+  while (pq.length) {
+    pq.sort((a, b) => a.dist - b.dist)
+    const { node: current, dist } = pq.shift()!
+    if (visited.has(current)) continue
+    visited.add(current)
+
+    for (const { node: neighbor, weight } of graph.get(current) || []) {
+      const newDist = dist + weight
+      if (newDist < (distances.get(neighbor) ?? Infinity)) {
+        distances.set(neighbor, newDist)
+        pq.push({ node: neighbor, dist: newDist })
+      }
+    }
+  }
+
+  return distances
+}
+
+
+
+function topologicalSort<T>(graph: Map<T, T[]>): T[] {
+  const inDegree = new Map<T, number>()
+  for (const [node, neighbors] of graph) {
+    if (!inDegree.has(node)) inDegree.set(node, 0)
+    for (const neighbor of neighbors) {
+      inDegree.set(neighbor, (inDegree.get(neighbor) || 0) + 1)
+    }
+  }
+
+  const queue: T[] = []
+  for (const [node, degree] of inDegree) {
+    if (degree === 0) queue.push(node)
+  }
+
+  const result: T[] = []
+  while (queue.length) {
+    const node = queue.shift()!
+    result.push(node)
+    for (const neighbor of graph.get(node) || []) {
+      const newDegree = (inDegree.get(neighbor) || 0) - 1
+      inDegree.set(neighbor, newDegree)
+      if (newDegree === 0) queue.push(neighbor)
+    }
+  }
+
+  return result.length === graph.size ? result : []
+}
+
+
+
+function* fibonacci(): Generator<number> {
+  let prev = 0, curr = 1
+  while (true) {
+    yield curr
+    ;[prev, curr] = [curr, prev + curr]
+  }
+}
+
+
+
+function* range(start: number, end: number, step = 1): Generator<number> {
+  for (let i = start; i < end; i += step) {
+    yield i
+  }
+}
+
+
+
+function* take<T>(iterable: Iterable<T>, n: number): Generator<T> {
+  let count = 0
+  for (const item of iterable) {
+    if (count >= n) return
+    yield item
+    count++
+  }
+}
+
+
+
+function* map<T, U>(iterable: Iterable<T>, fn: (item: T) => U): Generator<U> {
+  for (const item of iterable) {
+    yield fn(item)
+  }
+}
+
+
+
+function* filter<T>(iterable: Iterable<T>, predicate: (item: T) => boolean): Generator<T> {
+  for (const item of iterable) {
+    if (predicate(item)) yield item
+  }
+}
+
+
+
+async function* asyncMap<T, U>(
+  iterable: AsyncIterable<T>,
+  fn: (item: T) => Promise<U>
+): AsyncGenerator<U> {
+  for await (const item of iterable) {
+    yield await fn(item)
+  }
+}
+
+
+
+async function* asyncFilter<T>(
+  iterable: AsyncIterable<T>,
+  predicate: (item: T) => Promise<boolean>
+): AsyncGenerator<T> {
+  for await (const item of iterable) {
+    if (await predicate(item)) yield item
+  }
+}
+
+
+
+async function asyncReduce<T, U>(
+  iterable: AsyncIterable<T>,
+  fn: (acc: U, item: T) => Promise<U>,
+  initial: U
+): Promise<U> {
+  let acc = initial
+  for await (const item of iterable) {
+    acc = await fn(acc, item)
+  }
+  return acc
+}
+
+
+
+function createStore<T>(initialState: T) {
+  let state = initialState
+  const listeners = new Set<(state: T) => void>()
+
+  return {
+    getState: () => state,
+    setState: (newState: Partial<T>) => {
+      state = { ...state, ...newState }
+      listeners.forEach(listener => listener(state))
+    },
+    subscribe: (listener: (state: T) => void) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    }
+  }
+}
+
+
+
+function createSignal<T>(initialValue: T) {
+  let value = initialValue
+  const subscribers = new Set<(value: T) => void>()
+
+  return [
+    () => value,
+    (newValue: T) => {
+      value = newValue
+      subscribers.forEach(fn => fn(value))
+    },
+    (fn: (value: T) => void) => {
+      subscribers.add(fn)
+      return () => subscribers.delete(fn)
+    }
+  ] as const
+}
+
+
+
+function createEffect(fn: () => void | (() => void)): () => void {
+  let cleanup: void | (() => void)
+  const run = () => {
+    if (cleanup) cleanup()
+    cleanup = fn()
+  }
+  run()
+  return () => {
+    if (cleanup) cleanup()
+  }
+}
+
+
+
+function createMemo<T>(fn: () => T): () => T {
+  let cached: T | undefined
+  let dirty = true
+
+  return () => {
+    if (dirty) {
+      cached = fn()
+      dirty = false
+    }
+    return cached!
+  }
+}
+
+
+
+function createComputed<T>(deps: Array<() => any>, fn: (...args: any[]) => T): () => T {
+  let cached: T | undefined
+  let prevDeps: any[] = []
+
+  return () => {
+    const currentDeps = deps.map(dep => dep())
+    const changed = currentDeps.some((dep, i) => dep !== prevDeps[i])
+    if (changed) {
+      cached = fn(...currentDeps)
+      prevDeps = currentDeps
+    }
+    return cached!
+  }
+}
+
+
+
+function useDebounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout>
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
+
+
+
+function useThrottle<T extends (...args: any[]) => any>(
+  fn: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle = false
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      fn(...args)
+      inThrottle = true
+      setTimeout(() => (inThrottle = false), limit)
+    }
+  }
+}
+
+
+
+function usePrevious<T>(value: T): T | undefined {
+  let current = value
+  let previous: T | undefined
+  return (() => {
+    previous = current
+    current = value
+    return previous
+  })()
+}
+
+
+
+type StringToNumber<S extends string, A extends any[] = []> = 
+  S extends `${A['length']}` ? A['length'] : StringToNumber<S, [...A, any]>
+
+
+
+type NumberToString<N extends number> = `${N}`
+
+
+
+type IsNegative<N extends number> = `${N}` extends `-${infer _}` ? true : false
+
+
+
+type Absolute<N extends number | string> = `${N}` extends `-${infer R}` ? R : `${N}`
+
+
+
+type Add<A extends number, B extends number> = [...Tuple<A>, ...Tuple<B>]['length'] & number
+
+type Tuple<N extends number, A extends any[] = []> = A['length'] extends N ? A : Tuple<N, [...A, any]>
+
+
+
+type Sub<A extends number, B extends number> = Tuple<A> extends [...Tuple<B>, ...infer R] ? R['length'] : never
+
+
+
+type IsEmpty<T> = T extends '' ? true : T extends [] ? true : T extends {} ? keyof T extends never ? true : false : false
+
+
+
+type Keys<T> = T extends any[] ? number : keyof T
+
+
+
+type Values<T> = T extends any[] ? T[number] : T[keyof T]
+
+
+
+type Entries<T> = { [K in keyof T]: [K, T[K]] }[keyof T]
+
+
+
+type FromEntries<T extends [string, any]> = { [K in T[0]]: Extract<T, [K, any]>[1] }
+
+
+
+type ObjectFromList<T extends string, V = true> = { [K in T]: V }
+
+
+
+type KeysMatching<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T]
+
+
+
+type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
+
+
+type RequiredKeys<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
+
+
+
+type SetDifference<A, B> = A extends B ? never : A
+
+
+
+type SetIntersection<A, B> = A extends B ? A : never
+
+
+
+type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
+
+
+
+type Overwrite<T, U> = Omit<T, keyof U> & U
+
+
+
+type Assign<T, U> = Omit<T, keyof U> & U
+
+
+
+type MergeRight<L, R> = Omit<L, keyof R> & R
+
+
+
+type DeepMerge<T, U> = {
+  [K in keyof T | keyof U]: K extends keyof U
+    ? K extends keyof T
+      ? T[K] extends object
+        ? U[K] extends object
+          ? DeepMerge<T[K], U[K]>
+          : U[K]
+        : U[K]
+      : U[K]
+    : K extends keyof T
+    ? T[K]
+    : never
+}
+
+
+
+class AsyncQueue<T> {
+  private queue: T[] = []
+  private resolvers: ((value: T) => void)[] = []
+
+  enqueue(item: T): void {
+    if (this.resolvers.length > 0) {
+      const resolve = this.resolvers.shift()!
+      resolve(item)
+    } else {
+      this.queue.push(item)
+    }
+  }
+
+  async dequeue(): Promise<T> {
+    if (this.queue.length > 0) {
+      return this.queue.shift()!
+    }
+    return new Promise(resolve => {
+      this.resolvers.push(resolve)
+    })
+  }
+
+  get length(): number {
+    return this.queue.length
+  }
+}
+
+
+
+class Semaphore {
+  private permits: number
+  private waiters: (() => void)[] = []
+
+  constructor(permits: number) {
+    this.permits = permits
+  }
+
+  async acquire(): Promise<void> {
+    if (this.permits > 0) {
+      this.permits--
+      return
+    }
+    return new Promise(resolve => {
+      this.waiters.push(resolve)
+    })
+  }
+
+  release(): void {
+    if (this.waiters.length > 0) {
+      const resolve = this.waiters.shift()!
+      resolve()
+    } else {
+      this.permits++
+    }
+  }
+}
+
+
+
+class Mutex {
+  private locked = false
+  private waiters: (() => void)[] = []
+
+  async lock(): Promise<void> {
+    if (!this.locked) {
+      this.locked = true
+      return
+    }
+    return new Promise(resolve => {
+      this.waiters.push(resolve)
+    })
+  }
+
+  unlock(): void {
+    if (this.waiters.length > 0) {
+      const resolve = this.waiters.shift()!
+      resolve()
+    } else {
+      this.locked = false
+    }
+  }
+
+  async withLock<T>(fn: () => Promise<T>): Promise<T> {
+    await this.lock()
+    try {
+      return await fn()
+    } finally {
+      this.unlock()
+    }
+  }
+}
+
+
+
+class RateLimiter {
+  private tokens: number
+  private lastRefill: number
+  private readonly maxTokens: number
+  private readonly refillRate: number
+
+  constructor(tokensPerSecond: number, burst: number = tokensPerSecond) {
+    this.maxTokens = burst
+    this.tokens = burst
+    this.refillRate = tokensPerSecond
+    this.lastRefill = Date.now()
+  }
+
+  private refill(): void {
+    const now = Date.now()
+    const elapsed = (now - this.lastRefill) / 1000
+    this.tokens = Math.min(this.maxTokens, this.tokens + elapsed * this.refillRate)
+    this.lastRefill = now
+  }
+
+  async acquire(): Promise<void> {
+    this.refill()
+    if (this.tokens >= 1) {
+      this.tokens--
+      return
+    }
+    const waitTime = ((1 - this.tokens) / this.refillRate) * 1000
+    await new Promise(resolve => setTimeout(resolve, waitTime))
+    return this.acquire()
+  }
+}
+
+
+
+class RetryWithBackoff {
+  constructor(
+    private maxRetries: number = 3,
+    private baseDelay: number = 1000,
+    private maxDelay: number = 30000
+  ) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    let lastError: Error | undefined
+    for (let i = 0; i <= this.maxRetries; i++) {
+      try {
+        return await fn()
+      } catch (error) {
+        lastError = error as Error
+        if (i < this.maxRetries) {
+          const delay = Math.min(this.baseDelay * Math.pow(2, i), this.maxDelay)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+      }
+    }
+    throw lastError
+  }
+}
+
+
+
+class CircuitBreaker {
+  private failures = 0
+  private lastFailure = 0
+  private state: 'closed' | 'open' | 'half-open' = 'closed'
+
+  constructor(
+    private threshold: number = 5,
+    private timeout: number = 60000
+  ) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailure >= this.timeout) {
+        this.state = 'half-open'
+      } else {
+        throw new Error('Circuit breaker is open')
+      }
+    }
+
+    try {
+      const result = await fn()
+      this.onSuccess()
+      return result
+    } catch (error) {
+      this.onFailure()
+      throw error
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0
+    this.state = 'closed'
+  }
+
+  private onFailure(): void {
+    this.failures++
+    this.lastFailure = Date.now()
+    if (this.failures >= this.threshold) {
+      this.state = 'open'
+    }
+  }
+}
+
+
+
+function groupBy<T, K extends string | number | symbol>(
+  array: T[],
+  keyFn: (item: T) => K
+): Record<K, T[]> {
+  return array.reduce((acc, item) => {
+    const key = keyFn(item)
+    if (!acc[key]) acc[key] = []
+    acc[key].push(item)
+    return acc
+  }, {} as Record<K, T[]>)
+}
+
+
+
+function partition<T>(array: T[], predicate: (item: T) => boolean): [T[], T[]] {
+  return array.reduce(
+    ([pass, fail], item) => {
+      predicate(item) ? pass.push(item) : fail.push(item)
+      return [pass, fail]
+    },
+    [[], []] as [T[], T[]]
+  )
+}
+
+
+
+function chunk<T>(array: T[], size: number): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size))
+  }
+  return result
+}
+
+
+
+function zip<T, U>(a: T[], b: U[]): [T, U][] {
+  return a.map((item, i) => [item, b[i]])
+}
+
+
+
+function unzip<T, U>(pairs: [T, U][]): [T[], U[]] {
+  return pairs.reduce(
+    ([as, bs], [a, b]) => {
+      as.push(a)
+      bs.push(b)
+      return [as, bs]
+    },
+    [[], []] as [T[], U[]]
+  )
+}
+
+
+
+function mapObject<T extends object, U>(
+  obj: T,
+  fn: (value: T[keyof T], key: keyof T) => U
+): { [K in keyof T]: U } {
+  const result = {} as { [K in keyof T]: U }
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      result[key] = fn(obj[key], key)
+    }
+  }
+  return result
+}
+
+
+
+function pickBy<T extends object>(
+  obj: T,
+  predicate: (value: T[keyof T], key: keyof T) => boolean
+): Partial<T> {
+  const result: Partial<T> = {}
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key) && predicate(obj[key], key)) {
+      result[key] = obj[key]
+    }
+  }
+  return result
+}
+
+
+
+function omitBy<T extends object>(
+  obj: T,
+  predicate: (value: T[keyof T], key: keyof T) => boolean
+): Partial<T> {
+  return pickBy(obj, (v, k) => !predicate(v, k))
+}
+
+
+
+function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj
+  if (Array.isArray(obj)) return obj.map(deepClone) as unknown as T
+  const cloned = {} as T
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      cloned[key] = deepClone(obj[key])
+    }
+  }
+  return cloned
+}
+
+
+
+function deepEqual<T>(a: T, b: T): boolean {
+  if (a === b) return true
+  if (typeof a !== 'object' || typeof b !== 'object') return false
+  if (a === null || b === null) return false
+  const keysA = Object.keys(a as object)
+  const keysB = Object.keys(b as object)
+  if (keysA.length !== keysB.length) return false
+  return keysA.every(key => deepEqual((a as any)[key], (b as any)[key]))
+}
+
+
+
+function get<T, P extends string>(
+  obj: T,
+  path: P,
+  defaultValue?: unknown
+): unknown {
+  const keys = path.split('.')
+  let result: unknown = obj
+  for (const key of keys) {
+    if (result === null || result === undefined) return defaultValue
+    result = (result as Record<string, unknown>)[key]
+  }
+  return result ?? defaultValue
+}
+
+
+
+function set<T extends object>(obj: T, path: string, value: unknown): T {
+  const keys = path.split('.')
+  let current: any = obj
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!(keys[i] in current)) current[keys[i]] = {}
+    current = current[keys[i]]
+  }
+  current[keys[keys.length - 1]] = value
+  return obj
+}
+
+
+
+function copyRandomList(head: Node | null): Node | null {
+  if (!head) return null
+  const map = new Map<Node, Node>()
+  let curr: Node | null = head
+  while (curr) {
+    map.set(curr, new Node(curr.val))
+    curr = curr.next
+  }
+  curr = head
+  while (curr) {
+    const copy = map.get(curr)!
+    copy.next = curr.next ? map.get(curr.next)! : null
+    copy.random = curr.random ? map.get(curr.random)! : null
+    curr = curr.next
+  }
+  return map.get(head)!
+}
+
+
+
+function mergeKLists(lists: (ListNode | null)[]): ListNode | null {
+  if (lists.length === 0) return null
+  while (lists.length > 1) {
+    const merged: (ListNode | null)[] = []
+    for (let i = 0; i < lists.length; i += 2) {
+      const l1 = lists[i]
+      const l2 = i + 1 < lists.length ? lists[i + 1] : null
+      merged.push(mergeTwoLists(l1, l2))
+    }
+    lists = merged
+  }
+  return lists[0]
+}
+
+function mergeTwoLists(l1: ListNode | null, l2: ListNode | null): ListNode | null {
+  const dummy = new ListNode(0)
+  let curr = dummy
+  while (l1 && l2) {
+    if (l1.val < l2.val) {
+      curr.next = l1
+      l1 = l1.next
+    } else {
+      curr.next = l2
+      l2 = l2.next
+    }
+    curr = curr.next
+  }
+  curr.next = l1 || l2
+  return dummy.next
+}
+
+
+
+function reverseKGroup(head: ListNode | null, k: number): ListNode | null {
+  let curr = head
+  let count = 0
+  while (curr && count < k) {
+    curr = curr.next
+    count++
+  }
+  if (count < k) return head
+  let prev: ListNode | null = null
+  curr = head
+  for (let i = 0; i < k; i++) {
+    const next = curr!.next
+    curr!.next = prev
+    prev = curr
+    curr = next
+  }
+  head!.next = reverseKGroup(curr, k)
+  return prev
+}
+
+
+
+function detectCycle(head: ListNode | null): ListNode | null {
+  let slow = head
+  let fast = head
+  while (fast && fast.next) {
+    slow = slow!.next
+    fast = fast.next.next
+    if (slow === fast) {
+      let ptr = head
+      while (ptr !== slow) {
+        ptr = ptr!.next
+        slow = slow!.next
+      }
+      return ptr
+    }
+  }
+  return null
+}
+
+
+
+function reorderList(head: ListNode | null): void {
+  if (head -n 50 /home/linan/桌面/cloudflare-img-url/worker/index.js || !head.next) return
+  let slow = head
+  let fast = head
+  while (fast.next && fast.next.next) {
+    slow = slow.next!
+    fast = fast.next.next
+  }
+  let second: ListNode | null = slow.next
+  slow.next = null
+  let prev: ListNode | null = null
+  while (second) {
+    const next = second.next
+    second.next = prev
+    prev = second
+    second = next
+  }
+  let first: ListNode | null = head
+  second = prev
+  while (second) {
+    const tmp1 = first!.next
+    const tmp2 = second.next
+    first!.next = second
+    second.next = tmp1
+    first = tmp1
+    second = tmp2
+  }
+}

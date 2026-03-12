@@ -1,0 +1,3851 @@
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        fmt.Printf("worker %d started job %d\n", id, j)
+        time.Sleep(time.Second)
+        fmt.Printf("worker %d finished job %d\n", id, j)
+        results <- j * 2
+    }
+}
+
+
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("division by zero")
+    }
+    return a / b, nil
+}
+
+
+
+type Rectangle struct {
+    Width  float64
+    Height float64
+}
+
+func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+func (r *Rectangle) Scale(factor float64) {
+    r.Width *= factor
+    r.Height *= factor
+}
+
+
+
+type Shape interface {
+    Area() float64
+    Perimeter() float64
+}
+
+type Circle struct {
+    Radius float64
+}
+
+func (c Circle) Area() float64 {
+    return math.Pi * c.Radius * c.Radius
+}
+
+func (c Circle) Perimeter() float64 {
+    return 2 * math.Pi * c.Radius
+}
+
+
+
+func filterEven(nums []int) []int {
+    result := make([]int, 0)
+    for _, n := range nums {
+        if n%2 == 0 {
+            result = append(result, n)
+        }
+    }
+    return result
+}
+
+
+
+func binarySearch(arr []int, target int) int {
+    left, right := 0, len(arr)-1
+    for left <= right {
+        mid := left + (right-left)/2
+        if arr[mid] == target {
+            return mid
+        } else if arr[mid] < target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+    return -1
+}
+
+
+
+func quickSort(arr []int) []int {
+    if len(arr) <= 1 {
+        return arr
+    }
+    pivot := arr[len(arr)/2]
+    var left, middle, right []int
+    for _, x := range arr {
+        if x < pivot {
+            left = append(left, x)
+        } else if x == pivot {
+            middle = append(middle, x)
+        } else {
+            right = append(right, x)
+        }
+    }
+    result := quickSort(left)
+    result = append(result, middle...)
+    result = append(result, quickSort(right)...)
+    return result
+}
+
+
+
+func mergeSort(arr []int) []int {
+    if len(arr) <= 1 {
+        return arr
+    }
+    mid := len(arr) / 2
+    left := mergeSort(arr[:mid])
+    right := mergeSort(arr[mid:])
+    return merge(left, right)
+}
+
+func merge(left, right []int) []int {
+    result := make([]int, 0, len(left)+len(right))
+    i, j := 0, 0
+    for i < len(left) && j < len(right) {
+        if left[i] <= right[j] {
+            result = append(result, left[i])
+            i++
+        } else {
+            result = append(result, right[j])
+            j++
+        }
+    }
+    result = append(result, left[i:]...)
+    result = append(result, right[j:]...)
+    return result
+}
+
+
+
+type Stack struct {
+    items []interface{}
+}
+
+func NewStack() *Stack {
+    return &Stack{items: []interface{}{}}
+}
+
+func (s *Stack) Push(item interface{}) {
+    s.items = append(s.items, item)
+}
+
+func (s *Stack) Pop() interface{} {
+    if len(s.items) == 0 {
+        return nil
+    }
+    item := s.items[len(s.items)-1]
+    s.items = s.items[:len(s.items)-1]
+    return item
+}
+
+func (s *Stack) Peek() interface{} {
+    if len(s.items) == 0 {
+        return nil
+    }
+    return s.items[len(s.items)-1]
+}
+
+func (s *Stack) IsEmpty() bool {
+    return len(s.items) == 0
+}
+
+
+
+type Queue struct {
+    items []interface{}
+}
+
+func NewQueue() *Queue {
+    return &Queue{items: []interface{}{}}
+}
+
+func (q *Queue) Enqueue(item interface{}) {
+    q.items = append(q.items, item)
+}
+
+func (q *Queue) Dequeue() interface{} {
+    if len(q.items) == 0 {
+        return nil
+    }
+    item := q.items[0]
+    q.items = q.items[1:]
+    return item
+}
+
+func (q *Queue) Front() interface{} {
+    if len(q.items) == 0 {
+        return nil
+    }
+    return q.items[0]
+}
+
+func (q *Queue) IsEmpty() bool {
+    return len(q.items) == 0
+}
+
+
+
+type Node struct {
+    Value int
+    Next  *Node
+}
+
+type LinkedList struct {
+    Head *Node
+}
+
+func (l *LinkedList) Append(value int) {
+    newNode := &Node{Value: value}
+    if l.Head == nil {
+        l.Head = newNode
+        return
+    }
+    current := l.Head
+    for current.Next != nil {
+        current = current.Next
+    }
+    current.Next = newNode
+}
+
+func (l *LinkedList) Prepend(value int) {
+    newNode := &Node{Value: value, Next: l.Head}
+    l.Head = newNode
+}
+
+func (l *LinkedList) Delete(value int) {
+    if l.Head == nil {
+        return
+    }
+    if l.Head.Value == value {
+        l.Head = l.Head.Next
+        return
+    }
+    current := l.Head
+    for current.Next != nil {
+        if current.Next.Value == value {
+            current.Next = current.Next.Next
+            return
+        }
+        current = current.Next
+    }
+}
+
+
+
+func twoSum(nums []int, target int) []int {
+    seen := make(map[int]int)
+    for i, num := range nums {
+        complement := target - num
+        if j, ok := seen[complement]; ok {
+            return []int{j, i}
+        }
+        seen[num] = i
+    }
+    return nil
+}
+
+
+
+func maxSubArray(nums []int) int {
+    maxSum := nums[0]
+    currentSum := nums[0]
+    for _, num := range nums[1:] {
+        if num > currentSum+num {
+            currentSum = num
+        } else {
+            currentSum = currentSum + num
+        }
+        if currentSum > maxSum {
+            maxSum = currentSum
+        }
+    }
+    return maxSum
+}
+
+
+
+func fibonacci(n int) int {
+    if n <= 1 {
+        return n
+    }
+    prev, curr := 0, 1
+    for i := 2; i <= n; i++ {
+        prev, curr = curr, prev+curr
+    }
+    return curr
+}
+
+
+
+func factorial(n int) int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n-1)
+}
+
+
+
+func isPrime(n int) bool {
+    if n <= 1 {
+        return false
+    }
+    if n <= 3 {
+        return true
+    }
+    if n%2 == 0 || n%3 == 0 {
+        return false
+    }
+    for i := 5; i*i <= n; i += 6 {
+        if n%i == 0 || n%(i+2) == 0 {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func gcd(a, b int) int {
+    for b != 0 {
+        a, b = b, a%b
+    }
+    return a
+}
+
+
+
+func lcm(a, b int) int {
+    return a * b / gcd(a, b)
+}
+
+
+
+func isPalindrome(s string) bool {
+    cleaned := strings.ToLower(s)
+    runes := []rune(cleaned)
+    for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+        for i < j && !unicode.IsLetter(runes[i]) && !unicode.IsDigit(runes[i]) {
+            i++
+        }
+        for i < j && !unicode.IsLetter(runes[j]) && !unicode.IsDigit(runes[j]) {
+            j--
+        }
+        if runes[i] != runes[j] {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func reverseString(s string) string {
+    runes := []rune(s)
+    for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+        runes[i], runes[j] = runes[j], runes[i]
+    }
+    return string(runes)
+}
+
+
+
+func isValidParentheses(s string) bool {
+    stack := []rune{}
+    pairs := map[rune]rune{')': '(', ']': '[', '}': '{'}
+    for _, char := range s {
+        if match, ok := pairs[char]; ok {
+            if len(stack) == 0 || stack[len(stack)-1] != match {
+                return false
+            }
+            stack = stack[:len(stack)-1]
+        } else {
+            stack = append(stack, char)
+        }
+    }
+    return len(stack) == 0
+}
+
+
+
+func climbStairs(n int) int {
+    if n <= 2 {
+        return n
+    }
+    prev, curr := 1, 2
+    for i := 3; i <= n; i++ {
+        prev, curr = curr, prev+curr
+    }
+    return curr
+}
+
+
+
+func coinChange(coins []int, amount int) int {
+    dp := make([]int, amount+1)
+    for i := range dp {
+        dp[i] = amount + 1
+    }
+    dp[0] = 0
+    for _, coin := range coins {
+        for i := coin; i <= amount; i++ {
+            if dp[i-coin]+1 < dp[i] {
+                dp[i] = dp[i-coin] + 1
+            }
+        }
+    }
+    if dp[amount] > amount {
+        return -1
+    }
+    return dp[amount]
+}
+
+
+
+func unique(arr []int) []int {
+    seen := make(map[int]bool)
+    result := []int{}
+    for _, v := range arr {
+        if !seen[v] {
+            seen[v] = true
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
+
+
+func chunk(arr []int, size int) [][]int {
+    var result [][]int
+    for i := 0; i < len(arr); i += size {
+        end := i + size
+        if end > len(arr) {
+            end = len(arr)
+        }
+        result = append(result, arr[i:end])
+    }
+    return result
+}
+
+
+
+func flatten(arr [][]int) []int {
+    result := []int{}
+    for _, inner := range arr {
+        result = append(result, inner...)
+    }
+    return result
+}
+
+
+
+func groupBy(items []string, keyFn func(string) string) map[string][]string {
+    result := make(map[string][]string)
+    for _, item := range items {
+        key := keyFn(item)
+        result[key] = append(result[key], item)
+    }
+    return result
+}
+
+
+
+func partition(arr []int, predicate func(int) bool) ([]int, []int) {
+    trueArr := []int{}
+    falseArr := []int{}
+    for _, v := range arr {
+        if predicate(v) {
+            trueArr = append(trueArr, v)
+        } else {
+            falseArr = append(falseArr, v)
+        }
+    }
+    return trueArr, falseArr
+}
+
+
+
+func intersection(a, b []int) []int {
+    setB := make(map[int]bool)
+    for _, v := range b {
+        setB[v] = true
+    }
+    result := []int{}
+    for _, v := range a {
+        if setB[v] {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
+
+
+func difference(a, b []int) []int {
+    setB := make(map[int]bool)
+    for _, v := range b {
+        setB[v] = true
+    }
+    result := []int{}
+    for _, v := range a {
+        if !setB[v] {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
+
+
+func shuffle(arr []int) []int {
+    result := make([]int, len(arr))
+    copy(result, arr)
+    rand.Seed(time.Now().UnixNano())
+    for i := len(result) - 1; i > 0; i-- {
+        j := rand.Intn(i + 1)
+        result[i], result[j] = result[j], result[i]
+    }
+    return result
+}
+
+
+
+func clamp(value, min, max int) int {
+    if value < min {
+        return min
+    }
+    if value > max {
+        return max
+    }
+    return value
+}
+
+
+
+func retry(fn func() error, maxRetries int, delay time.Duration) error {
+    var err error
+    for i := 0; i < maxRetries; i++ {
+        err = fn()
+        if err == nil {
+            return nil
+        }
+        time.Sleep(delay)
+    }
+    return err
+}
+
+
+
+func fetchURL(url string) (string, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return "", err
+    }
+    return string(body), nil
+}
+
+
+
+type LRUCache struct {
+    capacity int
+    cache    map[int]int
+    order    []int
+}
+
+func NewLRUCache(capacity int) *LRUCache {
+    return &LRUCache{
+        capacity: capacity,
+        cache:    make(map[int]int),
+        order:    []int{},
+    }
+}
+
+func (c *LRUCache) Get(key int) int {
+    if val, ok := c.cache[key]; ok {
+        c.moveToEnd(key)
+        return val
+    }
+    return -1
+}
+
+func (c *LRUCache) Put(key, value int) {
+    if _, ok := c.cache[key]; ok {
+        c.cache[key] = value
+        c.moveToEnd(key)
+        return
+    }
+    if len(c.cache) >= c.capacity {
+        oldest := c.order[0]
+        c.order = c.order[1:]
+        delete(c.cache, oldest)
+    }
+    c.cache[key] = value
+    c.order = append(c.order, key)
+}
+
+func (c *LRUCache) moveToEnd(key int) {
+    for i, k := range c.order {
+        if k == key {
+            c.order = append(c.order[:i], c.order[i+1:]...)
+            break
+        }
+    }
+    c.order = append(c.order, key)
+}
+
+
+
+type Trie struct {
+    children map[rune]*Trie
+    isEnd    bool
+}
+
+func NewTrie() *Trie {
+    return &Trie{children: make(map[rune]*Trie)}
+}
+
+func (t *Trie) Insert(word string) {
+    node := t
+    for _, c := range word {
+        if _, ok := node.children[c]; !ok {
+            node.children[c] = NewTrie()
+        }
+        node = node.children[c]
+    }
+    node.isEnd = true
+}
+
+func (t *Trie) Search(word string) bool {
+    node := t
+    for _, c := range word {
+        if _, ok := node.children[c]; !ok {
+            return false
+        }
+        node = node.children[c]
+    }
+    return node.isEnd
+}
+
+func (t *Trie) StartsWith(prefix string) bool {
+    node := t
+    for _, c := range prefix {
+        if _, ok := node.children[c]; !ok {
+            return false
+        }
+        node = node.children[c]
+    }
+    return true
+}
+
+
+
+type UnionFind struct {
+    parent []int
+    rank   []int
+}
+
+func NewUnionFind(n int) *UnionFind {
+    parent := make([]int, n)
+    rank := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    return &UnionFind{parent: parent, rank: rank}
+}
+
+func (uf *UnionFind) Find(x int) int {
+    if uf.parent[x] != x {
+        uf.parent[x] = uf.Find(uf.parent[x])
+    }
+    return uf.parent[x]
+}
+
+func (uf *UnionFind) Union(x, y int) bool {
+    rootX := uf.Find(x)
+    rootY := uf.Find(y)
+    if rootX == rootY {
+        return false
+    }
+    if uf.rank[rootX] < uf.rank[rootY] {
+        uf.parent[rootX] = rootY
+    } else if uf.rank[rootX] > uf.rank[rootY] {
+        uf.parent[rootY] = rootX
+    } else {
+        uf.parent[rootY] = rootX
+        uf.rank[rootX]++
+    }
+    return true
+}
+
+
+
+func romanToInt(s string) int {
+    values := map[byte]int{'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    result := 0
+    for i := 0; i < len(s); i++ {
+        if i+1 < len(s) && values[s[i]] < values[s[i+1]] {
+            result -= values[s[i]]
+        } else {
+            result += values[s[i]]
+        }
+    }
+    return result
+}
+
+
+
+func intToRoman(num int) string {
+    values := []int{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
+    symbols := []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+    var result strings.Builder
+    for i, v := range values {
+        for num >= v {
+            result.WriteString(symbols[i])
+            num -= v
+        }
+    }
+    return result.String()
+}
+
+
+
+func spiralOrder(matrix [][]int) []int {
+    if len(matrix) == 0 {
+        return nil
+    }
+    result := []int{}
+    top, bottom := 0, len(matrix)-1
+    left, right := 0, len(matrix[0])-1
+    for top <= bottom && left <= right {
+        for i := left; i <= right; i++ {
+            result = append(result, matrix[top][i])
+        }
+        top++
+        for i := top; i <= bottom; i++ {
+            result = append(result, matrix[i][right])
+        }
+        right--
+        if top <= bottom {
+            for i := right; i >= left; i-- {
+                result = append(result, matrix[bottom][i])
+            }
+            bottom--
+        }
+        if left <= right {
+            for i := bottom; i >= top; i-- {
+                result = append(result, matrix[i][left])
+            }
+            left++
+        }
+    }
+    return result
+}
+
+
+
+func mergeIntervals(intervals [][]int) [][]int {
+    if len(intervals) <= 1 {
+        return intervals
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    result := [][]int{intervals[0]}
+    for i := 1; i < len(intervals); i++ {
+        last := result[len(result)-1]
+        if intervals[i][0] <= last[1] {
+            if intervals[i][1] > last[1] {
+                last[1] = intervals[i][1]
+            }
+        } else {
+            result = append(result, intervals[i])
+        }
+    }
+    return result
+}
+
+
+
+func trap(height []int) int {
+    if len(height) == 0 {
+        return 0
+    }
+    left, right := 0, len(height)-1
+    leftMax, rightMax := 0, 0
+    result := 0
+    for left < right {
+        if height[left] < height[right] {
+            if height[left] >= leftMax {
+                leftMax = height[left]
+            } else {
+                result += leftMax - height[left]
+            }
+            left++
+        } else {
+            if height[right] >= rightMax {
+                rightMax = height[right]
+            } else {
+                result += rightMax - height[right]
+            }
+            right--
+        }
+    }
+    return result
+}
+
+
+
+func nextGreaterElement(nums []int) []int {
+    result := make([]int, len(nums))
+    for i := range result {
+        result[i] = -1
+    }
+    stack := []int{}
+    for i, num := range nums {
+        for len(stack) > 0 && nums[stack[len(stack)-1]] < num {
+            idx := stack[len(stack)-1]
+            stack = stack[:len(stack)-1]
+            result[idx] = num
+        }
+        stack = append(stack, i)
+    }
+    return result
+}
+
+
+
+func dailyTemperatures(temperatures []int) []int {
+    result := make([]int, len(temperatures))
+    stack := []int{}
+    for i, temp := range temperatures {
+        for len(stack) > 0 && temperatures[stack[len(stack)-1]] < temp {
+            prevIdx := stack[len(stack)-1]
+            stack = stack[:len(stack)-1]
+            result[prevIdx] = i - prevIdx
+        }
+        stack = append(stack, i)
+    }
+    return result
+}
+
+
+
+func lengthOfLongestSubstring(s string) int {
+    seen := make(map[byte]int)
+    maxLen, start := 0, 0
+    for i := 0; i < len(s); i++ {
+        if pos, ok := seen[s[i]]; ok && pos >= start {
+            start = pos + 1
+        }
+        seen[s[i]] = i
+        if i-start+1 > maxLen {
+            maxLen = i - start + 1
+        }
+    }
+    return maxLen
+}
+
+
+
+func characterReplacement(s string, k int) int {
+    count := make([]int, 26)
+    maxCount, maxLen := 0, 0
+    left := 0
+    for right := 0; right < len(s); right++ {
+        count[s[right]-'A']++
+        if count[s[right]-'A'] > maxCount {
+            maxCount = count[s[right]-'A']
+        }
+        if right-left+1-maxCount > k {
+            count[s[left]-'A']--
+            left++
+        }
+        if right-left+1 > maxLen {
+            maxLen = right - left + 1
+        }
+    }
+    return maxLen
+}
+
+
+
+func minWindow(s, t string) string {
+    if len(s) < len(t) {
+        return ""
+    }
+    need := make(map[byte]int)
+    window := make(map[byte]int)
+    for i := 0; i < len(t); i++ {
+        need[t[i]]++
+    }
+    left, valid := 0, 0
+    start, minLen := 0, len(s)+1
+    for right := 0; right < len(s); right++ {
+        c := s[right]
+        if _, ok := need[c]; ok {
+            window[c]++
+            if window[c] == need[c] {
+                valid++
+            }
+        }
+        for valid == len(need) {
+            if right-left+1 < minLen {
+                start = left
+                minLen = right - left + 1
+            }
+            d := s[left]
+            left++
+            if _, ok := need[d]; ok {
+                if window[d] == need[d] {
+                    valid--
+                }
+                window[d]--
+            }
+        }
+    }
+    if minLen == len(s)+1 {
+        return ""
+    }
+    return s[start : start+minLen]
+}
+
+
+
+func longestPalindrome(s string) string {
+    if len(s) < 2 {
+        return s
+    }
+    start, maxLen := 0, 1
+    
+    expand := func(left, right int) {
+        for left >= 0 && right < len(s) && s[left] == s[right] {
+            if right-left+1 > maxLen {
+                start = left
+                maxLen = right - left + 1
+            }
+            left--
+            right++
+        }
+    }
+    
+    for i := 0; i < len(s); i++ {
+        expand(i, i)
+        expand(i, i+1)
+    }
+    return s[start : start+maxLen]
+}
+
+
+
+func groupAnagrams(strs []string) [][]string {
+    groups := make(map[string][]string)
+    for _, s := range strs {
+        chars := []byte(s)
+        sort.Slice(chars, func(i, j int) bool { return chars[i] < chars[j] })
+        key := string(chars)
+        groups[key] = append(groups[key], s)
+    }
+    result := make([][]string, 0, len(groups))
+    for _, v := range groups {
+        result = append(result, v)
+    }
+    return result
+}
+
+
+
+func isAnagram(s, t string) bool {
+    if len(s) != len(t) {
+        return false
+    }
+    count := make([]int, 26)
+    for i := 0; i < len(s); i++ {
+        count[s[i]-'a']++
+        count[t[i]-'a']--
+    }
+    for _, c := range count {
+        if c != 0 {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func wordBreak(s string, wordDict []string) bool {
+    wordSet := make(map[string]bool)
+    for _, word := range wordDict {
+        wordSet[word] = true
+    }
+    dp := make([]bool, len(s)+1)
+    dp[0] = true
+    for i := 1; i <= len(s); i++ {
+        for j := 0; j < i; j++ {
+            if dp[j] && wordSet[s[j:i]] {
+                dp[i] = true
+                break
+            }
+        }
+    }
+    return dp[len(s)]
+}
+
+
+
+func minPathSum(grid [][]int) int {
+    m, n := len(grid), len(grid[0])
+    dp := make([][]int, m)
+    for i := range dp {
+        dp[i] = make([]int, n)
+    }
+    dp[0][0] = grid[0][0]
+    for i := 1; i < m; i++ {
+        dp[i][0] = dp[i-1][0] + grid[i][0]
+    }
+    for j := 1; j < n; j++ {
+        dp[0][j] = dp[0][j-1] + grid[0][j]
+    }
+    for i := 1; i < m; i++ {
+        for j := 1; j < n; j++ {
+            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j]
+        }
+    }
+    return dp[m-1][n-1]
+}
+
+
+
+func editDistance(word1, word2 string) int {
+    m, n := len(word1), len(word2)
+    dp := make([][]int, m+1)
+    for i := range dp {
+        dp[i] = make([]int, n+1)
+        dp[i][0] = i
+    }
+    for j := 0; j <= n; j++ {
+        dp[0][j] = j
+    }
+    for i := 1; i <= m; i++ {
+        for j := 1; j <= n; j++ {
+            if word1[i-1] == word2[j-1] {
+                dp[i][j] = dp[i-1][j-1]
+            } else {
+                dp[i][j] = 1 + min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1]))
+            }
+        }
+    }
+    return dp[m][n]
+}
+
+
+
+func longestCommonSubsequence(text1, text2 string) int {
+    m, n := len(text1), len(text2)
+    dp := make([][]int, m+1)
+    for i := range dp {
+        dp[i] = make([]int, n+1)
+    }
+    for i := 1; i <= m; i++ {
+        for j := 1; j <= n; j++ {
+            if text1[i-1] == text2[j-1] {
+                dp[i][j] = dp[i-1][j-1] + 1
+            } else {
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+            }
+        }
+    }
+    return dp[m][n]
+}
+
+
+
+func numDecodings(s string) int {
+    if len(s) == 0 || s[0] == '0' {
+        return 0
+    }
+    n := len(s)
+    dp := make([]int, n+1)
+    dp[0], dp[1] = 1, 1
+    for i := 2; i <= n; i++ {
+        one, _ := strconv.Atoi(s[i-1 : i])
+        two, _ := strconv.Atoi(s[i-2 : i])
+        if one >= 1 && one <= 9 {
+            dp[i] += dp[i-1]
+        }
+        if two >= 10 && two <= 26 {
+            dp[i] += dp[i-2]
+        }
+    }
+    return dp[n]
+}
+
+
+
+func generateParenthesis(n int) []string {
+    result := []string{}
+    var backtrack func(s string, left, right int)
+    backtrack = func(s string, left, right int) {
+        if len(s) == 2*n {
+            result = append(result, s)
+            return
+        }
+        if left < n {
+            backtrack(s+"(", left+1, right)
+        }
+        if right < left {
+            backtrack(s+")", left, right+1)
+        }
+    }
+    backtrack("", 0, 0)
+    return result
+}
+
+
+
+func combine(n, k int) [][]int {
+    result := [][]int{}
+    var backtrack func(start int, path []int)
+    backtrack = func(start int, path []int) {
+        if len(path) == k {
+            temp := make([]int, k)
+            copy(temp, path)
+            result = append(result, temp)
+            return
+        }
+        for i := start; i <= n; i++ {
+            backtrack(i+1, append(path, i))
+        }
+    }
+    backtrack(1, []int{})
+    return result
+}
+
+
+
+func combinationSum(candidates []int, target int) [][]int {
+    result := [][]int{}
+    var backtrack func(start, remaining int, path []int)
+    backtrack = func(start, remaining int, path []int) {
+        if remaining == 0 {
+            temp := make([]int, len(path))
+            copy(temp, path)
+            result = append(result, temp)
+            return
+        }
+        if remaining < 0 {
+            return
+        }
+        for i := start; i < len(candidates); i++ {
+            backtrack(i, remaining-candidates[i], append(path, candidates[i]))
+        }
+    }
+    backtrack(0, target, []int{})
+    return result
+}
+
+
+
+func exist(board [][]byte, word string) bool {
+    m, n := len(board), len(board[0])
+    var dfs func(i, j, k int) bool
+    dfs = func(i, j, k int) bool {
+        if k == len(word) {
+            return true
+        }
+        if i < 0 || i >= m || j < 0 || j >= n || board[i][j] != word[k] {
+            return false
+        }
+        temp := board[i][j]
+        board[i][j] = '#'
+        found := dfs(i+1, j, k+1) || dfs(i-1, j, k+1) || dfs(i, j+1, k+1) || dfs(i, j-1, k+1)
+        board[i][j] = temp
+        return found
+    }
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if dfs(i, j, 0) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+
+
+func basicCalculator(s string) int {
+    stack := []int{}
+    num, sign, result := 0, 1, 0
+    for _, c := range s {
+        if c >= '0' && c <= '9' {
+            num = num*10 + int(c-'0')
+        } else if c == '+' {
+            result += sign * num
+            num = 0
+            sign = 1
+        } else if c == '-' {
+            result += sign * num
+            num = 0
+            sign = -1
+        } else if c == '(' {
+            stack = append(stack, result, sign)
+            result = 0
+            sign = 1
+        } else if c == ')' {
+            result += sign * num
+            num = 0
+            result *= stack[len(stack)-1]
+            result += stack[len(stack)-2]
+            stack = stack[:len(stack)-2]
+        }
+    }
+    return result + sign*num
+}
+
+
+
+func evalRPN(tokens []string) int {
+    stack := []int{}
+    for _, token := range tokens {
+        if token == "+" || token == "-" || token == "*" || token == "/" {
+            b, a := stack[len(stack)-1], stack[len(stack)-2]
+            stack = stack[:len(stack)-2]
+            switch token {
+            case "+":
+                stack = append(stack, a+b)
+            case "-":
+                stack = append(stack, a-b)
+            case "*":
+                stack = append(stack, a*b)
+            case "/":
+                stack = append(stack, a/b)
+            }
+        } else {
+            num, _ := strconv.Atoi(token)
+            stack = append(stack, num)
+        }
+    }
+    return stack[0]
+}
+
+
+
+func decodeString(s string) string {
+    strStack := []string{}
+    numStack := []int{}
+    current := ""
+    num := 0
+    for _, c := range s {
+        if c >= '0' && c <= '9' {
+            num = num*10 + int(c-'0')
+        } else if c == '[' {
+            strStack = append(strStack, current)
+            numStack = append(numStack, num)
+            current = ""
+            num = 0
+        } else if c == ']' {
+            prev := strStack[len(strStack)-1]
+            repeat := numStack[len(numStack)-1]
+            strStack = strStack[:len(strStack)-1]
+            numStack = numStack[:len(numStack)-1]
+            current = prev + strings.Repeat(current, repeat)
+        } else {
+            current += string(c)
+        }
+    }
+    return current
+}
+
+
+
+func simplifyPath(path string) string {
+    stack := []string{}
+    for _, part := range strings.Split(path, "/") {
+        if part == ".." {
+            if len(stack) > 0 {
+                stack = stack[:len(stack)-1]
+            }
+        } else if part != "" && part != "." {
+            stack = append(stack, part)
+        }
+    }
+    return "/" + strings.Join(stack, "/")
+}
+
+
+
+func asteroidCollision(asteroids []int) []int {
+    stack := []int{}
+    for _, asteroid := range asteroids {
+        alive := true
+        for len(stack) > 0 && asteroid < 0 && stack[len(stack)-1] > 0 {
+            if stack[len(stack)-1] < -asteroid {
+                stack = stack[:len(stack)-1]
+                continue
+            } else if stack[len(stack)-1] == -asteroid {
+                stack = stack[:len(stack)-1]
+            }
+            alive = false
+            break
+        }
+        if alive {
+            stack = append(stack, asteroid)
+        }
+    }
+    return stack
+}
+
+
+
+func removeKdigits(num string, k int) string {
+    stack := []byte{}
+    for i := 0; i < len(num); i++ {
+        for len(stack) > 0 && k > 0 && stack[len(stack)-1] > num[i] {
+            stack = stack[:len(stack)-1]
+            k--
+        }
+        stack = append(stack, num[i])
+    }
+    stack = stack[:len(stack)-k]
+    result := strings.TrimLeft(string(stack), "0")
+    if result == "" {
+        return "0"
+    }
+    return result
+}
+
+
+
+func taskScheduler(tasks []byte, n int) int {
+    freq := make([]int, 26)
+    for _, task := range tasks {
+        freq[task-'A']++
+    }
+    maxFreq := 0
+    for _, f := range freq {
+        if f > maxFreq {
+            maxFreq = f
+        }
+    }
+    maxCount := 0
+    for _, f := range freq {
+        if f == maxFreq {
+            maxCount++
+        }
+    }
+    return max(len(tasks), (maxFreq-1)*(n+1)+maxCount)
+}
+
+
+
+func minMeetingRooms(intervals [][]int) int {
+    if len(intervals) == 0 {
+        return 0
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    heap := &IntHeap{intervals[0][1]}
+    heap.Init()
+    for i := 1; i < len(intervals); i++ {
+        if (*heap)[0] <= intervals[i][0] {
+            heap.Pop()
+        }
+        heap.Push(intervals[i][1])
+    }
+    return heap.Len()
+}
+
+
+
+func intervalIntersection(A, B [][]int) [][]int {
+    result := [][]int{}
+    i, j := 0, 0
+    for i < len(A) && j < len(B) {
+        lo := max(A[i][0], B[j][0])
+        hi := min(A[i][1], B[j][1])
+        if lo <= hi {
+            result = append(result, []int{lo, hi})
+        }
+        if A[i][1] < B[j][1] {
+            i++
+        } else {
+            j++
+        }
+    }
+    return result
+}
+
+
+
+func carPooling(trips [][]int, capacity int) bool {
+    timeline := make([]int, 1001)
+    for _, trip := range trips {
+        timeline[trip[1]] += trip[0]
+        timeline[trip[2]] -= trip[0]
+    }
+    current := 0
+    for _, delta := range timeline {
+        current += delta
+        if current > capacity {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func serialize(root *TreeNode) string {
+    if root == nil {
+        return "null"
+    }
+    return strconv.Itoa(root.Val) + "," + serialize(root.Left) + "," + serialize(root.Right)
+}
+
+func deserialize(data string) *TreeNode {
+    nodes := strings.Split(data, ",")
+    idx := 0
+    var build func() *TreeNode
+    build = func() *TreeNode {
+        if idx >= len(nodes) || nodes[idx] == "null" {
+            idx++
+            return nil
+        }
+        val, _ := strconv.Atoi(nodes[idx])
+        idx++
+        return &TreeNode{Val: val, Left: build(), Right: build()}
+    }
+    return build()
+}
+
+
+
+func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
+    if root == nil || root == p || root == q {
+        return root
+    }
+    left := lowestCommonAncestor(root.Left, p, q)
+    right := lowestCommonAncestor(root.Right, p, q)
+    if left != nil && right != nil {
+        return root
+    }
+    if left != nil {
+        return left
+    }
+    return right
+}
+
+
+
+func flattenTree(root *TreeNode) {
+    if root == nil {
+        return
+    }
+    flattenTree(root.Left)
+    flattenTree(root.Right)
+    right := root.Right
+    root.Right = root.Left
+    root.Left = nil
+    for root.Right != nil {
+        root = root.Right
+    }
+    root.Right = right
+}
+
+
+
+func pathSum(root *TreeNode, targetSum int) int {
+    prefixSum := make(map[int64]int)
+    prefixSum[0] = 1
+    var dfs func(node *TreeNode, currentSum int64) int
+    dfs = func(node *TreeNode, currentSum int64) int {
+        if node == nil {
+            return 0
+        }
+        currentSum += int64(node.Val)
+        count := prefixSum[currentSum-int64(targetSum)]
+        prefixSum[currentSum]++
+        count += dfs(node.Left, currentSum)
+        count += dfs(node.Right, currentSum)
+        prefixSum[currentSum]--
+        return count
+    }
+    return dfs(root, 0)
+}
+
+
+
+func maxPathSum(root *TreeNode) int {
+    maxSum := math.MinInt32
+    var dfs func(node *TreeNode) int
+    dfs = func(node *TreeNode) int {
+        if node == nil {
+            return 0
+        }
+        left := max(0, dfs(node.Left))
+        right := max(0, dfs(node.Right))
+        maxSum = max(maxSum, left+right+node.Val)
+        return max(left, right) + node.Val
+    }
+    dfs(root)
+    return maxSum
+}
+
+
+
+func rightSideView(root *TreeNode) []int {
+    if root == nil {
+        return []int{}
+    }
+    result := []int{}
+    queue := []*TreeNode{root}
+    for len(queue) > 0 {
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            node := queue[0]
+            queue = queue[1:]
+            if i == size-1 {
+                result = append(result, node.Val)
+            }
+            if node.Left != nil {
+                queue = append(queue, node.Left)
+            }
+            if node.Right != nil {
+                queue = append(queue, node.Right)
+            }
+        }
+    }
+    return result
+}
+
+
+
+func zigzagLevelOrder(root *TreeNode) [][]int {
+    if root == nil {
+        return [][]int{}
+    }
+    result := [][]int{}
+    queue := []*TreeNode{root}
+    leftToRight := true
+    for len(queue) > 0 {
+        size := len(queue)
+        level := make([]int, size)
+        for i := 0; i < size; i++ {
+            node := queue[0]
+            queue = queue[1:]
+            idx := i
+            if !leftToRight {
+                idx = size - 1 - i
+            }
+            level[idx] = node.Val
+            if node.Left != nil {
+                queue = append(queue, node.Left)
+            }
+            if node.Right != nil {
+                queue = append(queue, node.Right)
+            }
+        }
+        result = append(result, level)
+        leftToRight = !leftToRight
+    }
+    return result
+}
+
+
+
+func pacificAtlantic(heights [][]int) [][]int {
+    if len(heights) == 0 {
+        return [][]int{}
+    }
+    m, n := len(heights), len(heights[0])
+    pacific := make([][]bool, m)
+    atlantic := make([][]bool, m)
+    for i := range pacific {
+        pacific[i] = make([]bool, n)
+        atlantic[i] = make([]bool, n)
+    }
+    
+    var dfs func(visited [][]bool, i, j int)
+    dfs = func(visited [][]bool, i, j int) {
+        visited[i][j] = true
+        dirs := [][2]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+        for _, d := range dirs {
+            ni, nj := i+d[0], j+d[1]
+            if ni >= 0 && ni < m && nj >= 0 && nj < n &&
+                !visited[ni][nj] && heights[ni][nj] >= heights[i][j] {
+                dfs(visited, ni, nj)
+            }
+        }
+    }
+    
+    for i := 0; i < m; i++ {
+        dfs(pacific, i, 0)
+        dfs(atlantic, i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(pacific, 0, j)
+        dfs(atlantic, m-1, j)
+    }
+    
+    result := [][]int{}
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if pacific[i][j] && atlantic[i][j] {
+                result = append(result, []int{i, j})
+            }
+        }
+    }
+    return result
+}
+
+
+
+func surroundedRegions(board [][]byte) {
+    if len(board) == 0 {
+        return
+    }
+    m, n := len(board), len(board[0])
+    
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || board[i][j] != 'O' {
+            return
+        }
+        board[i][j] = 'T'
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    
+    for i := 0; i < m; i++ {
+        dfs(i, 0)
+        dfs(i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(0, j)
+        dfs(m-1, j)
+    }
+    
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if board[i][j] == 'O' {
+                board[i][j] = 'X'
+            } else if board[i][j] == 'T' {
+                board[i][j] = 'O'
+            }
+        }
+    }
+}
+
+
+
+func ladderLength(beginWord, endWord string, wordList []string) int {
+    wordSet := make(map[string]bool)
+    for _, word := range wordList {
+        wordSet[word] = true
+    }
+    if !wordSet[endWord] {
+        return 0
+    }
+    queue := []string{beginWord}
+    level := 1
+    for len(queue) > 0 {
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            word := queue[0]
+            queue = queue[1:]
+            if word == endWord {
+                return level
+            }
+            chars := []byte(word)
+            for j := 0; j < len(chars); j++ {
+                original := chars[j]
+                for c := byte('a'); c <= 'z'; c++ {
+                    if c == original {
+                        continue
+                    }
+                    chars[j] = c
+                    newWord := string(chars)
+                    if wordSet[newWord] {
+                        queue = append(queue, newWord)
+                        delete(wordSet, newWord)
+                    }
+                }
+                chars[j] = original
+            }
+        }
+        level++
+    }
+    return 0
+}
+
+
+
+func longestConsecutive(nums []int) int {
+    numSet := make(map[int]bool)
+    for _, num := range nums {
+        numSet[num] = true
+    }
+    longest := 0
+    for num := range numSet {
+        if !numSet[num-1] {
+            current := num
+            streak := 1
+            for numSet[current+1] {
+                current++
+                streak++
+            }
+            if streak > longest {
+                longest = streak
+            }
+        }
+    }
+    return longest
+}
+
+
+
+func subarraySum(nums []int, k int) int {
+    prefixSum := make(map[int]int)
+    prefixSum[0] = 1
+    sum, count := 0, 0
+    for _, num := range nums {
+        sum += num
+        count += prefixSum[sum-k]
+        prefixSum[sum]++
+    }
+    return count
+}
+
+
+
+func topKFrequent(nums []int, k int) []int {
+    freq := make(map[int]int)
+    for _, num := range nums {
+        freq[num]++
+    }
+    buckets := make([][]int, len(nums)+1)
+    for num, count := range freq {
+        buckets[count] = append(buckets[count], num)
+    }
+    result := []int{}
+    for i := len(buckets) - 1; i >= 0 && len(result) < k; i-- {
+        result = append(result, buckets[i]...)
+    }
+    return result[:k]
+}
+
+
+
+func findKthLargest(nums []int, k int) int {
+    sort.Ints(nums)
+    return nums[len(nums)-k]
+}
+
+
+
+func maxSlidingWindow(nums []int, k int) []int {
+    result := []int{}
+    deque := []int{}
+    for i := 0; i < len(nums); i++ {
+        for len(deque) > 0 && deque[0] <= i-k {
+            deque = deque[1:]
+        }
+        for len(deque) > 0 && nums[deque[len(deque)-1]] < nums[i] {
+            deque = deque[:len(deque)-1]
+        }
+        deque = append(deque, i)
+        if i >= k-1 {
+            result = append(result, nums[deque[0]])
+        }
+    }
+    return result
+}
+
+
+
+type MedianFinder struct {
+    small *IntMaxHeap
+    large *IntMinHeap
+}
+
+func Constructor() MedianFinder {
+    s := &IntMaxHeap{}
+    l := &IntMinHeap{}
+    heap.Init(s)
+    heap.Init(l)
+    return MedianFinder{small: s, large: l}
+}
+
+func (this *MedianFinder) AddNum(num int) {
+    heap.Push(this.small, num)
+    heap.Push(this.large, heap.Pop(this.small).(int))
+    if this.large.Len() > this.small.Len() {
+        heap.Push(this.small, heap.Pop(this.large).(int))
+    }
+}
+
+func (this *MedianFinder) FindMedian() float64 {
+    if this.small.Len() > this.large.Len() {
+        return float64((*this.small)[0])
+    }
+    return float64((*this.small)[0]+(*this.large)[0]) / 2.0
+}
+
+
+
+func copyRandomList(head *Node) *Node {
+    if head == nil {
+        return nil
+    }
+    m := make(map[*Node]*Node)
+    curr := head
+    for curr != nil {
+        m[curr] = &Node{Val: curr.Val}
+        curr = curr.Next
+    }
+    curr = head
+    for curr != nil {
+        m[curr].Next = m[curr.Next]
+        m[curr].Random = m[curr.Random]
+        curr = curr.Next
+    }
+    return m[head]
+}
+
+
+
+func mergeKLists(lists []*ListNode) *ListNode {
+    h := &ListNodeHeap{}
+    heap.Init(h)
+    for _, list := range lists {
+        if list != nil {
+            heap.Push(h, list)
+        }
+    }
+    dummy := &ListNode{}
+    curr := dummy
+    for h.Len() > 0 {
+        node := heap.Pop(h).(*ListNode)
+        curr.Next = node
+        curr = curr.Next
+        if node.Next != nil {
+            heap.Push(h, node.Next)
+        }
+    }
+    return dummy.Next
+}
+
+
+
+func reverseKGroup(head *ListNode, k int) *ListNode {
+    curr := head
+    count := 0
+    for curr != nil && count < k {
+        curr = curr.Next
+        count++
+    }
+    if count < k {
+        return head
+    }
+    prev := (*ListNode)(nil)
+    curr = head
+    for i := 0; i < k; i++ {
+        next := curr.Next
+        curr.Next = prev
+        prev = curr
+        curr = next
+    }
+    head.Next = reverseKGroup(curr, k)
+    return prev
+}
+
+
+
+func detectCycle(head *ListNode) *ListNode {
+    slow, fast := head, head
+    for fast != nil && fast.Next != nil {
+        slow = slow.Next
+        fast = fast.Next.Next
+        if slow == fast {
+            ptr := head
+            for ptr != slow {
+                ptr = ptr.Next
+                slow = slow.Next
+            }
+            return ptr
+        }
+    }
+    return nil
+}
+
+
+
+func reorderList(head *ListNode) {
+    if head == nil || head.Next == nil {
+        return
+    }
+    slow, fast := head, head
+    for fast.Next != nil && fast.Next.Next != nil {
+        slow = slow.Next
+        fast = fast.Next.Next
+    }
+    second := slow.Next
+    slow.Next = nil
+    var prev *ListNode
+    for second != nil {
+        next := second.Next
+        second.Next = prev
+        prev = second
+        second = next
+    }
+    first := head
+    second = prev
+    for second != nil {
+        tmp1, tmp2 := first.Next, second.Next
+        first.Next = second
+        second.Next = tmp1
+        first = tmp1
+        second = tmp2
+    }
+}
+
+
+
+func sortList(head *ListNode) *ListNode {
+    if head == nil || head.Next == nil {
+        return head
+    }
+    slow, fast := head, head.Next
+    for fast != nil && fast.Next != nil {
+        slow = slow.Next
+        fast = fast.Next.Next
+    }
+    mid := slow.Next
+    slow.Next = nil
+    left := sortList(head)
+    right := sortList(mid)
+    return mergeLists(left, right)
+}
+
+func mergeLists(l1, l2 *ListNode) *ListNode {
+    dummy := &ListNode{}
+    curr := dummy
+    for l1 != nil && l2 != nil {
+        if l1.Val < l2.Val {
+            curr.Next = l1
+            l1 = l1.Next
+        } else {
+            curr.Next = l2
+            l2 = l2.Next
+        }
+        curr = curr.Next
+    }
+    if l1 != nil {
+        curr.Next = l1
+    } else {
+        curr.Next = l2
+    }
+    return dummy.Next
+}
+
+
+
+func nextPermutation(nums []int) {
+    i := len(nums) - 2
+    for i >= 0 && nums[i] >= nums[i+1] {
+        i--
+    }
+    if i >= 0 {
+        j := len(nums) - 1
+        for nums[j] <= nums[i] {
+            j--
+        }
+        nums[i], nums[j] = nums[j], nums[i]
+    }
+    left, right := i+1, len(nums)-1
+    for left < right {
+        nums[left], nums[right] = nums[right], nums[left]
+        left++
+        right--
+    }
+}
+
+
+
+func minWindow(s, t string) string {
+    if len(s) < len(t) {
+        return ""
+    }
+    need := make(map[byte]int)
+    for i := 0; i < len(t); i++ {
+        need[t[i]]++
+    }
+    window := make(map[byte]int)
+    left, valid := 0, 0
+    start, minLen := 0, len(s)+1
+    for right := 0; right < len(s); right++ {
+        c := s[right]
+        if _, ok := need[c]; ok {
+            window[c]++
+            if window[c] == need[c] {
+                valid++
+            }
+        }
+        for valid == len(need) {
+            if right-left+1 < minLen {
+                start = left
+                minLen = right - left + 1
+            }
+            d := s[left]
+            left++
+            if _, ok := need[d]; ok {
+                if window[d] == need[d] {
+                    valid--
+                }
+                window[d]--
+            }
+        }
+    }
+    if minLen == len(s)+1 {
+        return ""
+    }
+    return s[start : start+minLen]
+}
+
+
+
+func findAnagrams(s, p string) []int {
+    result := []int{}
+    if len(s) < len(p) {
+        return result
+    }
+    pCount := make([]int, 26)
+    sCount := make([]int, 26)
+    for i := 0; i < len(p); i++ {
+        pCount[p[i]-'a']++
+    }
+    for i := 0; i < len(s); i++ {
+        sCount[s[i]-'a']++
+        if i >= len(p) {
+            sCount[s[i-len(p)]-'a']--
+        }
+        if i >= len(p)-1 && equal(sCount, pCount) {
+            result = append(result, i-len(p)+1)
+        }
+    }
+    return result
+}
+
+func equal(a, b []int) bool {
+    for i := 0; i < 26; i++ {
+        if a[i] != b[i] {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func lengthOfLongestSubstringTwoDistinct(s string) int {
+    count := make(map[byte]int)
+    left, maxLen := 0, 0
+    for right := 0; right < len(s); right++ {
+        count[s[right]]++
+        for len(count) > 2 {
+            count[s[left]]--
+            if count[s[left]] == 0 {
+                delete(count, s[left])
+            }
+            left++
+        }
+        if right-left+1 > maxLen {
+            maxLen = right - left + 1
+        }
+    }
+    return maxLen
+}
+
+
+
+func characterReplacement(s string, k int) int {
+    count := make([]int, 26)
+    left, maxCount, result := 0, 0, 0
+    for right := 0; right < len(s); right++ {
+        count[s[right]-'A']++
+        maxCount = max(maxCount, count[s[right]-'A'])
+        for right-left+1-maxCount > k {
+            count[s[left]-'A']--
+            left++
+        }
+        result = max(result, right-left+1)
+    }
+    return result
+}
+
+
+
+func uniquePaths(m, n int) int {
+    dp := make([][]int, m)
+    for i := range dp {
+        dp[i] = make([]int, n)
+        dp[i][0] = 1
+    }
+    for j := 0; j < n; j++ {
+        dp[0][j] = 1
+    }
+    for i := 1; i < m; i++ {
+        for j := 1; j < n; j++ {
+            dp[i][j] = dp[i-1][j] + dp[i][j-1]
+        }
+    }
+    return dp[m-1][n-1]
+}
+
+
+
+func uniquePathsWithObstacles(obstacleGrid [][]int) int {
+    m, n := len(obstacleGrid), len(obstacleGrid[0])
+    if obstacleGrid[0][0] == 1 {
+        return 0
+    }
+    dp := make([][]int, m)
+    for i := range dp {
+        dp[i] = make([]int, n)
+    }
+    dp[0][0] = 1
+    for i := 1; i < m; i++ {
+        if obstacleGrid[i][0] == 1 {
+            dp[i][0] = 0
+        } else {
+            dp[i][0] = dp[i-1][0]
+        }
+    }
+    for j := 1; j < n; j++ {
+        if obstacleGrid[0][j] == 1 {
+            dp[0][j] = 0
+        } else {
+            dp[0][j] = dp[0][j-1]
+        }
+    }
+    for i := 1; i < m; i++ {
+        for j := 1; j < n; j++ {
+            if obstacleGrid[i][j] == 1 {
+                dp[i][j] = 0
+            } else {
+                dp[i][j] = dp[i-1][j] + dp[i][j-1]
+            }
+        }
+    }
+    return dp[m-1][n-1]
+}
+
+
+
+func orangesRotting(grid [][]int) int {
+    m, n := len(grid), len(grid[0])
+    queue := [][]int{}
+    fresh := 0
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if grid[i][j] == 2 {
+                queue = append(queue, []int{i, j})
+            } else if grid[i][j] == 1 {
+                fresh++
+            }
+        }
+    }
+    if fresh == 0 {
+        return 0
+    }
+    dirs := [][]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+    minutes := -1
+    for len(queue) > 0 {
+        size := len(queue)
+        minutes++
+        for i := 0; i < size; i++ {
+            cell := queue[0]
+            queue = queue[1:]
+            for _, d := range dirs {
+                nx, ny := cell[0]+d[0], cell[1]+d[1]
+                if nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1 {
+                    grid[nx][ny] = 2
+                    fresh--
+                    queue = append(queue, []int{nx, ny})
+                }
+            }
+        }
+    }
+    if fresh == 0 {
+        return minutes
+    }
+    return -1
+}
+
+
+
+func canJump(nums []int) bool {
+    maxReach := 0
+    for i := 0; i < len(nums); i++ {
+        if i > maxReach {
+            return false
+        }
+        maxReach = max(maxReach, i+nums[i])
+    }
+    return true
+}
+
+
+
+func jump(nums []int) int {
+    jumps, curEnd, curFar := 0, 0, 0
+    for i := 0; i < len(nums)-1; i++ {
+        curFar = max(curFar, i+nums[i])
+        if i == curEnd {
+            jumps++
+            curEnd = curFar
+        }
+    }
+    return jumps
+}
+
+
+
+func canCompleteCircuit(gas, cost []int) int {
+    totalTank, currTank, start := 0, 0, 0
+    for i := 0; i < len(gas); i++ {
+        totalTank += gas[i] - cost[i]
+        currTank += gas[i] - cost[i]
+        if currTank < 0 {
+            start = i + 1
+            currTank = 0
+        }
+    }
+    if totalTank >= 0 {
+        return start
+    }
+    return -1
+}
+
+
+
+func candy(ratings []int) int {
+    n := len(ratings)
+    candies := make([]int, n)
+    for i := range candies {
+        candies[i] = 1
+    }
+    for i := 1; i < n; i++ {
+        if ratings[i] > ratings[i-1] {
+            candies[i] = candies[i-1] + 1
+        }
+    }
+    for i := n - 2; i >= 0; i-- {
+        if ratings[i] > ratings[i+1] && candies[i] <= candies[i+1] {
+            candies[i] = candies[i+1] + 1
+        }
+    }
+    sum := 0
+    for _, c := range candies {
+        sum += c
+    }
+    return sum
+}
+
+
+
+func threeSum(nums []int) [][]int {
+    sort.Ints(nums)
+    result := [][]int{}
+    for i := 0; i < len(nums)-2; i++ {
+        if i > 0 && nums[i] == nums[i-1] {
+            continue
+        }
+        left, right := i+1, len(nums)-1
+        for left < right {
+            sum := nums[i] + nums[left] + nums[right]
+            if sum == 0 {
+                result = append(result, []int{nums[i], nums[left], nums[right]})
+                for left < right && nums[left] == nums[left+1] {
+                    left++
+                }
+                for left < right && nums[right] == nums[right-1] {
+                    right--
+                }
+                left++
+                right--
+            } else if sum < 0 {
+                left++
+            } else {
+                right--
+            }
+        }
+    }
+    return result
+}
+
+
+
+func threeSumClosest(nums []int, target int) int {
+    sort.Ints(nums)
+    closest := nums[0] + nums[1] + nums[2]
+    for i := 0; i < len(nums)-2; i++ {
+        left, right := i+1, len(nums)-1
+        for left < right {
+            sum := nums[i] + nums[left] + nums[right]
+            if abs(sum-target) < abs(closest-target) {
+                closest = sum
+            }
+            if sum < target {
+                left++
+            } else if sum > target {
+                right--
+            } else {
+                return target
+            }
+        }
+    }
+    return closest
+}
+
+func abs(x int) int {
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
+
+
+func maxArea(height []int) int {
+    left, right := 0, len(height)-1
+    maxArea := 0
+    for left < right {
+        area := min(height[left], height[right]) * (right - left)
+        maxArea = max(maxArea, area)
+        if height[left] < height[right] {
+            left++
+        } else {
+            right--
+        }
+    }
+    return maxArea
+}
+
+
+
+func trapWater(height []int) int {
+    if len(height) == 0 {
+        return 0
+    }
+    left, right := 0, len(height)-1
+    leftMax, rightMax := 0, 0
+    result := 0
+    for left < right {
+        if height[left] < height[right] {
+            if height[left] >= leftMax {
+                leftMax = height[left]
+            } else {
+                result += leftMax - height[left]
+            }
+            left++
+        } else {
+            if height[right] >= rightMax {
+                rightMax = height[right]
+            } else {
+                result += rightMax - height[right]
+            }
+            right--
+        }
+    }
+    return result
+}
+
+
+
+func searchMatrix(matrix [][]int, target int) bool {
+    if len(matrix) == 0 || len(matrix[0]) == 0 {
+        return false
+    }
+    m, n := len(matrix), len(matrix[0])
+    left, right := 0, m*n-1
+    for left <= right {
+        mid := left + (right-left)/2
+        val := matrix[mid/n][mid%n]
+        if val == target {
+            return true
+        } else if val < target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+    return false
+}
+
+
+
+func searchMatrixII(matrix [][]int, target int) bool {
+    if len(matrix) == 0 || len(matrix[0]) == 0 {
+        return false
+    }
+    m, n := len(matrix), len(matrix[0])
+    row, col := 0, n-1
+    for row < m && col >= 0 {
+        if matrix[row][col] == target {
+            return true
+        } else if matrix[row][col] > target {
+            col--
+        } else {
+            row++
+        }
+    }
+    return false
+}
+
+
+
+func findPeakElement(nums []int) int {
+    left, right := 0, len(nums)-1
+    for left < right {
+        mid := left + (right-left)/2
+        if nums[mid] > nums[mid+1] {
+            right = mid
+        } else {
+            left = mid + 1
+        }
+    }
+    return left
+}
+
+
+
+func searchRotatedArray(nums []int, target int) int {
+    left, right := 0, len(nums)-1
+    for left <= right {
+        mid := left + (right-left)/2
+        if nums[mid] == target {
+            return mid
+        }
+        if nums[left] <= nums[mid] {
+            if target >= nums[left] && target < nums[mid] {
+                right = mid - 1
+            } else {
+                left = mid + 1
+            }
+        } else {
+            if target > nums[mid] && target <= nums[right] {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+    }
+    return -1
+}
+
+
+
+func findMin(nums []int) int {
+    left, right := 0, len(nums)-1
+    for left < right {
+        mid := left + (right-left)/2
+        if nums[mid] > nums[right] {
+            left = mid + 1
+        } else {
+            right = mid
+        }
+    }
+    return nums[left]
+}
+
+
+
+func isValid(s string) bool {
+    stack := []rune{}
+    pairs := map[rune]rune{')': '(', ']': '[', '}': '{'}
+    for _, c := range s {
+        if c == '(' || c == '[' || c == '{' {
+            stack = append(stack, c)
+        } else {
+            if len(stack) == 0 || stack[len(stack)-1] != pairs[c] {
+                return false
+            }
+            stack = stack[:len(stack)-1]
+        }
+    }
+    return len(stack) == 0
+}
+
+
+
+func longestValidParentheses(s string) int {
+    stack := []int{-1}
+    maxLen := 0
+    for i := 0; i < len(s); i++ {
+        if s[i] == '(' {
+            stack = append(stack, i)
+        } else {
+            stack = stack[:len(stack)-1]
+            if len(stack) == 0 {
+                stack = append(stack, i)
+            } else {
+                if i-stack[len(stack)-1] > maxLen {
+                    maxLen = i - stack[len(stack)-1]
+                }
+            }
+        }
+    }
+    return maxLen
+}
+
+
+
+type MinStackStruct struct {
+    stack    []int
+    minStack []int
+}
+
+func ConstructorMinStack() MinStackStruct {
+    return MinStackStruct{stack: []int{}, minStack: []int{}}
+}
+
+func (this *MinStackStruct) Push(val int) {
+    this.stack = append(this.stack, val)
+    if len(this.minStack) == 0 || val <= this.minStack[len(this.minStack)-1] {
+        this.minStack = append(this.minStack, val)
+    }
+}
+
+func (this *MinStackStruct) Pop() {
+    if this.stack[len(this.stack)-1] == this.minStack[len(this.minStack)-1] {
+        this.minStack = this.minStack[:len(this.minStack)-1]
+    }
+    this.stack = this.stack[:len(this.stack)-1]
+}
+
+func (this *MinStackStruct) Top() int {
+    return this.stack[len(this.stack)-1]
+}
+
+func (this *MinStackStruct) GetMin() int {
+    return this.minStack[len(this.minStack)-1]
+}
+
+
+
+func dailyTemperatures(temperatures []int) []int {
+    n := len(temperatures)
+    result := make([]int, n)
+    stack := []int{}
+    for i := 0; i < n; i++ {
+        for len(stack) > 0 && temperatures[i] > temperatures[stack[len(stack)-1]] {
+            idx := stack[len(stack)-1]
+            stack = stack[:len(stack)-1]
+            result[idx] = i - idx
+        }
+        stack = append(stack, i)
+    }
+    return result
+}
+
+
+
+func nextGreaterElement(nums1, nums2 []int) []int {
+    m := make(map[int]int)
+    stack := []int{}
+    for _, num := range nums2 {
+        for len(stack) > 0 && num > stack[len(stack)-1] {
+            m[stack[len(stack)-1]] = num
+            stack = stack[:len(stack)-1]
+        }
+        stack = append(stack, num)
+    }
+    result := make([]int, len(nums1))
+    for i, num := range nums1 {
+        if val, ok := m[num]; ok {
+            result[i] = val
+        } else {
+            result[i] = -1
+        }
+    }
+    return result
+}
+
+
+
+func largestRectangleArea(heights []int) int {
+    stack := []int{}
+    maxArea := 0
+    for i := 0; i <= len(heights); i++ {
+        h := 0
+        if i < len(heights) {
+            h = heights[i]
+        }
+        for len(stack) > 0 && h < heights[stack[len(stack)-1]] {
+            height := heights[stack[len(stack)-1]]
+            stack = stack[:len(stack)-1]
+            width := i
+            if len(stack) > 0 {
+                width = i - stack[len(stack)-1] - 1
+            }
+            area := height * width
+            if area > maxArea {
+                maxArea = area
+            }
+        }
+        stack = append(stack, i)
+    }
+    return maxArea
+}
+
+
+
+func canFinish(numCourses int, prerequisites [][]int) bool {
+    inDegree := make([]int, numCourses)
+    adj := make([][]int, numCourses)
+    for i := range adj {
+        adj[i] = []int{}
+    }
+    for _, pre := range prerequisites {
+        adj[pre[1]] = append(adj[pre[1]], pre[0])
+        inDegree[pre[0]]++
+    }
+    queue := []int{}
+    for i := 0; i < numCourses; i++ {
+        if inDegree[i] == 0 {
+            queue = append(queue, i)
+        }
+    }
+    count := 0
+    for len(queue) > 0 {
+        course := queue[0]
+        queue = queue[1:]
+        count++
+        for _, next := range adj[course] {
+            inDegree[next]--
+            if inDegree[next] == 0 {
+                queue = append(queue, next)
+            }
+        }
+    }
+    return count == numCourses
+}
+
+
+
+func findOrder(numCourses int, prerequisites [][]int) []int {
+    inDegree := make([]int, numCourses)
+    adj := make([][]int, numCourses)
+    for i := range adj {
+        adj[i] = []int{}
+    }
+    for _, pre := range prerequisites {
+        adj[pre[1]] = append(adj[pre[1]], pre[0])
+        inDegree[pre[0]]++
+    }
+    queue := []int{}
+    for i := 0; i < numCourses; i++ {
+        if inDegree[i] == 0 {
+            queue = append(queue, i)
+        }
+    }
+    result := []int{}
+    for len(queue) > 0 {
+        course := queue[0]
+        queue = queue[1:]
+        result = append(result, course)
+        for _, next := range adj[course] {
+            inDegree[next]--
+            if inDegree[next] == 0 {
+                queue = append(queue, next)
+            }
+        }
+    }
+    if len(result) == numCourses {
+        return result
+    }
+    return []int{}
+}
+
+
+
+func setZeroes(matrix [][]int) {
+    m, n := len(matrix), len(matrix[0])
+    firstRowZero, firstColZero := false, false
+    for j := 0; j < n; j++ {
+        if matrix[0][j] == 0 {
+            firstRowZero = true
+        }
+    }
+    for i := 0; i < m; i++ {
+        if matrix[i][0] == 0 {
+            firstColZero = true
+        }
+    }
+    for i := 1; i < m; i++ {
+        for j := 1; j < n; j++ {
+            if matrix[i][j] == 0 {
+                matrix[i][0] = 0
+                matrix[0][j] = 0
+            }
+        }
+    }
+    for i := 1; i < m; i++ {
+        for j := 1; j < n; j++ {
+            if matrix[i][0] == 0 || matrix[0][j] == 0 {
+                matrix[i][j] = 0
+            }
+        }
+    }
+    if firstRowZero {
+        for j := 0; j < n; j++ {
+            matrix[0][j] = 0
+        }
+    }
+    if firstColZero {
+        for i := 0; i < m; i++ {
+            matrix[i][0] = 0
+        }
+    }
+}
+
+
+
+func rotateMatrix(matrix [][]int) {
+    n := len(matrix)
+    for i := 0; i < n/2; i++ {
+        for j := i; j < n-1-i; j++ {
+            temp := matrix[i][j]
+            matrix[i][j] = matrix[n-1-j][i]
+            matrix[n-1-j][i] = matrix[n-1-i][n-1-j]
+            matrix[n-1-i][n-1-j] = matrix[j][n-1-i]
+            matrix[j][n-1-i] = temp
+        }
+    }
+}
+
+
+
+func spiralOrder(matrix [][]int) []int {
+    if len(matrix) == 0 {
+        return []int{}
+    }
+    result := []int{}
+    top, bottom, left, right := 0, len(matrix)-1, 0, len(matrix[0])-1
+    for top <= bottom && left <= right {
+        for j := left; j <= right; j++ {
+            result = append(result, matrix[top][j])
+        }
+        top++
+        for i := top; i <= bottom; i++ {
+            result = append(result, matrix[i][right])
+        }
+        right--
+        if top <= bottom {
+            for j := right; j >= left; j-- {
+                result = append(result, matrix[bottom][j])
+            }
+            bottom--
+        }
+        if left <= right {
+            for i := bottom; i >= top; i-- {
+                result = append(result, matrix[i][left])
+            }
+            left++
+        }
+    }
+    return result
+}
+
+
+
+func generateMatrix(n int) [][]int {
+    matrix := make([][]int, n)
+    for i := range matrix {
+        matrix[i] = make([]int, n)
+    }
+    top, bottom, left, right := 0, n-1, 0, n-1
+    num := 1
+    for top <= bottom && left <= right {
+        for j := left; j <= right; j++ {
+            matrix[top][j] = num
+            num++
+        }
+        top++
+        for i := top; i <= bottom; i++ {
+            matrix[i][right] = num
+            num++
+        }
+        right--
+        for j := right; j >= left; j-- {
+            matrix[bottom][j] = num
+            num++
+        }
+        bottom--
+        for i := bottom; i >= top; i-- {
+            matrix[i][left] = num
+            num++
+        }
+        left++
+    }
+    return matrix
+}
+
+
+
+func isValidSudoku(board [][]byte) bool {
+    seen := make(map[string]bool)
+    for i := 0; i < 9; i++ {
+        for j := 0; j < 9; j++ {
+            c := board[i][j]
+            if c != '.' {
+                row := fmt.Sprintf("%c row %d", c, i)
+                col := fmt.Sprintf("%c col %d", c, j)
+                box := fmt.Sprintf("%c box %d-%d", c, i/3, j/3)
+                if seen[row] || seen[col] || seen[box] {
+                    return false
+                }
+                seen[row], seen[col], seen[box] = true, true, true
+            }
+        }
+    }
+    return true
+}
+
+
+
+func exist(board [][]byte, word string) bool {
+    m, n := len(board), len(board[0])
+    var dfs func(i, j, k int) bool
+    dfs = func(i, j, k int) bool {
+        if k == len(word) {
+            return true
+        }
+        if i < 0 || i >= m || j < 0 || j >= n || board[i][j] != word[k] {
+            return false
+        }
+        temp := board[i][j]
+        board[i][j] = '#'
+        found := dfs(i+1, j, k+1) || dfs(i-1, j, k+1) || dfs(i, j+1, k+1) || dfs(i, j-1, k+1)
+        board[i][j] = temp
+        return found
+    }
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if dfs(i, j, 0) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+
+
+func numIslands(grid [][]byte) int {
+    if len(grid) == 0 {
+        return 0
+    }
+    m, n := len(grid), len(grid[0])
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != '1' {
+            return
+        }
+        grid[i][j] = '0'
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    count := 0
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if grid[i][j] == '1' {
+                count++
+                dfs(i, j)
+            }
+        }
+    }
+    return count
+}
+
+
+
+func solveBoard(board [][]byte) {
+    if len(board) == 0 {
+        return
+    }
+    m, n := len(board), len(board[0])
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || board[i][j] != 'O' {
+            return
+        }
+        board[i][j] = 'T'
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    for i := 0; i < m; i++ {
+        dfs(i, 0)
+        dfs(i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(0, j)
+        dfs(m-1, j)
+    }
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if board[i][j] == 'O' {
+                board[i][j] = 'X'
+            } else if board[i][j] == 'T' {
+                board[i][j] = 'O'
+            }
+        }
+    }
+}
+
+
+
+func pacificAtlantic(heights [][]int) [][]int {
+    if len(heights) == 0 {
+        return [][]int{}
+    }
+    m, n := len(heights), len(heights[0])
+    pacific := make([][]bool, m)
+    atlantic := make([][]bool, m)
+    for i := range pacific {
+        pacific[i] = make([]bool, n)
+        atlantic[i] = make([]bool, n)
+    }
+    var dfs func(ocean [][]bool, i, j int)
+    dfs = func(ocean [][]bool, i, j int) {
+        ocean[i][j] = true
+        dirs := [][]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+        for _, d := range dirs {
+            ni, nj := i+d[0], j+d[1]
+            if ni >= 0 && ni < m && nj >= 0 && nj < n {
+                if !ocean[ni][nj] && heights[ni][nj] >= heights[i][j] {
+                    dfs(ocean, ni, nj)
+                }
+            }
+        }
+    }
+    for i := 0; i < m; i++ {
+        dfs(pacific, i, 0)
+        dfs(atlantic, i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(pacific, 0, j)
+        dfs(atlantic, m-1, j)
+    }
+    result := [][]int{}
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if pacific[i][j] && atlantic[i][j] {
+                result = append(result, []int{i, j})
+            }
+        }
+    }
+    return result
+}
+
+
+
+func maxIslandArea(grid [][]int) int {
+    if len(grid) == 0 {
+        return 0
+    }
+    m, n := len(grid), len(grid[0])
+    maxArea := 0
+    var dfs func(i, j int) int
+    dfs = func(i, j int) int {
+        if i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != 1 {
+            return 0
+        }
+        grid[i][j] = 0
+        return 1 + dfs(i+1, j) + dfs(i-1, j) + dfs(i, j+1) + dfs(i, j-1)
+    }
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if grid[i][j] == 1 {
+                area := dfs(i, j)
+                if area > maxArea {
+                    maxArea = area
+                }
+            }
+        }
+    }
+    return maxArea
+}
+
+
+
+func wallsAndGates(rooms [][]int) {
+    if len(rooms) == 0 {
+        return
+    }
+    m, n := len(rooms), len(rooms[0])
+    INF := 2147483647
+    queue := [][]int{}
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if rooms[i][j] == 0 {
+                queue = append(queue, []int{i, j})
+            }
+        }
+    }
+    dirs := [][]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+    for len(queue) > 0 {
+        cell := queue[0]
+        queue = queue[1:]
+        x, y := cell[0], cell[1]
+        for _, d := range dirs {
+            nx, ny := x+d[0], y+d[1]
+            if nx >= 0 && nx < m && ny >= 0 && ny < n && rooms[nx][ny] == INF {
+                rooms[nx][ny] = rooms[x][y] + 1
+                queue = append(queue, []int{nx, ny})
+            }
+        }
+    }
+}
+
+
+
+func openLock(deadends []string, target string) int {
+    dead := make(map[string]bool)
+    for _, d := range deadends {
+        dead[d] = true
+    }
+    if dead["0000"] {
+        return -1
+    }
+    visited := make(map[string]bool)
+    queue := []string{"0000"}
+    visited["0000"] = true
+    steps := 0
+    for len(queue) > 0 {
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            curr := queue[0]
+            queue = queue[1:]
+            if curr == target {
+                return steps
+            }
+            for j := 0; j < 4; j++ {
+                for _, delta := range []int{-1, 1} {
+                    digit := (int(curr[j]-'0') + delta + 10) % 10
+                    next := curr[:j] + string(rune('0'+digit)) + curr[j+1:]
+                    if !visited[next] && !dead[next] {
+                        visited[next] = true
+                        queue = append(queue, next)
+                    }
+                }
+            }
+        }
+        steps++
+    }
+    return -1
+}
+
+
+
+func minimumEffortPath(heights [][]int) int {
+    m, n := len(heights), len(heights[0])
+    dist := make([][]int, m)
+    for i := range dist {
+        dist[i] = make([]int, n)
+        for j := range dist[i] {
+            dist[i][j] = 1 << 30
+        }
+    }
+    dist[0][0] = 0
+    pq := &IntHeap{{0, 0, 0}}
+    heap.Init(pq)
+    dirs := [][]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+    for pq.Len() > 0 {
+        curr := heap.Pop(pq).([]int)
+        x, y, effort := curr[0], curr[1], curr[2]
+        if x == m-1 && y == n-1 {
+            return effort
+        }
+        if effort > dist[x][y] {
+            continue
+        }
+        for _, d := range dirs {
+            nx, ny := x+d[0], y+d[1]
+            if nx >= 0 && nx < m && ny >= 0 && ny < n {
+                newEffort := max(effort, abs(heights[nx][ny]-heights[x][y]))
+                if newEffort < dist[nx][ny] {
+                    dist[nx][ny] = newEffort
+                    heap.Push(pq, []int{nx, ny, newEffort})
+                }
+            }
+        }
+    }
+    return -1
+}
+
+
+
+func networkDelayTime(times [][]int, n int, k int) int {
+    graph := make(map[int][][]int)
+    for _, t := range times {
+        graph[t[0]] = append(graph[t[0]], []int{t[1], t[2]})
+    }
+    dist := make([]int, n+1)
+    for i := range dist {
+        dist[i] = 1 << 30
+    }
+    dist[k] = 0
+    pq := &IntHeap{{k, 0}}
+    heap.Init(pq)
+    for pq.Len() > 0 {
+        curr := heap.Pop(pq).([]int)
+        u, d := curr[0], curr[1]
+        if d > dist[u] {
+            continue
+        }
+        for _, edge := range graph[u] {
+            v, w := edge[0], edge[1]
+            if dist[u]+w < dist[v] {
+                dist[v] = dist[u] + w
+                heap.Push(pq, []int{v, dist[v]})
+            }
+        }
+    }
+    maxTime := 0
+    for i := 1; i <= n; i++ {
+        if dist[i] == 1<<30 {
+            return -1
+        }
+        if dist[i] > maxTime {
+            maxTime = dist[i]
+        }
+    }
+    return maxTime
+}
+
+
+
+func findCheapestPrice(n int, flights [][]int, src int, dst int, k int) int {
+    dist := make([]int, n)
+    for i := range dist {
+        dist[i] = 1 << 30
+    }
+    dist[src] = 0
+    for i := 0; i <= k; i++ {
+        temp := make([]int, n)
+        copy(temp, dist)
+        for _, f := range flights {
+            if dist[f[0]] != 1<<30 && dist[f[0]]+f[2] < temp[f[1]] {
+                temp[f[1]] = dist[f[0]] + f[2]
+            }
+        }
+        dist = temp
+    }
+    if dist[dst] == 1<<30 {
+        return -1
+    }
+    return dist[dst]
+}
+
+
+
+func longestIncreasingPath(matrix [][]int) int {
+    if len(matrix) == 0 {
+        return 0
+    }
+    m, n := len(matrix), len(matrix[0])
+    cache := make([][]int, m)
+    for i := range cache {
+        cache[i] = make([]int, n)
+    }
+    var dfs func(i, j int) int
+    dfs = func(i, j int) int {
+        if cache[i][j] != 0 {
+            return cache[i][j]
+        }
+        dirs := [][]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+        maxLen := 1
+        for _, d := range dirs {
+            ni, nj := i+d[0], j+d[1]
+            if ni >= 0 && ni < m && nj >= 0 && nj < n && matrix[ni][nj] > matrix[i][j] {
+                length := 1 + dfs(ni, nj)
+                if length > maxLen {
+                    maxLen = length
+                }
+            }
+        }
+        cache[i][j] = maxLen
+        return maxLen
+    }
+    result := 0
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            length := dfs(i, j)
+            if length > result {
+                result = length
+            }
+        }
+    }
+    return result
+}
+
+
+
+func ladderLength(beginWord string, endWord string, wordList []string) int {
+    wordSet := make(map[string]bool)
+    for _, word := range wordList {
+        wordSet[word] = true
+    }
+    if !wordSet[endWord] {
+        return 0
+    }
+    queue := []string{beginWord}
+    level := 1
+    for len(queue) > 0 {
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            word := queue[0]
+            queue = queue[1:]
+            if word == endWord {
+                return level
+            }
+            chars := []byte(word)
+            for j := 0; j < len(chars); j++ {
+                original := chars[j]
+                for c := byte('a'); c <= 'z'; c++ {
+                    if c != original {
+                        chars[j] = c
+                        newWord := string(chars)
+                        if wordSet[newWord] {
+                            queue = append(queue, newWord)
+                            delete(wordSet, newWord)
+                        }
+                    }
+                }
+                chars[j] = original
+            }
+        }
+        level++
+    }
+    return 0
+}
+
+
+
+func minMeetingRooms(intervals [][]int) int {
+    if len(intervals) == 0 {
+        return 0
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    pq := &IntMinHeap{intervals[0][1]}
+    heap.Init(pq)
+    for i := 1; i < len(intervals); i++ {
+        if intervals[i][0] >= (*pq)[0] {
+            heap.Pop(pq)
+        }
+        heap.Push(pq, intervals[i][1])
+    }
+    return pq.Len()
+}
+
+
+
+func mergeIntervals(intervals [][]int) [][]int {
+    if len(intervals) == 0 {
+        return [][]int{}
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    result := [][]int{intervals[0]}
+    for i := 1; i < len(intervals); i++ {
+        if intervals[i][0] <= result[len(result)-1][1] {
+            result[len(result)-1][1] = max(result[len(result)-1][1], intervals[i][1])
+        } else {
+            result = append(result, intervals[i])
+        }
+    }
+    return result
+}
+
+
+
+func insertInterval(intervals [][]int, newInterval []int) [][]int {
+    result := [][]int{}
+    i := 0
+    for i < len(intervals) && intervals[i][1] < newInterval[0] {
+        result = append(result, intervals[i])
+        i++
+    }
+    for i < len(intervals) && intervals[i][0] <= newInterval[1] {
+        newInterval[0] = min(newInterval[0], intervals[i][0])
+        newInterval[1] = max(newInterval[1], intervals[i][1])
+        i++
+    }
+    result = append(result, newInterval)
+    for i < len(intervals) {
+        result = append(result, intervals[i])
+        i++
+    }
+    return result
+}
+
+
+
+func canAttendMeetings(intervals [][]int) bool {
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    for i := 1; i < len(intervals); i++ {
+        if intervals[i][0] < intervals[i-1][1] {
+            return false
+        }
+    }
+    return true
+}
+
+
+
+func eraseOverlapIntervals(intervals [][]int) int {
+    if len(intervals) == 0 {
+        return 0
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][1] < intervals[j][1]
+    })
+    count := 0
+    end := intervals[0][1]
+    for i := 1; i < len(intervals); i++ {
+        if intervals[i][0] < end {
+            count++
+        } else {
+            end = intervals[i][1]
+        }
+    }
+    return count
+}
+
+
+
+func findCircleNum(isConnected [][]int) int {
+    n := len(isConnected)
+    visited := make([]bool, n)
+    count := 0
+    var dfs func(i int)
+    dfs = func(i int) {
+        visited[i] = true
+        for j := 0; j < n; j++ {
+            if isConnected[i][j] == 1 && !visited[j] {
+                dfs(j)
+            }
+        }
+    }
+    for i := 0; i < n; i++ {
+        if !visited[i] {
+            dfs(i)
+            count++
+        }
+    }
+    return count
+}
+
+
+
+func findRedundantConnection(edges [][]int) []int {
+    n := len(edges)
+    parent := make([]int, n+1)
+    for i := 0; i <= n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    for _, edge := range edges {
+        u, v := edge[0], edge[1]
+        if find(u) == find(v) {
+            return edge
+        }
+        parent[find(u)] = find(v)
+    }
+    return nil
+}
+
+
+
+func countComponents(n int, edges [][]int) int {
+    parent := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    count := n
+    for _, edge := range edges {
+        p1, p2 := find(edge[0]), find(edge[1])
+        if p1 != p2 {
+            parent[p1] = p2
+            count--
+        }
+    }
+    return count
+}
+
+
+
+func validTree(n int, edges [][]int) bool {
+    if len(edges) != n-1 {
+        return false
+    }
+    parent := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    for _, edge := range edges {
+        p1, p2 := find(edge[0]), find(edge[1])
+        if p1 == p2 {
+            return false
+        }
+        parent[p1] = p2
+    }
+    return true
+}
+
+
+
+func earliestAcq(logs [][]int, n int) int {
+    sort.Slice(logs, func(i, j int) bool {
+        return logs[i][0] < logs[j][0]
+    })
+    parent := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    groups := n
+    for _, log := range logs {
+        p1, p2 := find(log[1]), find(log[2])
+        if p1 != p2 {
+            parent[p1] = p2
+            groups--
+            if groups == 1 {
+                return log[0]
+            }
+        }
+    }
+    return -1
+}
+
+
+
+func smallestStringWithSwaps(s string, pairs [][]int) string {
+    n := len(s)
+    parent := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    for _, pair := range pairs {
+        parent[find(pair[0])] = find(pair[1])
+    }
+    groups := make(map[int][]int)
+    for i := 0; i < n; i++ {
+        root := find(i)
+        groups[root] = append(groups[root], i)
+    }
+    bytes := []byte(s)
+    for _, indices := range groups {
+        chars := make([]byte, len(indices))
+        for i, idx := range indices {
+            chars[i] = bytes[idx]
+        }
+        sort.Slice(chars, func(i, j int) bool {
+            return chars[i] < chars[j]
+        })
+        sort.Ints(indices)
+        for i, idx := range indices {
+            bytes[idx] = chars[i]
+        }
+    }
+    return string(bytes)
+}
+
+
+
+func makeConnected(n int, connections [][]int) int {
+    if len(connections) < n-1 {
+        return -1
+    }
+    parent := make([]int, n)
+    for i := 0; i < n; i++ {
+        parent[i] = i
+    }
+    var find func(x int) int
+    find = func(x int) int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])
+        }
+        return parent[x]
+    }
+    components := n
+    for _, conn := range connections {
+        p1, p2 := find(conn[0]), find(conn[1])
+        if p1 != p2 {
+            parent[p1] = p2
+            components--
+        }
+    }
+    return components - 1
+}
+
+
+
+func findCriticalEdges(n int, connections [][]int) [][]int {
+    graph := make(map[int][]int)
+    for _, conn := range connections {
+        graph[conn[0]] = append(graph[conn[0]], conn[1])
+        graph[conn[1]] = append(graph[conn[1]], conn[0])
+    }
+    result := [][]int{}
+    disc := make([]int, n)
+    low := make([]int, n)
+    for i := range disc {
+        disc[i] = -1
+    }
+    timer := 0
+    var dfs func(u, parent int)
+    dfs = func(u, parent int) {
+        disc[u] = timer
+        low[u] = timer
+        timer++
+        for _, v := range graph[u] {
+            if disc[v] == -1 {
+                dfs(v, u)
+                low[u] = min(low[u], low[v])
+                if low[v] > disc[u] {
+                    result = append(result, []int{u, v})
+                }
+            } else if v != parent {
+                low[u] = min(low[u], disc[v])
+            }
+        }
+    }
+    for i := 0; i < n; i++ {
+        if disc[i] == -1 {
+            dfs(i, -1)
+        }
+    }
+    return result
+}
+
+
+
+func allPathsSourceTarget(graph [][]int) [][]int {
+    result := [][]int{}
+    path := []int{0}
+    var dfs func(node int)
+    dfs = func(node int) {
+        if node == len(graph)-1 {
+            copy := make([]int, len(path))
+            copy(copy, path)
+            result = append(result, copy)
+            return
+        }
+        for _, next := range graph[node] {
+            path = append(path, next)
+            dfs(next)
+            path = path[:len(path)-1]
+        }
+    }
+    dfs(0)
+    return result
+}
+
+
+
+func shortestPathBinaryMatrix(grid [][]int) int {
+    n := len(grid)
+    if grid[0][0] == 1 || grid[n-1][n-1] == 1 {
+        return -1
+    }
+    dirs := [][]int{{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}
+    queue := [][]int{{0, 0, 1}}
+    grid[0][0] = 1
+    for len(queue) > 0 {
+        curr := queue[0]
+        queue = queue[1:]
+        if curr[0] == n-1 && curr[1] == n-1 {
+            return curr[2]
+        }
+        for _, d := range dirs {
+            nx, ny := curr[0]+d[0], curr[1]+d[1]
+            if nx >= 0 && nx < n && ny >= 0 && ny < n && grid[nx][ny] == 0 {
+                grid[nx][ny] = 1
+                queue = append(queue, []int{nx, ny, curr[2] + 1})
+            }
+        }
+    }
+    return -1
+}
+
+
+
+func numEnclavesGo(grid [][]int) int {
+    m, n := len(grid), len(grid[0])
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != 1 {
+            return
+        }
+        grid[i][j] = 0
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    for i := 0; i < m; i++ {
+        dfs(i, 0)
+        dfs(i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(0, j)
+        dfs(m-1, j)
+    }
+    count := 0
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if grid[i][j] == 1 {
+                count++
+            }
+        }
+    }
+    return count
+}
+
+
+
+func closedIslandGo(grid [][]int) int {
+    m, n := len(grid), len(grid[0])
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != 0 {
+            return
+        }
+        grid[i][j] = 1
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    for i := 0; i < m; i++ {
+        dfs(i, 0)
+        dfs(i, n-1)
+    }
+    for j := 0; j < n; j++ {
+        dfs(0, j)
+        dfs(m-1, j)
+    }
+    count := 0
+    for i := 1; i < m-1; i++ {
+        for j := 1; j < n-1; j++ {
+            if grid[i][j] == 0 {
+                count++
+                dfs(i, j)
+            }
+        }
+    }
+    return count
+}
+
+
+
+func shortestBridge(grid [][]int) int {
+    m, n := len(grid), len(grid[0])
+    queue := [][]int{}
+    var dfs func(i, j int)
+    dfs = func(i, j int) {
+        if i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != 1 {
+            return
+        }
+        grid[i][j] = 2
+        queue = append(queue, []int{i, j})
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+    }
+    found := false
+    for i := 0; i < m && !found; i++ {
+        for j := 0; j < n && !found; j++ {
+            if grid[i][j] == 1 {
+                dfs(i, j)
+                found = true
+            }
+        }
+    }
+    dirs := [][]int{{0,1},{0,-1},{1,0},{-1,0}}
+    steps := 0
+    for len(queue) > 0 {
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            curr := queue[0]
+            queue = queue[1:]
+            for _, d := range dirs {
+                nx, ny := curr[0]+d[0], curr[1]+d[1]
+                if nx >= 0 && nx < m && ny >= 0 && ny < n {
+                    if grid[nx][ny] == 1 {
+                        return steps
+                    }
+                    if grid[nx][ny] == 0 {
+                        grid[nx][ny] = 2
+                        queue = append(queue, []int{nx, ny})
+                    }
+                }
+            }
+        }
+        steps++
+    }
+    return -1
+}
+
+
+
+func colorBorderGo(grid [][]int, row int, col int, color int) [][]int {
+    m, n := len(grid), len(grid[0])
+    originalColor := grid[row][col]
+    visited := make([][]bool, m)
+    for i := range visited {
+        visited[i] = make([]bool, n)
+    }
+    borders := [][]int{}
+    var dfs func(i, j int) bool
+    dfs = func(i, j int) bool {
+        if i < 0 || i >= m || j < 0 || j >= n {
+            return false
+        }
+        if visited[i][j] {
+            return true
+        }
+        if grid[i][j] != originalColor {
+            return false
+        }
+        visited[i][j] = true
+        up := dfs(i-1, j)
+        down := dfs(i+1, j)
+        left := dfs(i, j-1)
+        right := dfs(i, j+1)
+        if !(up && down && left && right) {
+            borders = append(borders, []int{i, j})
+        }
+        return true
+    }
+    dfs(row, col)
+    for _, border := range borders {
+        grid[border[0]][border[1]] = color
+    }
+    return grid
+}
+
+
+
+func shortestPathWithKObstacles(grid [][]int, k int) int {
+    m, n := len(grid), len(grid[0])
+    if m == 1 && n == 1 {
+        return 0
+    }
+    visited := make([][][]bool, m)
+    for i := range visited {
+        visited[i] = make([][]bool, n)
+        for j := range visited[i] {
+            visited[i][j] = make([]bool, k+1)
+        }
+    }
+    queue := [][]int{{0, 0, 0}}
+    visited[0][0][0] = true
+    steps := 0
+    dirs := [][]int{{0,1},{0,-1},{1,0},{-1,0}}
+    for len(queue) > 0 {
+        steps++
+        size := len(queue)
+        for i := 0; i < size; i++ {
+            curr := queue[0]
+            queue = queue[1:]
+            for _, d := range dirs {
+                nx, ny := curr[0]+d[0], curr[1]+d[1]
+                if nx >= 0 && nx < m && ny >= 0 && ny < n {
+                    newObs := curr[2] + grid[nx][ny]
+                    if newObs <= k && !visited[nx][ny][newObs] {
+                        if nx == m-1 && ny == n-1 {
+                            return steps
+                        }
+                        visited[nx][ny][newObs] = true
+                        queue = append(queue, []int{nx, ny, newObs})
+                    }
+                }
+            }
+        }
+    }
+    return -1
+}

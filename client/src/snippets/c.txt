@@ -1,0 +1,3132 @@
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+void append(struct Node** head, int data) {
+    struct Node* new_node = malloc(sizeof(struct Node));
+    new_node->data = data;
+    new_node->next = NULL;
+    if (*head == NULL) {
+        *head = new_node;
+        return;
+    }
+    struct Node* last = *head;
+    while (last->next != NULL) {
+        last = last->next;
+    }
+    last->next = new_node;
+}
+
+
+
+int binary_search(int arr[], int size, int target) {
+    int left = 0;
+    int right = size - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            return mid;
+        } else if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+
+
+
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[i + 1], &arr[high]);
+    return i + 1;
+}
+
+void quicksort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quicksort(arr, low, pi - 1);
+        quicksort(arr, pi + 1, high);
+    }
+}
+
+
+
+void merge(int arr[], int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+    int L[n1], R[n2];
+    for (int i = 0; i < n1; i++) L[i] = arr[left + i];
+    for (int j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) { arr[k] = L[i]; i++; k++; }
+    while (j < n2) { arr[k] = R[j]; j++; k++; }
+}
+
+void mergesort(int arr[], int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergesort(arr, left, mid);
+        mergesort(arr, mid + 1, right);
+        merge(arr, left, mid, right);
+    }
+}
+
+
+
+void bubble_sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(&arr[j], &arr[j + 1]);
+            }
+        }
+    }
+}
+
+
+
+void insertion_sort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+
+
+void selection_sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx]) {
+                min_idx = j;
+            }
+        }
+        swap(&arr[i], &arr[min_idx]);
+    }
+}
+
+
+
+#define MAX_SIZE 100
+
+struct Stack {
+    int items[MAX_SIZE];
+    int top;
+};
+
+void init_stack(struct Stack* s) {
+    s->top = -1;
+}
+
+void push(struct Stack* s, int item) {
+    if (s->top < MAX_SIZE - 1) {
+        s->items[++s->top] = item;
+    }
+}
+
+int pop(struct Stack* s) {
+    if (s->top >= 0) {
+        return s->items[s->top--];
+    }
+    return -1;
+}
+
+int peek(struct Stack* s) {
+    if (s->top >= 0) {
+        return s->items[s->top];
+    }
+    return -1;
+}
+
+int is_empty(struct Stack* s) {
+    return s->top == -1;
+}
+
+
+
+struct Queue {
+    int items[MAX_SIZE];
+    int front;
+    int rear;
+};
+
+void init_queue(struct Queue* q) {
+    q->front = 0;
+    q->rear = -1;
+}
+
+void enqueue(struct Queue* q, int item) {
+    if (q->rear < MAX_SIZE - 1) {
+        q->items[++q->rear] = item;
+    }
+}
+
+int dequeue(struct Queue* q) {
+    if (q->front <= q->rear) {
+        return q->items[q->front++];
+    }
+    return -1;
+}
+
+int queue_front(struct Queue* q) {
+    if (q->front <= q->rear) {
+        return q->items[q->front];
+    }
+    return -1;
+}
+
+int queue_is_empty(struct Queue* q) {
+    return q->front > q->rear;
+}
+
+
+
+void reverse_string(char* str) {
+    int len = strlen(str);
+    int left = 0;
+    int right = len - 1;
+    while (left < right) {
+        char temp = str[left];
+        str[left] = str[right];
+        str[right] = temp;
+        left++;
+        right--;
+    }
+}
+
+
+
+int is_palindrome(char* str) {
+    int len = strlen(str);
+    int left = 0;
+    int right = len - 1;
+    while (left < right) {
+        if (str[left] != str[right]) {
+            return 0;
+        }
+        left++;
+        right--;
+    }
+    return 1;
+}
+
+
+
+long fibonacci(int n) {
+    if (n <= 1) return n;
+    long prev = 0, curr = 1;
+    for (int i = 2; i <= n; i++) {
+        long next = prev + curr;
+        prev = curr;
+        curr = next;
+    }
+    return curr;
+}
+
+
+
+long factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+
+
+int is_prime(int n) {
+    if (n <= 1) return 0;
+    if (n <= 3) return 1;
+    if (n % 2 == 0 || n % 3 == 0) return 0;
+    for (int i = 5; i * i <= n; i += 6) {
+        if (n % i == 0 || n % (i + 2) == 0) return 0;
+    }
+    return 1;
+}
+
+
+
+int gcd(int a, int b) {
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+
+
+int lcm(int a, int b) {
+    return a * b / gcd(a, b);
+}
+
+
+
+int max_subarray(int arr[], int n) {
+    int max_sum = arr[0];
+    int current_sum = arr[0];
+    for (int i = 1; i < n; i++) {
+        current_sum = (arr[i] > current_sum + arr[i]) ? arr[i] : current_sum + arr[i];
+        max_sum = (current_sum > max_sum) ? current_sum : max_sum;
+    }
+    return max_sum;
+}
+
+
+
+int climb_stairs(int n) {
+    if (n <= 2) return n;
+    int prev = 1, curr = 2;
+    for (int i = 3; i <= n; i++) {
+        int next = prev + curr;
+        prev = curr;
+        curr = next;
+    }
+    return curr;
+}
+
+
+
+void matrix_multiply(int a[][3], int b[][3], int c[][3], int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            c[i][j] = 0;
+            for (int k = 0; k < n; k++) {
+                c[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+}
+
+
+
+void transpose_matrix(int mat[][3], int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            int temp = mat[i][j];
+            mat[i][j] = mat[j][i];
+            mat[j][i] = temp;
+        }
+    }
+}
+
+
+
+int count_set_bits(int n) {
+    int count = 0;
+    while (n) {
+        count += n & 1;
+        n >>= 1;
+    }
+    return count;
+}
+
+
+
+int power(int base, int exp) {
+    int result = 1;
+    while (exp > 0) {
+        if (exp & 1) {
+            result *= base;
+        }
+        base *= base;
+        exp >>= 1;
+    }
+    return result;
+}
+
+
+
+void rotate_array(int arr[], int n, int k) {
+    k = k % n;
+    reverse(arr, 0, n - 1);
+    reverse(arr, 0, k - 1);
+    reverse(arr, k, n - 1);
+}
+
+void reverse(int arr[], int start, int end) {
+    while (start < end) {
+        swap(&arr[start], &arr[end]);
+        start++;
+        end--;
+    }
+}
+
+
+
+int find_max(int arr[], int n) {
+    int max = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    return max;
+}
+
+
+
+int find_min(int arr[], int n) {
+    int min = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < min) {
+            min = arr[i];
+        }
+    }
+    return min;
+}
+
+
+
+double average(int arr[], int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += arr[i];
+    }
+    return (double)sum / n;
+}
+
+
+
+void remove_duplicates(int arr[], int* n) {
+    int j = 0;
+    for (int i = 0; i < *n - 1; i++) {
+        if (arr[i] != arr[i + 1]) {
+            arr[j++] = arr[i];
+        }
+    }
+    arr[j++] = arr[*n - 1];
+    *n = j;
+}
+
+
+
+int linear_search(int arr[], int n, int target) {
+    for (int i = 0; i < n; i++) {
+        if (arr[i] == target) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+
+char* strrev(char* str) {
+    if (str == NULL) return NULL;
+    char* start = str;
+    char* end = str + strlen(str) - 1;
+    while (start < end) {
+        char temp = *start;
+        *start = *end;
+        *end = temp;
+        start++;
+        end--;
+    }
+    return str;
+}
+
+
+
+int atoi_custom(const char* str) {
+    int result = 0;
+    int sign = 1;
+    int i = 0;
+    while (str[i] == ' ') i++;
+    if (str[i] == '-' || str[i] == '+') {
+        sign = (str[i] == '-') ? -1 : 1;
+        i++;
+    }
+    while (str[i] >= '0' && str[i] <= '9') {
+        result = result * 10 + (str[i] - '0');
+        i++;
+    }
+    return sign * result;
+}
+
+
+
+void itoa_custom(int num, char* str) {
+    int i = 0;
+    int is_negative = 0;
+    if (num < 0) {
+        is_negative = 1;
+        num = -num;
+    }
+    do {
+        str[i++] = num % 10 + '0';
+        num /= 10;
+    } while (num > 0);
+    if (is_negative) {
+        str[i++] = '-';
+    }
+    str[i] = '\0';
+    strrev(str);
+}
+
+
+
+int* spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSize) {
+    if (matrixSize == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int m = matrixSize, n = *matrixColSize;
+    int* result = (int*)malloc(m * n * sizeof(int));
+    *returnSize = 0;
+    int top = 0, bottom = m - 1, left = 0, right = n - 1;
+    
+    while (top <= bottom && left <= right) {
+        for (int i = left; i <= right; i++)
+            result[(*returnSize)++] = matrix[top][i];
+        top++;
+        for (int i = top; i <= bottom; i++)
+            result[(*returnSize)++] = matrix[i][right];
+        right--;
+        if (top <= bottom) {
+            for (int i = right; i >= left; i--)
+                result[(*returnSize)++] = matrix[bottom][i];
+            bottom--;
+        }
+        if (left <= right) {
+            for (int i = bottom; i >= top; i--)
+                result[(*returnSize)++] = matrix[i][left];
+            left++;
+        }
+    }
+    return result;
+}
+
+
+
+int trap(int* height, int heightSize) {
+    if (heightSize == 0) return 0;
+    int left = 0, right = heightSize - 1;
+    int leftMax = 0, rightMax = 0;
+    int result = 0;
+    
+    while (left < right) {
+        if (height[left] < height[right]) {
+            if (height[left] >= leftMax)
+                leftMax = height[left];
+            else
+                result += leftMax - height[left];
+            left++;
+        } else {
+            if (height[right] >= rightMax)
+                rightMax = height[right];
+            else
+                result += rightMax - height[right];
+            right--;
+        }
+    }
+    return result;
+}
+
+
+
+int largestRectangleArea(int* heights, int heightsSize) {
+    int* stack = (int*)malloc((heightsSize + 1) * sizeof(int));
+    int top = -1;
+    int maxArea = 0;
+    
+    for (int i = 0; i <= heightsSize; i++) {
+        int h = (i == heightsSize) ? 0 : heights[i];
+        while (top >= 0 && heights[stack[top]] > h) {
+            int height = heights[stack[top--]];
+            int width = (top < 0) ? i : i - stack[top] - 1;
+            int area = height * width;
+            if (area > maxArea) maxArea = area;
+        }
+        stack[++top] = i;
+    }
+    
+    free(stack);
+    return maxArea;
+}
+
+
+
+int* nextGreaterElements(int* nums, int numsSize, int* returnSize) {
+    *returnSize = numsSize;
+    int* result = (int*)malloc(numsSize * sizeof(int));
+    int* stack = (int*)malloc(numsSize * sizeof(int));
+    int top = -1;
+    
+    for (int i = 0; i < numsSize; i++) result[i] = -1;
+    
+    for (int i = 0; i < numsSize; i++) {
+        while (top >= 0 && nums[stack[top]] < nums[i]) {
+            result[stack[top--]] = nums[i];
+        }
+        stack[++top] = i;
+    }
+    
+    free(stack);
+    return result;
+}
+
+
+
+int lengthOfLongestSubstring(char* s) {
+    int index[128];
+    memset(index, -1, sizeof(index));
+    int maxLen = 0, start = 0;
+    
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (index[(int)s[i]] >= start) {
+            start = index[(int)s[i]] + 1;
+        }
+        index[(int)s[i]] = i;
+        int len = i - start + 1;
+        if (len > maxLen) maxLen = len;
+    }
+    return maxLen;
+}
+
+
+
+char* longestPalindrome(char* s) {
+    int n = strlen(s);
+    if (n < 2) return strdup(s);
+    int start = 0, maxLen = 1;
+    
+    for (int i = 0; i < n; i++) {
+        int left = i, right = i;
+        while (left >= 0 && right < n && s[left] == s[right]) {
+            if (right - left + 1 > maxLen) {
+                start = left;
+                maxLen = right - left + 1;
+            }
+            left--;
+            right++;
+        }
+        left = i;
+        right = i + 1;
+        while (left >= 0 && right < n && s[left] == s[right]) {
+            if (right - left + 1 > maxLen) {
+                start = left;
+                maxLen = right - left + 1;
+            }
+            left--;
+            right++;
+        }
+    }
+    
+    char* result = (char*)malloc((maxLen + 1) * sizeof(char));
+    strncpy(result, s + start, maxLen);
+    result[maxLen] = '\0';
+    return result;
+}
+
+
+
+int minPathSum(int** grid, int gridSize, int* gridColSize) {
+    int m = gridSize, n = *gridColSize;
+    int** dp = (int**)malloc(m * sizeof(int*));
+    for (int i = 0; i < m; i++) {
+        dp[i] = (int*)malloc(n * sizeof(int));
+    }
+    
+    dp[0][0] = grid[0][0];
+    for (int i = 1; i < m; i++)
+        dp[i][0] = dp[i-1][0] + grid[i][0];
+    for (int j = 1; j < n; j++)
+        dp[0][j] = dp[0][j-1] + grid[0][j];
+    
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            dp[i][j] = (dp[i-1][j] < dp[i][j-1] ? dp[i-1][j] : dp[i][j-1]) + grid[i][j];
+        }
+    }
+    
+    int result = dp[m-1][n-1];
+    for (int i = 0; i < m; i++) free(dp[i]);
+    free(dp);
+    return result;
+}
+
+
+
+int minDistance(char* word1, char* word2) {
+    int m = strlen(word1), n = strlen(word2);
+    int** dp = (int**)malloc((m + 1) * sizeof(int*));
+    for (int i = 0; i <= m; i++) {
+        dp[i] = (int*)malloc((n + 1) * sizeof(int));
+        dp[i][0] = i;
+    }
+    for (int j = 0; j <= n; j++) dp[0][j] = j;
+    
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (word1[i-1] == word2[j-1]) {
+                dp[i][j] = dp[i-1][j-1];
+            } else {
+                int a = dp[i-1][j-1], b = dp[i-1][j], c = dp[i][j-1];
+                int min = a < b ? a : b;
+                min = min < c ? min : c;
+                dp[i][j] = 1 + min;
+            }
+        }
+    }
+    
+    int result = dp[m][n];
+    for (int i = 0; i <= m; i++) free(dp[i]);
+    free(dp);
+    return result;
+}
+
+
+
+int longestCommonSubsequence(char* text1, char* text2) {
+    int m = strlen(text1), n = strlen(text2);
+    int** dp = (int**)malloc((m + 1) * sizeof(int*));
+    for (int i = 0; i <= m; i++) {
+        dp[i] = (int*)calloc(n + 1, sizeof(int));
+    }
+    
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (text1[i-1] == text2[j-1]) {
+                dp[i][j] = dp[i-1][j-1] + 1;
+            } else {
+                dp[i][j] = dp[i-1][j] > dp[i][j-1] ? dp[i-1][j] : dp[i][j-1];
+            }
+        }
+    }
+    
+    int result = dp[m][n];
+    for (int i = 0; i <= m; i++) free(dp[i]);
+    free(dp);
+    return result;
+}
+
+
+
+int numIslands(char** grid, int gridSize, int* gridColSize) {
+    if (gridSize == 0) return 0;
+    int m = gridSize, n = *gridColSize;
+    int count = 0;
+    
+    void dfs(int i, int j) {
+        if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] == '0') return;
+        grid[i][j] = '0';
+        dfs(i + 1, j);
+        dfs(i - 1, j);
+        dfs(i, j + 1);
+        dfs(i, j - 1);
+    }
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (grid[i][j] == '1') {
+                count++;
+                dfs(i, j);
+            }
+        }
+    }
+    return count;
+}
+
+
+
+int maxProfit(int* prices, int pricesSize) {
+    if (pricesSize < 2) return 0;
+    int minPrice = prices[0];
+    int maxProfit = 0;
+    
+    for (int i = 1; i < pricesSize; i++) {
+        if (prices[i] < minPrice) {
+            minPrice = prices[i];
+        } else if (prices[i] - minPrice > maxProfit) {
+            maxProfit = prices[i] - minPrice;
+        }
+    }
+    return maxProfit;
+}
+
+
+
+int maxSubArray(int* nums, int numsSize) {
+    int maxSum = nums[0];
+    int currentSum = nums[0];
+    
+    for (int i = 1; i < numsSize; i++) {
+        currentSum = currentSum + nums[i] > nums[i] ? currentSum + nums[i] : nums[i];
+        if (currentSum > maxSum) maxSum = currentSum;
+    }
+    return maxSum;
+}
+
+
+
+int* productExceptSelf(int* nums, int numsSize, int* returnSize) {
+    *returnSize = numsSize;
+    int* result = (int*)malloc(numsSize * sizeof(int));
+    
+    result[0] = 1;
+    for (int i = 1; i < numsSize; i++) {
+        result[i] = result[i - 1] * nums[i - 1];
+    }
+    
+    int right = 1;
+    for (int i = numsSize - 1; i >= 0; i--) {
+        result[i] *= right;
+        right *= nums[i];
+    }
+    return result;
+}
+
+
+
+void rotate(int* nums, int numsSize, int k) {
+    k %= numsSize;
+    
+    void reverse(int* nums, int start, int end) {
+        while (start < end) {
+            int temp = nums[start];
+            nums[start] = nums[end];
+            nums[end] = temp;
+            start++;
+            end--;
+        }
+    }
+    
+    reverse(nums, 0, numsSize - 1);
+    reverse(nums, 0, k - 1);
+    reverse(nums, k, numsSize - 1);
+}
+
+
+
+int searchInRotatedArray(int* nums, int numsSize, int target) {
+    int left = 0, right = numsSize - 1;
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        
+        if (nums[left] <= nums[mid]) {
+            if (target >= nums[left] && target < nums[mid]) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if (target > nums[mid] && target <= nums[right]) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+    }
+    return -1;
+}
+
+
+
+int findPeakElement(int* nums, int numsSize) {
+    int left = 0, right = numsSize - 1;
+    
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] > nums[mid + 1]) {
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return left;
+}
+
+
+
+int findMinInRotatedArray(int* nums, int numsSize) {
+    int left = 0, right = numsSize - 1;
+    
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] > nums[right]) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return nums[left];
+}
+
+
+
+int calculate(char* s) {
+    int stack[10000];
+    int top = -1;
+    int num = 0, sign = 1, result = 0;
+    for (int i = 0; s[i] != '\0'; i++) {
+        char c = s[i];
+        if (c >= '0' && c <= '9') {
+            num = num * 10 + (c - '0');
+        } else if (c == '+') {
+            result += sign * num;
+            num = 0;
+            sign = 1;
+        } else if (c == '-') {
+            result += sign * num;
+            num = 0;
+            sign = -1;
+        } else if (c == '(') {
+            stack[++top] = result;
+            stack[++top] = sign;
+            result = 0;
+            sign = 1;
+        } else if (c == ')') {
+            result += sign * num;
+            num = 0;
+            result *= stack[top--];
+            result += stack[top--];
+        }
+    }
+    return result + sign * num;
+}
+
+
+
+int evalRPN(char** tokens, int tokensSize) {
+    int stack[10000];
+    int top = -1;
+    for (int i = 0; i < tokensSize; i++) {
+        if (strlen(tokens[i]) == 1 && strchr("+-*/", tokens[i][0])) {
+            int b = stack[top--];
+            int a = stack[top--];
+            switch (tokens[i][0]) {
+                case '+': stack[++top] = a + b; break;
+                case '-': stack[++top] = a - b; break;
+                case '*': stack[++top] = a * b; break;
+                case '/': stack[++top] = a / b; break;
+            }
+        } else {
+            stack[++top] = atoi(tokens[i]);
+        }
+    }
+    return stack[top];
+}
+
+
+
+char* simplifyPath(char* path) {
+    char* stack[10000];
+    int top = -1;
+    char* token = strtok(path, "/");
+    while (token) {
+        if (strcmp(token, "..") == 0) {
+            if (top >= 0) top--;
+        } else if (strlen(token) > 0 && strcmp(token, ".") != 0) {
+            stack[++top] = token;
+        }
+        token = strtok(NULL, "/");
+    }
+    if (top < 0) return strdup("/");
+    char* result = (char*)malloc(10000);
+    result[0] = '\0';
+    for (int i = 0; i <= top; i++) {
+        strcat(result, "/");
+        strcat(result, stack[i]);
+    }
+    return result;
+}
+
+
+
+int* asteroidCollision(int* asteroids, int asteroidsSize, int* returnSize) {
+    int* stack = (int*)malloc(asteroidsSize * sizeof(int));
+    int top = -1;
+    for (int i = 0; i < asteroidsSize; i++) {
+        int asteroid = asteroids[i];
+        int alive = 1;
+        while (top >= 0 && asteroid < 0 && stack[top] > 0) {
+            if (stack[top] < -asteroid) {
+                top--;
+                continue;
+            } else if (stack[top] == -asteroid) {
+                top--;
+            }
+            alive = 0;
+            break;
+        }
+        if (alive) stack[++top] = asteroid;
+    }
+    *returnSize = top + 1;
+    return stack;
+}
+
+
+
+char* removeKdigits(char* num, int k) {
+    int len = strlen(num);
+    char* stack = (char*)malloc((len + 1) * sizeof(char));
+    int top = -1;
+    for (int i = 0; i < len; i++) {
+        while (top >= 0 && k > 0 && stack[top] > num[i]) {
+            top--;
+            k--;
+        }
+        stack[++top] = num[i];
+    }
+    top -= k;
+    int start = 0;
+    while (start <= top && stack[start] == '0') start++;
+    if (start > top) return strdup("0");
+    stack[top + 1] = '\0';
+    return strdup(stack + start);
+}
+
+
+
+int leastInterval(char* tasks, int tasksSize, int n) {
+    int freq[26] = {0};
+    for (int i = 0; i < tasksSize; i++) {
+        freq[tasks[i] - 'A']++;
+    }
+    int maxFreq = 0;
+    for (int i = 0; i < 26; i++) {
+        if (freq[i] > maxFreq) maxFreq = freq[i];
+    }
+    int maxCount = 0;
+    for (int i = 0; i < 26; i++) {
+        if (freq[i] == maxFreq) maxCount++;
+    }
+    int result = (maxFreq - 1) * (n + 1) + maxCount;
+    return result > tasksSize ? result : tasksSize;
+}
+
+
+
+int carPooling(int** trips, int tripsSize, int* tripsColSize, int capacity) {
+    int timeline[1001] = {0};
+    for (int i = 0; i < tripsSize; i++) {
+        timeline[trips[i][1]] += trips[i][0];
+        timeline[trips[i][2]] -= trips[i][0];
+    }
+    int current = 0;
+    for (int i = 0; i < 1001; i++) {
+        current += timeline[i];
+        if (current > capacity) return 0;
+    }
+    return 1;
+}
+
+
+
+struct TreeNode* lowestCommonAncestor(struct TreeNode* root, struct TreeNode* p, struct TreeNode* q) {
+    if (root == NULL || root == p || root == q) return root;
+    struct TreeNode* left = lowestCommonAncestor(root->left, p, q);
+    struct TreeNode* right = lowestCommonAncestor(root->right, p, q);
+    if (left && right) return root;
+    return left ? left : right;
+}
+
+
+
+void flattenTree(struct TreeNode* root) {
+    if (root == NULL) return;
+    flattenTree(root->left);
+    flattenTree(root->right);
+    struct TreeNode* right = root->right;
+    root->right = root->left;
+    root->left = NULL;
+    while (root->right) root = root->right;
+    root->right = right;
+}
+
+
+
+int maxPathSumHelper(struct TreeNode* node, int* maxSum) {
+    if (node == NULL) return 0;
+    int left = maxPathSumHelper(node->left, maxSum);
+    int right = maxPathSumHelper(node->right, maxSum);
+    left = left > 0 ? left : 0;
+    right = right > 0 ? right : 0;
+    int pathSum = left + right + node->val;
+    if (pathSum > *maxSum) *maxSum = pathSum;
+    return (left > right ? left : right) + node->val;
+}
+
+int maxPathSum(struct TreeNode* root) {
+    int maxSum = INT_MIN;
+    maxPathSumHelper(root, &maxSum);
+    return maxSum;
+}
+
+
+
+int* rightSideView(struct TreeNode* root, int* returnSize) {
+    if (root == NULL) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int* result = (int*)malloc(1000 * sizeof(int));
+    *returnSize = 0;
+    struct TreeNode* queue[10000];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    while (front < rear) {
+        int size = rear - front;
+        for (int i = 0; i < size; i++) {
+            struct TreeNode* node = queue[front++];
+            if (i == size - 1) result[(*returnSize)++] = node->val;
+            if (node->left) queue[rear++] = node->left;
+            if (node->right) queue[rear++] = node->right;
+        }
+    }
+    return result;
+}
+
+
+
+void surroundedDfs(char** board, int m, int n, int i, int j) {
+    if (i < 0 || i >= m || j < 0 || j >= n || board[i][j] != 'O') return;
+    board[i][j] = 'T';
+    surroundedDfs(board, m, n, i + 1, j);
+    surroundedDfs(board, m, n, i - 1, j);
+    surroundedDfs(board, m, n, i, j + 1);
+    surroundedDfs(board, m, n, i, j - 1);
+}
+
+void solve(char** board, int boardSize, int* boardColSize) {
+    if (boardSize == 0) return;
+    int m = boardSize, n = *boardColSize;
+    for (int i = 0; i < m; i++) {
+        surroundedDfs(board, m, n, i, 0);
+        surroundedDfs(board, m, n, i, n - 1);
+    }
+    for (int j = 0; j < n; j++) {
+        surroundedDfs(board, m, n, 0, j);
+        surroundedDfs(board, m, n, m - 1, j);
+    }
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (board[i][j] == 'O') board[i][j] = 'X';
+            else if (board[i][j] == 'T') board[i][j] = 'O';
+        }
+    }
+}
+
+
+
+int longestConsecutive(int* nums, int numsSize) {
+    if (numsSize == 0) return 0;
+    qsort(nums, numsSize, sizeof(int), (int (*)(const void*, const void*))strcmp);
+    int longest = 1, current = 1;
+    for (int i = 1; i < numsSize; i++) {
+        if (nums[i] == nums[i - 1]) continue;
+        if (nums[i] == nums[i - 1] + 1) {
+            current++;
+        } else {
+            if (current > longest) longest = current;
+            current = 1;
+        }
+    }
+    return current > longest ? current : longest;
+}
+
+
+
+int subarraySum(int* nums, int numsSize, int k) {
+    int count = 0, sum = 0;
+    int* prefixSum = (int*)calloc(numsSize + 1, sizeof(int));
+    int* prefixCount = (int*)calloc(20001, sizeof(int));
+    prefixCount[10000] = 1;
+    for (int i = 0; i < numsSize; i++) {
+        sum += nums[i];
+        int target = sum - k + 10000;
+        if (target >= 0 && target < 20001) {
+            count += prefixCount[target];
+        }
+        prefixCount[sum + 10000]++;
+    }
+    free(prefixSum);
+    free(prefixCount);
+    return count;
+}
+
+
+
+int maxSlidingWindowHelper(int* nums, int numsSize, int k, int* result) {
+    int* deque = (int*)malloc(numsSize * sizeof(int));
+    int front = 0, rear = 0;
+    int resultSize = 0;
+    for (int i = 0; i < numsSize; i++) {
+        while (front < rear && deque[front] <= i - k) front++;
+        while (front < rear && nums[deque[rear - 1]] < nums[i]) rear--;
+        deque[rear++] = i;
+        if (i >= k - 1) result[resultSize++] = nums[deque[front]];
+    }
+    free(deque);
+    return resultSize;
+}
+
+
+
+int findKthLargest(int* nums, int numsSize, int k) {
+    int* minHeap = (int*)malloc(k * sizeof(int));
+    for (int i = 0; i < k; i++) minHeap[i] = nums[i];
+    for (int i = k / 2 - 1; i >= 0; i--) {
+        int j = i, n = k;
+        while (2 * j + 1 < n) {
+            int child = 2 * j + 1;
+            if (child + 1 < n && minHeap[child + 1] < minHeap[child]) child++;
+            if (minHeap[j] <= minHeap[child]) break;
+            int temp = minHeap[j];
+            minHeap[j] = minHeap[child];
+            minHeap[child] = temp;
+            j = child;
+        }
+    }
+    for (int i = k; i < numsSize; i++) {
+        if (nums[i] > minHeap[0]) {
+            minHeap[0] = nums[i];
+            int j = 0, n = k;
+            while (2 * j + 1 < n) {
+                int child = 2 * j + 1;
+                if (child + 1 < n && minHeap[child + 1] < minHeap[child]) child++;
+                if (minHeap[j] <= minHeap[child]) break;
+                int temp = minHeap[j];
+                minHeap[j] = minHeap[child];
+                minHeap[child] = temp;
+                j = child;
+            }
+        }
+    }
+    int result = minHeap[0];
+    free(minHeap);
+    return result;
+}
+
+
+
+int longestConsecutiveHelper(int* nums, int numsSize) {
+    if (numsSize == 0) return 0;
+    qsort(nums, numsSize, sizeof(int), (int (*)(const void*, const void*))strcmp);
+    int longest = 1, current = 1;
+    for (int i = 1; i < numsSize; i++) {
+        if (nums[i] == nums[i - 1]) continue;
+        if (nums[i] == nums[i - 1] + 1) {
+            current++;
+        } else {
+            if (current > longest) longest = current;
+            current = 1;
+        }
+    }
+    return current > longest ? current : longest;
+}
+
+
+
+int* topKFrequentHelper(int* nums, int numsSize, int k, int* returnSize) {
+    int* freq = (int*)calloc(20001, sizeof(int));
+    for (int i = 0; i < numsSize; i++) {
+        freq[nums[i] + 10000]++;
+    }
+    
+    int** buckets = (int**)calloc(numsSize + 1, sizeof(int*));
+    int* bucketSizes = (int*)calloc(numsSize + 1, sizeof(int));
+    
+    for (int i = 0; i < 20001; i++) {
+        if (freq[i] > 0) {
+            if (!buckets[freq[i]]) {
+                buckets[freq[i]] = (int*)malloc(100 * sizeof(int));
+            }
+            buckets[freq[i]][bucketSizes[freq[i]]++] = i - 10000;
+        }
+    }
+    
+    int* result = (int*)malloc(k * sizeof(int));
+    *returnSize = 0;
+    for (int i = numsSize; i >= 0 && *returnSize < k; i--) {
+        for (int j = 0; j < bucketSizes[i] && *returnSize < k; j++) {
+            result[(*returnSize)++] = buckets[i][j];
+        }
+    }
+    
+    free(freq);
+    for (int i = 0; i <= numsSize; i++) if (buckets[i]) free(buckets[i]);
+    free(buckets);
+    free(bucketSizes);
+    return result;
+}
+
+
+
+void heapify(int* heap, int size, int i) {
+    int smallest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+    if (left < size && heap[left] < heap[smallest]) smallest = left;
+    if (right < size && heap[right] < heap[smallest]) smallest = right;
+    if (smallest != i) {
+        int temp = heap[i];
+        heap[i] = heap[smallest];
+        heap[smallest] = temp;
+        heapify(heap, size, smallest);
+    }
+}
+
+int findKthLargestWithHeap(int* nums, int numsSize, int k) {
+    int* heap = (int*)malloc(k * sizeof(int));
+    for (int i = 0; i < k; i++) heap[i] = nums[i];
+    for (int i = k / 2 - 1; i >= 0; i--) heapify(heap, k, i);
+    for (int i = k; i < numsSize; i++) {
+        if (nums[i] > heap[0]) {
+            heap[0] = nums[i];
+            heapify(heap, k, 0);
+        }
+    }
+    int result = heap[0];
+    free(heap);
+    return result;
+}
+
+
+
+struct ListNode* detectCycleInList(struct ListNode* head) {
+    struct ListNode* slow = head;
+    struct ListNode* fast = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) {
+            struct ListNode* ptr = head;
+            while (ptr != slow) {
+                ptr = ptr->next;
+                slow = slow->next;
+            }
+            return ptr;
+        }
+    }
+    return NULL;
+}
+
+
+
+void reorderLinkedList(struct ListNode* head) {
+    if (head -n 50 /home/linan/桌面/cloudflare-img-url/worker/index.js || head -n 50>next) return;
+    struct ListNode* slow = head;
+    struct ListNode* fast = head;
+    while (fast->next && fast->next->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    struct ListNode* second = slow->next;
+    slow->next = NULL;
+    struct ListNode* prev = NULL;
+    while (second) {
+        struct ListNode* next = second->next;
+        second->next = prev;
+        prev = second;
+        second = next;
+    }
+    struct ListNode* first = head;
+    second = prev;
+    while (second) {
+        struct ListNode* tmp1 = first->next;
+        struct ListNode* tmp2 = second->next;
+        first->next = second;
+        second->next = tmp1;
+        first = tmp1;
+        second = tmp2;
+    }
+}
+
+
+
+struct ListNode* sortLinkedList(struct ListNode* head) {
+    if (head -n 50 /home/linan/桌面/cloudflare-img-url/worker/index.js || head -n 50>next) return head;
+    struct ListNode* slow = head;
+    struct ListNode* fast = head->next;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    struct ListNode* mid = slow->next;
+    slow->next = NULL;
+    struct ListNode* left = sortLinkedList(head);
+    struct ListNode* right = sortLinkedList(mid);
+    struct ListNode dummy;
+    struct ListNode* curr = &dummy;
+    while (left && right) {
+        if (left->val < right->val) {
+            curr->next = left;
+            left = left->next;
+        } else {
+            curr->next = right;
+            right = right->next;
+        }
+        curr = curr->next;
+    }
+    curr->next = left ? left : right;
+    return dummy.next;
+}
+
+
+
+void nextPermutationInPlace(int* nums, int numsSize) {
+    int i = numsSize - 2;
+    while (i >= 0 && nums[i] >= nums[i + 1]) i--;
+    if (i >= 0) {
+        int j = numsSize - 1;
+        while (nums[j] <= nums[i]) j--;
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+    int left = i + 1, right = numsSize - 1;
+    while (left < right) {
+        int temp = nums[left];
+        nums[left] = nums[right];
+        nums[right] = temp;
+        left++;
+        right--;
+    }
+}
+
+
+
+char* minWindowHelper(char* s, char* t) {
+    int need[128] = {0};
+    int window[128] = {0};
+    int needCount = 0;
+    for (int i = 0; t[i]; i++) {
+        if (need[(int)t[i]] == 0) needCount++;
+        need[(int)t[i]]++;
+    }
+    int left = 0, valid = 0;
+    int start = 0, minLen = INT_MAX;
+    int sLen = strlen(s);
+    for (int right = 0; right < sLen; right++) {
+        char c = s[right];
+        if (need[(int)c] > 0) {
+            window[(int)c]++;
+            if (window[(int)c] == need[(int)c]) valid++;
+        }
+        while (valid == needCount) {
+            if (right - left + 1 < minLen) {
+                start = left;
+                minLen = right - left + 1;
+            }
+            char d = s[left++];
+            if (need[(int)d] > 0) {
+                if (window[(int)d] == need[(int)d]) valid--;
+                window[(int)d]--;
+            }
+        }
+    }
+    if (minLen == INT_MAX) return "";
+    char* result = (char*)malloc((minLen + 1) * sizeof(char));
+    strncpy(result, s + start, minLen);
+    result[minLen] = '\0';
+    return result;
+}
+
+
+
+int* findAnagramsHelper(char* s, char* p, int* returnSize) {
+    int sLen = strlen(s);
+    int pLen = strlen(p);
+    if (sLen < pLen) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int pCount[26] = {0};
+    int sCount[26] = {0};
+    for (int i = 0; i < pLen; i++) pCount[p[i] - 'a']++;
+    int* result = (int*)malloc(sLen * sizeof(int));
+    *returnSize = 0;
+    for (int i = 0; i < sLen; i++) {
+        sCount[s[i] - 'a']++;
+        if (i >= pLen) sCount[s[i - pLen] - 'a']--;
+        if (i >= pLen - 1) {
+            int match = 1;
+            for (int j = 0; j < 26; j++) {
+                if (pCount[j] != sCount[j]) {
+                    match = 0;
+                    break;
+                }
+            }
+            if (match) result[(*returnSize)++] = i - pLen + 1;
+        }
+    }
+    return result;
+}
+
+
+
+int characterReplacementHelper(char* s, int k) {
+    int count[26] = {0};
+    int left = 0, maxCount = 0, result = 0;
+    int sLen = strlen(s);
+    for (int right = 0; right < sLen; right++) {
+        count[s[right] - 'A']++;
+        if (count[s[right] - 'A'] > maxCount) maxCount = count[s[right] - 'A'];
+        while (right - left + 1 - maxCount > k) {
+            count[s[left] - 'A']--;
+            left++;
+        }
+        if (right - left + 1 > result) result = right - left + 1;
+    }
+    return result;
+}
+
+
+
+int lengthOfLongestSubstringKDistinctHelper(char* s, int k) {
+    int count[256] = {0};
+    int distinct = 0;
+    int left = 0, maxLen = 0;
+    int sLen = strlen(s);
+    for (int right = 0; right < sLen; right++) {
+        if (count[(int)s[right]] == 0) distinct++;
+        count[(int)s[right]]++;
+        while (distinct > k) {
+            count[(int)s[left]]--;
+            if (count[(int)s[left]] == 0) distinct--;
+            left++;
+        }
+        if (right - left + 1 > maxLen) maxLen = right - left + 1;
+    }
+    return maxLen;
+}
+
+
+
+int uniquePathsWithObstacles(int** obstacleGrid, int m, int n) {
+    if (obstacleGrid[0][0] == 1) return 0;
+    int** dp = (int**)malloc(m * sizeof(int*));
+    for (int i = 0; i < m; i++) {
+        dp[i] = (int*)calloc(n, sizeof(int));
+    }
+    dp[0][0] = 1;
+    for (int i = 1; i < m; i++) {
+        dp[i][0] = obstacleGrid[i][0] == 1 ? 0 : dp[i-1][0];
+    }
+    for (int j = 1; j < n; j++) {
+        dp[0][j] = obstacleGrid[0][j] == 1 ? 0 : dp[0][j-1];
+    }
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            if (obstacleGrid[i][j] == 1) {
+                dp[i][j] = 0;
+            } else {
+                dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            }
+        }
+    }
+    int result = dp[m-1][n-1];
+    for (int i = 0; i < m; i++) free(dp[i]);
+    free(dp);
+    return result;
+}
+
+
+
+int shortestPath(int** grid, int m, int n) {
+    if (grid[0][0] == 1 || grid[m-1][n-1] == 1) return -1;
+    int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    int** dist = (int**)malloc(m * sizeof(int*));
+    for (int i = 0; i < m; i++) {
+        dist[i] = (int*)malloc(n * sizeof(int));
+        for (int j = 0; j < n; j++) dist[i][j] = INT_MAX;
+    }
+    dist[0][0] = 1;
+    int queue[m * n][2];
+    int front = 0, rear = 0;
+    queue[rear][0] = 0;
+    queue[rear++][1] = 0;
+    while (front < rear) {
+        int x = queue[front][0];
+        int y = queue[front++][1];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dirs[d][0];
+            int ny = y + dirs[d][1];
+            if (nx >= 0 && nx < m && ny >= 0 && ny < n && 
+                grid[nx][ny] == 0 && dist[x][y] + 1 < dist[nx][ny]) {
+                dist[nx][ny] = dist[x][y] + 1;
+                queue[rear][0] = nx;
+                queue[rear++][1] = ny;
+            }
+        }
+    }
+    int result = dist[m-1][n-1] == INT_MAX ? -1 : dist[m-1][n-1];
+    for (int i = 0; i < m; i++) free(dist[i]);
+    free(dist);
+    return result;
+}
+
+
+
+int orangesRotting(int** grid, int m, int n) {
+    int queue[m * n][2];
+    int front = 0, rear = 0;
+    int fresh = 0;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (grid[i][j] == 2) {
+                queue[rear][0] = i;
+                queue[rear++][1] = j;
+            } else if (grid[i][j] == 1) {
+                fresh++;
+            }
+        }
+    }
+    if (fresh == 0) return 0;
+    int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    int minutes = -1;
+    while (front < rear) {
+        int size = rear - front;
+        minutes++;
+        for (int i = 0; i < size; i++) {
+            int x = queue[front][0];
+            int y = queue[front++][1];
+            for (int d = 0; d < 4; d++) {
+                int nx = x + dirs[d][0];
+                int ny = y + dirs[d][1];
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                    grid[nx][ny] = 2;
+                    fresh--;
+                    queue[rear][0] = nx;
+                    queue[rear++][1] = ny;
+                }
+            }
+        }
+    }
+    return fresh == 0 ? minutes : -1;
+}
+
+
+
+int uniquePaths(int m, int n) {
+    int dp[m][n];
+    for (int i = 0; i < m; i++) dp[i][0] = 1;
+    for (int j = 0; j < n; j++) dp[0][j] = 1;
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            dp[i][j] = dp[i-1][j] + dp[i][j-1];
+        }
+    }
+    return dp[m-1][n-1];
+}
+
+
+
+int canJump(int* nums, int numsSize) {
+    int maxReach = 0;
+    for (int i = 0; i < numsSize; i++) {
+        if (i > maxReach) return 0;
+        if (i + nums[i] > maxReach) maxReach = i + nums[i];
+    }
+    return 1;
+}
+
+
+
+int jumpGame(int* nums, int numsSize) {
+    int jumps = 0, curEnd = 0, curFar = 0;
+    for (int i = 0; i < numsSize - 1; i++) {
+        if (i + nums[i] > curFar) curFar = i + nums[i];
+        if (i == curEnd) {
+            jumps++;
+            curEnd = curFar;
+        }
+    }
+    return jumps;
+}
+
+
+
+int canCompleteCircuitHelper(int* gas, int gasSize, int* cost, int costSize) {
+    int totalTank = 0, currTank = 0, start = 0;
+    for (int i = 0; i < gasSize; i++) {
+        totalTank += gas[i] - cost[i];
+        currTank += gas[i] - cost[i];
+        if (currTank < 0) {
+            start = i + 1;
+            currTank = 0;
+        }
+    }
+    return totalTank >= 0 ? start : -1;
+}
+
+
+
+int candyHelper(int* ratings, int ratingsSize) {
+    int* candies = (int*)malloc(ratingsSize * sizeof(int));
+    for (int i = 0; i < ratingsSize; i++) candies[i] = 1;
+    for (int i = 1; i < ratingsSize; i++) {
+        if (ratings[i] > ratings[i-1]) {
+            candies[i] = candies[i-1] + 1;
+        }
+    }
+    for (int i = ratingsSize - 2; i >= 0; i--) {
+        if (ratings[i] > ratings[i+1] && candies[i] <= candies[i+1]) {
+            candies[i] = candies[i+1] + 1;
+        }
+    }
+    int sum = 0;
+    for (int i = 0; i < ratingsSize; i++) sum += candies[i];
+    free(candies);
+    return sum;
+}
+
+
+
+int** threeSumHelper(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    qsort(nums, numsSize, sizeof(int), (int (*)(const void*, const void*))strcmp);
+    int capacity = 1000;
+    int** result = (int**)malloc(capacity * sizeof(int*));
+    *returnSize = 0;
+    *returnColumnSizes = (int*)malloc(capacity * sizeof(int));
+    
+    for (int i = 0; i < numsSize - 2; i++) {
+        if (i > 0 && nums[i] == nums[i-1]) continue;
+        int left = i + 1, right = numsSize - 1;
+        while (left < right) {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (sum == 0) {
+                result[*returnSize] = (int*)malloc(3 * sizeof(int));
+                result[*returnSize][0] = nums[i];
+                result[*returnSize][1] = nums[left];
+                result[*returnSize][2] = nums[right];
+                (*returnColumnSizes)[*returnSize] = 3;
+                (*returnSize)++;
+                while (left < right && nums[left] == nums[left+1]) left++;
+                while (left < right && nums[right] == nums[right-1]) right--;
+                left++;
+                right--;
+            } else if (sum < 0) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+    return result;
+}
+
+
+
+int threeSumClosestHelper(int* nums, int numsSize, int target) {
+    qsort(nums, numsSize, sizeof(int), (int (*)(const void*, const void*))strcmp);
+    int closest = nums[0] + nums[1] + nums[2];
+    for (int i = 0; i < numsSize - 2; i++) {
+        int left = i + 1, right = numsSize - 1;
+        while (left < right) {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (abs(sum - target) < abs(closest - target)) {
+                closest = sum;
+            }
+            if (sum < target) left++;
+            else if (sum > target) right--;
+            else return target;
+        }
+    }
+    return closest;
+}
+
+
+
+int maxAreaHelper(int* height, int heightSize) {
+    int left = 0, right = heightSize - 1;
+    int maxArea = 0;
+    while (left < right) {
+        int h = height[left] < height[right] ? height[left] : height[right];
+        int area = h * (right - left);
+        if (area > maxArea) maxArea = area;
+        if (height[left] < height[right]) left++;
+        else right--;
+    }
+    return maxArea;
+}
+
+
+
+int trapHelper(int* height, int heightSize) {
+    if (heightSize == 0) return 0;
+    int left = 0, right = heightSize - 1;
+    int leftMax = 0, rightMax = 0;
+    int result = 0;
+    while (left < right) {
+        if (height[left] < height[right]) {
+            if (height[left] >= leftMax) leftMax = height[left];
+            else result += leftMax - height[left];
+            left++;
+        } else {
+            if (height[right] >= rightMax) rightMax = height[right];
+            else result += rightMax - height[right];
+            right--;
+        }
+    }
+    return result;
+}
+
+
+
+int searchMatrix(int** matrix, int matrixSize, int* matrixColSize, int target) {
+    if (matrixSize == 0 || matrixColSize[0] == 0) return 0;
+    int m = matrixSize, n = matrixColSize[0];
+    int left = 0, right = m * n - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        int val = matrix[mid / n][mid % n];
+        if (val == target) return 1;
+        else if (val < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return 0;
+}
+
+
+
+int searchMatrixII(int** matrix, int matrixSize, int* matrixColSize, int target) {
+    if (matrixSize == 0 || matrixColSize[0] == 0) return 0;
+    int m = matrixSize, n = matrixColSize[0];
+    int row = 0, col = n - 1;
+    while (row < m && col >= 0) {
+        if (matrix[row][col] == target) return 1;
+        else if (matrix[row][col] > target) col--;
+        else row++;
+    }
+    return 0;
+}
+
+
+
+int findPeakElement(int* nums, int numsSize) {
+    int left = 0, right = numsSize - 1;
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] > nums[mid + 1]) {
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return left;
+}
+
+
+
+int searchRotatedArray(int* nums, int numsSize, int target) {
+    int left = 0, right = numsSize - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[left] <= nums[mid]) {
+            if (target >= nums[left] && target < nums[mid]) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if (target > nums[mid] && target <= nums[right]) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+    }
+    return -1;
+}
+
+
+
+int findMinHelper(int* nums, int numsSize) {
+    int left = 0, right = numsSize - 1;
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] > nums[right]) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    return nums[left];
+}
+
+
+
+int isValidParentheses(char* s) {
+    char stack[10000];
+    int top = -1;
+    for (int i = 0; s[i] != '\0'; i++) {
+        char c = s[i];
+        if (c == '(' || c == '[' || c == '{') {
+            stack[++top] = c;
+        } else {
+            if (top < 0) return 0;
+            char t = stack[top--];
+            if ((c == ')' && t != '(') ||
+                (c == ']' && t != '[') ||
+                (c == '}' && t != '{')) {
+                return 0;
+            }
+        }
+    }
+    return top < 0;
+}
+
+
+
+int longestValidParenthesesHelper(char* s) {
+    int stack[10000];
+    int top = 0;
+    stack[top++] = -1;
+    int maxLen = 0;
+    int len = strlen(s);
+    for (int i = 0; i < len; i++) {
+        if (s[i] == '(') {
+            stack[top++] = i;
+        } else {
+            top--;
+            if (top == 0) {
+                stack[top++] = i;
+            } else {
+                int length = i - stack[top - 1];
+                if (length > maxLen) maxLen = length;
+            }
+        }
+    }
+    return maxLen;
+}
+
+
+
+int* dailyTemperaturesHelper(int* temperatures, int temperaturesSize, int* returnSize) {
+    int* result = (int*)calloc(temperaturesSize, sizeof(int));
+    int* stack = (int*)malloc(temperaturesSize * sizeof(int));
+    int top = -1;
+    
+    for (int i = 0; i < temperaturesSize; i++) {
+        while (top >= 0 && temperatures[i] > temperatures[stack[top]]) {
+            int idx = stack[top--];
+            result[idx] = i - idx;
+        }
+        stack[++top] = i;
+    }
+    
+    free(stack);
+    *returnSize = temperaturesSize;
+    return result;
+}
+
+
+
+int largestRectangleAreaHelper(int* heights, int heightsSize) {
+    int* stack = (int*)malloc((heightsSize + 1) * sizeof(int));
+    int top = -1;
+    int maxArea = 0;
+    
+    for (int i = 0; i <= heightsSize; i++) {
+        int h = i == heightsSize ? 0 : heights[i];
+        while (top >= 0 && h < heights[stack[top]]) {
+            int height = heights[stack[top--]];
+            int width = top < 0 ? i : i - stack[top] - 1;
+            int area = height * width;
+            if (area > maxArea) maxArea = area;
+        }
+        stack[++top] = i;
+    }
+    
+    free(stack);
+    return maxArea;
+}
+
+
+
+int canFinishHelper(int numCourses, int** prerequisites, int prerequisitesSize, int* prerequisitesColSize) {
+    int* inDegree = (int*)calloc(numCourses, sizeof(int));
+    int** adj = (int**)malloc(numCourses * sizeof(int*));
+    int* adjSize = (int*)calloc(numCourses, sizeof(int));
+    
+    for (int i = 0; i < numCourses; i++) {
+        adj[i] = (int*)malloc(numCourses * sizeof(int));
+    }
+    
+    for (int i = 0; i < prerequisitesSize; i++) {
+        int from = prerequisites[i][1];
+        int to = prerequisites[i][0];
+        adj[from][adjSize[from]++] = to;
+        inDegree[to]++;
+    }
+    
+    int* queue = (int*)malloc(numCourses * sizeof(int));
+    int front = 0, rear = 0;
+    
+    for (int i = 0; i < numCourses; i++) {
+        if (inDegree[i] == 0) queue[rear++] = i;
+    }
+    
+    int count = 0;
+    while (front < rear) {
+        int course = queue[front++];
+        count++;
+        for (int i = 0; i < adjSize[course]; i++) {
+            int next = adj[course][i];
+            if (--inDegree[next] == 0) queue[rear++] = next;
+        }
+    }
+    
+    for (int i = 0; i < numCourses; i++) free(adj[i]);
+    free(adj);
+    free(adjSize);
+    free(inDegree);
+    free(queue);
+    
+    return count == numCourses;
+}
+
+
+
+int* findOrderHelper(int numCourses, int** prerequisites, int prerequisitesSize, int* returnSize) {
+    int* inDegree = (int*)calloc(numCourses, sizeof(int));
+    int** adj = (int**)malloc(numCourses * sizeof(int*));
+    int* adjSize = (int*)calloc(numCourses, sizeof(int));
+    
+    for (int i = 0; i < numCourses; i++) {
+        adj[i] = (int*)malloc(numCourses * sizeof(int));
+    }
+    
+    for (int i = 0; i < prerequisitesSize; i++) {
+        int from = prerequisites[i][1];
+        int to = prerequisites[i][0];
+        adj[from][adjSize[from]++] = to;
+        inDegree[to]++;
+    }
+    
+    int* queue = (int*)malloc(numCourses * sizeof(int));
+    int front = 0, rear = 0;
+    
+    for (int i = 0; i < numCourses; i++) {
+        if (inDegree[i] == 0) queue[rear++] = i;
+    }
+    
+    int* result = (int*)malloc(numCourses * sizeof(int));
+    int idx = 0;
+    
+    while (front < rear) {
+        int course = queue[front++];
+        result[idx++] = course;
+        for (int i = 0; i < adjSize[course]; i++) {
+            int next = adj[course][i];
+            if (--inDegree[next] == 0) queue[rear++] = next;
+        }
+    }
+    
+    for (int i = 0; i < numCourses; i++) free(adj[i]);
+    free(adj);
+    free(adjSize);
+    free(inDegree);
+    free(queue);
+    
+    if (idx == numCourses) {
+        *returnSize = numCourses;
+        return result;
+    }
+    
+    free(result);
+    *returnSize = 0;
+    return NULL;
+}
+
+
+
+void setZeroes(int** matrix, int matrixSize, int* matrixColSize) {
+    int m = matrixSize, n = matrixColSize[0];
+    int firstRowZero = 0, firstColZero = 0;
+    
+    for (int j = 0; j < n; j++) {
+        if (matrix[0][j] == 0) firstRowZero = 1;
+    }
+    for (int i = 0; i < m; i++) {
+        if (matrix[i][0] == 0) firstColZero = 1;
+    }
+    
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            if (matrix[i][j] == 0) {
+                matrix[i][0] = 0;
+                matrix[0][j] = 0;
+            }
+        }
+    }
+    
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                matrix[i][j] = 0;
+            }
+        }
+    }
+    
+    if (firstRowZero) {
+        for (int j = 0; j < n; j++) matrix[0][j] = 0;
+    }
+    if (firstColZero) {
+        for (int i = 0; i < m; i++) matrix[i][0] = 0;
+    }
+}
+
+
+
+void rotateImage(int** matrix, int matrixSize, int* matrixColSize) {
+    int n = matrixSize;
+    for (int i = 0; i < n / 2; i++) {
+        for (int j = i; j < n - 1 - i; j++) {
+            int temp = matrix[i][j];
+            matrix[i][j] = matrix[n - 1 - j][i];
+            matrix[n - 1 - j][i] = matrix[n - 1 - i][n - 1 - j];
+            matrix[n - 1 - i][n - 1 - j] = matrix[j][n - 1 - i];
+            matrix[j][n - 1 - i] = temp;
+        }
+    }
+}
+
+
+
+int** spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSize) {
+    if (matrixSize == 0 || matrixColSize[0] == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int m = matrixSize, n = matrixColSize[0];
+    int* result = (int*)malloc(m * n * sizeof(int));
+    int idx = 0;
+    int top = 0, bottom = m - 1, left = 0, right = n - 1;
+    
+    while (top <= bottom && left <= right) {
+        for (int j = left; j <= right; j++) result[idx++] = matrix[top][j];
+        top++;
+        for (int i = top; i <= bottom; i++) result[idx++] = matrix[i][right];
+        right--;
+        if (top <= bottom) {
+            for (int j = right; j >= left; j--) result[idx++] = matrix[bottom][j];
+            bottom--;
+        }
+        if (left <= right) {
+            for (int i = bottom; i >= top; i--) result[idx++] = matrix[i][left];
+            left++;
+        }
+    }
+    
+    *returnSize = idx;
+    int** resultArr = (int**)malloc(sizeof(int*));
+    resultArr[0] = result;
+    return resultArr;
+}
+
+
+
+void gameOfLife(int** board, int boardSize, int* boardColSize) {
+    int m = boardSize, n = boardColSize[0];
+    int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            int count = 0;
+            for (int k = 0; k < 8; k++) {
+                int ni = i + dx[k], nj = j + dy[k];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+                    if ((board[ni][nj] & 1) == 1) count++;
+                }
+            }
+            if ((board[i][j] & 1) == 1) {
+                if (count == 2 || count == 3) board[i][j] |= 2;
+            } else {
+                if (count == 3) board[i][j] |= 2;
+            }
+        }
+    }
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            board[i][j] >>= 1;
+        }
+    }
+}
+
+
+
+int numIslandsHelper(char** grid, int gridSize, int* gridColSize) {
+    if (gridSize == 0) return 0;
+    int m = gridSize, n = gridColSize[0];
+    int count = 0;
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (grid[i][j] == '1') {
+                count++;
+                int stack[m * n][2];
+                int top = 0;
+                stack[top][0] = i;
+                stack[top++][1] = j;
+                grid[i][j] = '0';
+                
+                while (top > 0) {
+                    int x = stack[--top][0];
+                    int y = stack[top][1];
+                    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                    for (int d = 0; d < 4; d++) {
+                        int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                        if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == '1') {
+                            grid[nx][ny] = '0';
+                            stack[top][0] = nx;
+                            stack[top++][1] = ny;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+
+
+
+int maxAreaOfIsland(int** grid, int gridSize, int* gridColSize) {
+    if (gridSize == 0) return 0;
+    int m = gridSize, n = gridColSize[0];
+    int maxArea = 0;
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (grid[i][j] == 1) {
+                int area = 0;
+                int stack[m * n][2];
+                int top = 0;
+                stack[top][0] = i;
+                stack[top++][1] = j;
+                grid[i][j] = 0;
+                
+                while (top > 0) {
+                    int x = stack[--top][0];
+                    int y = stack[top][1];
+                    area++;
+                    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                    for (int d = 0; d < 4; d++) {
+                        int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                        if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                            grid[nx][ny] = 0;
+                            stack[top][0] = nx;
+                            stack[top++][1] = ny;
+                        }
+                    }
+                }
+                if (area > maxArea) maxArea = area;
+            }
+        }
+    }
+    return maxArea;
+}
+
+
+
+int** generateMatrixHelper(int n, int* returnSize, int** returnColumnSizes) {
+    int** matrix = (int**)malloc(n * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        matrix[i] = (int*)malloc(n * sizeof(int));
+        (*returnColumnSizes)[i] = n;
+    }
+    *returnSize = n;
+    
+    int top = 0, bottom = n - 1, left = 0, right = n - 1;
+    int num = 1;
+    
+    while (top <= bottom && left <= right) {
+        for (int j = left; j <= right; j++) matrix[top][j] = num++;
+        top++;
+        for (int i = top; i <= bottom; i++) matrix[i][right] = num++;
+        right--;
+        for (int j = right; j >= left; j--) matrix[bottom][j] = num++;
+        bottom--;
+        for (int i = bottom; i >= top; i--) matrix[i][left] = num++;
+        left++;
+    }
+    return matrix;
+}
+
+
+
+int isValidSudoku(char** board, int boardSize, int* boardColSize) {
+    int rows[9][9] = {0};
+    int cols[9][9] = {0};
+    int boxes[9][9] = {0};
+    
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            if (board[i][j] != '.') {
+                int num = board[i][j] - '1';
+                int boxIdx = (i / 3) * 3 + j / 3;
+                if (rows[i][num] || cols[j][num] || boxes[boxIdx][num]) {
+                    return 0;
+                }
+                rows[i][num] = cols[j][num] = boxes[boxIdx][num] = 1;
+            }
+        }
+    }
+    return 1;
+}
+
+
+
+void wordSearchDfs(char** board, int m, int n, char* word, int i, int j, int k, int* found) {
+    if (*found) return;
+    if (word[k] == '\0') {
+        *found = 1;
+        return;
+    }
+    if (i < 0 || i >= m || j < 0 || j >= n) return;
+    if (board[i][j] != word[k]) return;
+    char temp = board[i][j];
+    board[i][j] = '#';
+    wordSearchDfs(board, m, n, word, i + 1, j, k + 1, found);
+    wordSearchDfs(board, m, n, word, i - 1, j, k + 1, found);
+    wordSearchDfs(board, m, n, word, i, j + 1, k + 1, found);
+    wordSearchDfs(board, m, n, word, i, j - 1, k + 1, found);
+    board[i][j] = temp;
+}
+
+int wordSearch(char** board, int boardSize, int* boardColSize, char* word) {
+    int m = boardSize, n = boardColSize[0];
+    int found = 0;
+    for (int i = 0; i < m && !found; i++) {
+        for (int j = 0; j < n && !found; j++) {
+            wordSearchDfs(board, m, n, word, i, j, 0, &found);
+        }
+    }
+    return found;
+}
+
+
+
+int** pacificAtlanticHelper(int** heights, int heightsSize, int* heightsColSize, int* returnSize, int** returnColumnSizes) {
+    if (heightsSize == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int m = heightsSize, n = heightsColSize[0];
+    int** pacific = (int**)calloc(m, sizeof(int*));
+    int** atlantic = (int**)calloc(m, sizeof(int*));
+    for (int i = 0; i < m; i++) {
+        pacific[i] = (int*)calloc(n, sizeof(int));
+        atlantic[i] = (int*)calloc(n, sizeof(int));
+    }
+    
+    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    int queue[m * n][2];
+    
+    int front = 0, rear = 0;
+    for (int i = 0; i < m; i++) {
+        queue[rear][0] = i; queue[rear++][1] = 0;
+        pacific[i][0] = 1;
+    }
+    for (int j = 1; j < n; j++) {
+        queue[rear][0] = 0; queue[rear++][1] = j;
+        pacific[0][j] = 1;
+    }
+    while (front < rear) {
+        int x = queue[front][0], y = queue[front++][1];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dirs[d][0], ny = y + dirs[d][1];
+            if (nx >= 0 && nx < m && ny >= 0 && ny < n && !pacific[nx][ny] && heights[nx][ny] >= heights[x][y]) {
+                pacific[nx][ny] = 1;
+                queue[rear][0] = nx; queue[rear++][1] = ny;
+            }
+        }
+    }
+    
+    front = rear = 0;
+    for (int i = 0; i < m; i++) {
+        queue[rear][0] = i; queue[rear++][1] = n - 1;
+        atlantic[i][n - 1] = 1;
+    }
+    for (int j = 0; j < n - 1; j++) {
+        queue[rear][0] = m - 1; queue[rear++][1] = j;
+        atlantic[m - 1][j] = 1;
+    }
+    while (front < rear) {
+        int x = queue[front][0], y = queue[front++][1];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dirs[d][0], ny = y + dirs[d][1];
+            if (nx >= 0 && nx < m && ny >= 0 && ny < n && !atlantic[nx][ny] && heights[nx][ny] >= heights[x][y]) {
+                atlantic[nx][ny] = 1;
+                queue[rear][0] = nx; queue[rear++][1] = ny;
+            }
+        }
+    }
+    
+    int** result = (int**)malloc(m * n * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(m * n * sizeof(int));
+    *returnSize = 0;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (pacific[i][j] && atlantic[i][j]) {
+                result[*returnSize] = (int*)malloc(2 * sizeof(int));
+                result[*returnSize][0] = i;
+                result[*returnSize][1] = j;
+                (*returnColumnSizes)[*returnSize] = 2;
+                (*returnSize)++;
+            }
+        }
+    }
+    
+    for (int i = 0; i < m; i++) {
+        free(pacific[i]);
+        free(atlantic[i]);
+    }
+    free(pacific);
+    free(atlantic);
+    
+    return result;
+}
+
+
+
+void wallsAndGatesHelper(int** rooms, int roomsSize, int* roomsColSize) {
+    int m = roomsSize, n = roomsColSize[0];
+    int INF = 2147483647;
+    int queue[m * n][2];
+    int front = 0, rear = 0;
+    
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (rooms[i][j] == 0) {
+                queue[rear][0] = i;
+                queue[rear++][1] = j;
+            }
+        }
+    }
+    
+    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    while (front < rear) {
+        int x = queue[front][0], y = queue[front++][1];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dirs[d][0], ny = y + dirs[d][1];
+            if (nx >= 0 && nx < m && ny >= 0 && ny < n && rooms[nx][ny] == INF) {
+                rooms[nx][ny] = rooms[x][y] + 1;
+                queue[rear][0] = nx;
+                queue[rear++][1] = ny;
+            }
+        }
+    }
+}
+
+
+
+int** mergeIntervalsHelper(int** intervals, int intervalsSize, int* intervalsColSize, int* returnSize, int** returnColumnSizes) {
+    if (intervalsSize == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+    
+    for (int i = 0; i < intervalsSize - 1; i++) {
+        for (int j = 0; j < intervalsSize - i - 1; j++) {
+            if (intervals[j][0] > intervals[j + 1][0]) {
+                int* temp = intervals[j];
+                intervals[j] = intervals[j + 1];
+                intervals[j + 1] = temp;
+            }
+        }
+    }
+    
+    int** result = (int**)malloc(intervalsSize * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(intervalsSize * sizeof(int));
+    result[0] = (int*)malloc(2 * sizeof(int));
+    result[0][0] = intervals[0][0];
+    result[0][1] = intervals[0][1];
+    (*returnColumnSizes)[0] = 2;
+    *returnSize = 1;
+    
+    for (int i = 1; i < intervalsSize; i++) {
+        if (intervals[i][0] <= result[*returnSize - 1][1]) {
+            if (intervals[i][1] > result[*returnSize - 1][1]) {
+                result[*returnSize - 1][1] = intervals[i][1];
+            }
+        } else {
+            result[*returnSize] = (int*)malloc(2 * sizeof(int));
+            result[*returnSize][0] = intervals[i][0];
+            result[*returnSize][1] = intervals[i][1];
+            (*returnColumnSizes)[*returnSize] = 2;
+            (*returnSize)++;
+        }
+    }
+    return result;
+}
+
+
+
+int** insertIntervalHelper(int** intervals, int intervalsSize, int* intervalsColSize, int* newInterval, int newIntervalSize, int* returnSize, int** returnColumnSizes) {
+    int** result = (int**)malloc((intervalsSize + 1) * sizeof(int*));
+    *returnColumnSizes = (int*)malloc((intervalsSize + 1) * sizeof(int));
+    *returnSize = 0;
+    int i = 0;
+    
+    while (i < intervalsSize && intervals[i][1] < newInterval[0]) {
+        result[*returnSize] = (int*)malloc(2 * sizeof(int));
+        result[*returnSize][0] = intervals[i][0];
+        result[*returnSize][1] = intervals[i][1];
+        (*returnColumnSizes)[*returnSize] = 2;
+        (*returnSize)++;
+        i++;
+    }
+    
+    while (i < intervalsSize && intervals[i][0] <= newInterval[1]) {
+        if (intervals[i][0] < newInterval[0]) newInterval[0] = intervals[i][0];
+        if (intervals[i][1] > newInterval[1]) newInterval[1] = intervals[i][1];
+        i++;
+    }
+    result[*returnSize] = (int*)malloc(2 * sizeof(int));
+    result[*returnSize][0] = newInterval[0];
+    result[*returnSize][1] = newInterval[1];
+    (*returnColumnSizes)[*returnSize] = 2;
+    (*returnSize)++;
+    
+    while (i < intervalsSize) {
+        result[*returnSize] = (int*)malloc(2 * sizeof(int));
+        result[*returnSize][0] = intervals[i][0];
+        result[*returnSize][1] = intervals[i][1];
+        (*returnColumnSizes)[*returnSize] = 2;
+        (*returnSize)++;
+        i++;
+    }
+    
+    return result;
+}
+
+
+
+int longestIncreasingPathDfs(int** matrix, int** cache, int m, int n, int i, int j) {
+    if (cache[i][j] != 0) return cache[i][j];
+    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    int maxLen = 1;
+    for (int d = 0; d < 4; d++) {
+        int ni = i + dirs[d][0], nj = j + dirs[d][1];
+        if (ni >= 0 && ni < m && nj >= 0 && nj < n && matrix[ni][nj] > matrix[i][j]) {
+            int len = 1 + longestIncreasingPathDfs(matrix, cache, m, n, ni, nj);
+            if (len > maxLen) maxLen = len;
+        }
+    }
+    cache[i][j] = maxLen;
+    return maxLen;
+}
+
+int longestIncreasingPathHelper(int** matrix, int matrixSize, int* matrixColSize) {
+    if (matrixSize == 0) return 0;
+    int m = matrixSize, n = matrixColSize[0];
+    int** cache = (int**)calloc(m, sizeof(int*));
+    for (int i = 0; i < m; i++) {
+        cache[i] = (int*)calloc(n, sizeof(int));
+    }
+    int maxLen = 0;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            int len = longestIncreasingPathDfs(matrix, cache, m, n, i, j);
+            if (len > maxLen) maxLen = len;
+        }
+    }
+    for (int i = 0; i < m; i++) free(cache[i]);
+    free(cache);
+    return maxLen;
+}
+
+
+
+int numEnclaves(int** grid, int gridSize, int* gridColSize) {
+    int m = gridSize, n = gridColSize[0];
+    
+    for (int i = 0; i < m; i++) {
+        if (grid[i][0] == 1) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = i; stack[top++][1] = 0;
+            grid[i][0] = 0;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                        grid[nx][ny] = 0;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+        if (grid[i][n-1] == 1) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = i; stack[top++][1] = n - 1;
+            grid[i][n-1] = 0;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                        grid[nx][ny] = 0;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+    }
+    
+    for (int j = 0; j < n; j++) {
+        if (grid[0][j] == 1) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = 0; stack[top++][1] = j;
+            grid[0][j] = 0;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                        grid[nx][ny] = 0;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+        if (grid[m-1][j] == 1) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = m - 1; stack[top++][1] = j;
+            grid[m-1][j] = 0;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 1) {
+                        grid[nx][ny] = 0;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+    }
+    
+    int count = 0;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (grid[i][j] == 1) count++;
+        }
+    }
+    return count;
+}
+
+
+
+int closedIsland(int** grid, int gridSize, int* gridColSize) {
+    int m = gridSize, n = gridColSize[0];
+    
+    for (int i = 0; i < m; i++) {
+        if (grid[i][0] == 0) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = i; stack[top++][1] = 0;
+            grid[i][0] = 1;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                        grid[nx][ny] = 1;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+        if (grid[i][n-1] == 0) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = i; stack[top++][1] = n - 1;
+            grid[i][n-1] = 1;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                        grid[nx][ny] = 1;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+    }
+    
+    for (int j = 0; j < n; j++) {
+        if (grid[0][j] == 0) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = 0; stack[top++][1] = j;
+            grid[0][j] = 1;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                        grid[nx][ny] = 1;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+        if (grid[m-1][j] == 0) {
+            int stack[m * n][2];
+            int top = 0;
+            stack[top][0] = m - 1; stack[top++][1] = j;
+            grid[m-1][j] = 1;
+            while (top > 0) {
+                int x = stack[--top][0], y = stack[top][1];
+                int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                    if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                        grid[nx][ny] = 1;
+                        stack[top][0] = nx; stack[top++][1] = ny;
+                    }
+                }
+            }
+        }
+    }
+    
+    int count = 0;
+    for (int i = 1; i < m - 1; i++) {
+        for (int j = 1; j < n - 1; j++) {
+            if (grid[i][j] == 0) {
+                count++;
+                int stack[m * n][2];
+                int top = 0;
+                stack[top][0] = i; stack[top++][1] = j;
+                grid[i][j] = 1;
+                while (top > 0) {
+                    int x = stack[--top][0], y = stack[top][1];
+                    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+                    for (int d = 0; d < 4; d++) {
+                        int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                        if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                            grid[nx][ny] = 1;
+                            stack[top][0] = nx; stack[top++][1] = ny;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+
+
+
+int canAttendMeetings(int** intervals, int intervalsSize, int* intervalsColSize) {
+    for (int i = 0; i < intervalsSize - 1; i++) {
+        for (int j = 0; j < intervalsSize - i - 1; j++) {
+            if (intervals[j][0] > intervals[j + 1][0]) {
+                int* temp = intervals[j];
+                intervals[j] = intervals[j + 1];
+                intervals[j + 1] = temp;
+            }
+        }
+    }
+    for (int i = 1; i < intervalsSize; i++) {
+        if (intervals[i][0] < intervals[i - 1][1]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+
+int eraseOverlapIntervalsHelper(int** intervals, int intervalsSize, int* intervalsColSize) {
+    if (intervalsSize == 0) return 0;
+    for (int i = 0; i < intervalsSize - 1; i++) {
+        for (int j = 0; j < intervalsSize - i - 1; j++) {
+            if (intervals[j][1] > intervals[j + 1][1]) {
+                int* temp = intervals[j];
+                intervals[j] = intervals[j + 1];
+                intervals[j + 1] = temp;
+            }
+        }
+    }
+    int count = 0;
+    int end = intervals[0][1];
+    for (int i = 1; i < intervalsSize; i++) {
+        if (intervals[i][0] < end) {
+            count++;
+        } else {
+            end = intervals[i][1];
+        }
+    }
+    return count;
+}
+
+
+
+void findCircleNumDfs(int** isConnected, int* visited, int n, int i) {
+    visited[i] = 1;
+    for (int j = 0; j < n; j++) {
+        if (isConnected[i][j] == 1 && !visited[j]) {
+            findCircleNumDfs(isConnected, visited, n, j);
+        }
+    }
+}
+
+int findCircleNumHelper(int** isConnected, int isConnectedSize, int* isConnectedColSize) {
+    int n = isConnectedSize;
+    int* visited = (int*)calloc(n, sizeof(int));
+    int count = 0;
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            findCircleNumDfs(isConnected, visited, n, i);
+            count++;
+        }
+    }
+    free(visited);
+    return count;
+}
+
+
+
+int findParent(int* parent, int x) {
+    if (parent[x] != x) {
+        parent[x] = findParent(parent, parent[x]);
+    }
+    return parent[x];
+}
+
+int* findRedundantConnectionHelper(int** edges, int edgesSize, int* edgesColSize, int* returnSize) {
+    int n = edgesSize;
+    int* parent = (int*)malloc((n + 1) * sizeof(int));
+    for (int i = 0; i <= n; i++) parent[i] = i;
+    
+    for (int i = 0; i < edgesSize; i++) {
+        int u = edges[i][0], v = edges[i][1];
+        if (findParent(parent, u) == findParent(parent, v)) {
+            int* result = (int*)malloc(2 * sizeof(int));
+            result[0] = u;
+            result[1] = v;
+            *returnSize = 2;
+            free(parent);
+            return result;
+        }
+        parent[findParent(parent, u)] = findParent(parent, v);
+    }
+    
+    free(parent);
+    *returnSize = 0;
+    return NULL;
+}
+
+
+
+int countComponentsHelper(int n, int** edges, int edgesSize, int* edgesColSize) {
+    int* parent = (int*)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) parent[i] = i;
+    int count = n;
+    
+    for (int i = 0; i < edgesSize; i++) {
+        int p1 = findParent(parent, edges[i][0]);
+        int p2 = findParent(parent, edges[i][1]);
+        if (p1 != p2) {
+            parent[p1] = p2;
+            count--;
+        }
+    }
+    
+    free(parent);
+    return count;
+}
+
+
+
+int validTreeHelper(int n, int** edges, int edgesSize, int* edgesColSize) {
+    if (edgesSize != n - 1) return 0;
+    
+    int* parent = (int*)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) parent[i] = i;
+    
+    for (int i = 0; i < edgesSize; i++) {
+        int p1 = findParent(parent, edges[i][0]);
+        int p2 = findParent(parent, edges[i][1]);
+        if (p1 == p2) {
+            free(parent);
+            return 0;
+        }
+        parent[p1] = p2;
+    }
+    
+    free(parent);
+    return 1;
+}
+
+
+
+int makeConnectedHelper(int n, int** connections, int connectionsSize, int* connectionsColSize) {
+    if (connectionsSize < n - 1) return -1;
+    
+    int* parent = (int*)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) parent[i] = i;
+    int components = n;
+    
+    for (int i = 0; i < connectionsSize; i++) {
+        int p1 = findParent(parent, connections[i][0]);
+        int p2 = findParent(parent, connections[i][1]);
+        if (p1 != p2) {
+            parent[p1] = p2;
+            components--;
+        }
+    }
+    
+    free(parent);
+    return components - 1;
+}
+
+
+
+int earliestAcqHelper(int** logs, int logsSize, int* logsColSize, int n) {
+    for (int i = 0; i < logsSize - 1; i++) {
+        for (int j = 0; j < logsSize - i - 1; j++) {
+            if (logs[j][0] > logs[j + 1][0]) {
+                int* temp = logs[j];
+                logs[j] = logs[j + 1];
+                logs[j + 1] = temp;
+            }
+        }
+    }
+    
+    int* parent = (int*)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) parent[i] = i;
+    int groups = n;
+    
+    for (int i = 0; i < logsSize; i++) {
+        int p1 = findParent(parent, logs[i][1]);
+        int p2 = findParent(parent, logs[i][2]);
+        if (p1 != p2) {
+            parent[p1] = p2;
+            groups--;
+            if (groups == 1) {
+                int result = logs[i][0];
+                free(parent);
+                return result;
+            }
+        }
+    }
+    
+    free(parent);
+    return -1;
+}
+
+
+
+int shortestPathBinaryMatrix(int** grid, int gridSize, int* gridColSize) {
+    int n = gridSize;
+    if (grid[0][0] == 1 || grid[n-1][n-1] == 1) return -1;
+    
+    int dirs[8][2] = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
+    int queue[n * n][3];
+    int front = 0, rear = 0;
+    queue[rear][0] = 0;
+    queue[rear][1] = 0;
+    queue[rear++][2] = 1;
+    grid[0][0] = 1;
+    
+    while (front < rear) {
+        int x = queue[front][0], y = queue[front][1], dist = queue[front++][2];
+        if (x == n - 1 && y == n - 1) return dist;
+        for (int d = 0; d < 8; d++) {
+            int nx = x + dirs[d][0], ny = y + dirs[d][1];
+            if (nx >= 0 && nx < n && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                grid[nx][ny] = 1;
+                queue[rear][0] = nx;
+                queue[rear][1] = ny;
+                queue[rear++][2] = dist + 1;
+            }
+        }
+    }
+    return -1;
+}
+
+
+
+void allPathsDfs(int** graph, int* graphColSize, int n, int node, int* path, int pathLen, int*** result, int* returnSize, int** returnColumnSizes) {
+    path[pathLen++] = node;
+    if (node == n - 1) {
+        (*result)[*returnSize] = (int*)malloc(pathLen * sizeof(int));
+        for (int i = 0; i < pathLen; i++) {
+            (*result)[*returnSize][i] = path[i];
+        }
+        (*returnColumnSizes)[*returnSize] = pathLen;
+        (*returnSize)++;
+        return;
+    }
+    for (int i = 0; i < graphColSize[node]; i++) {
+        allPathsDfs(graph, graphColSize, n, graph[node][i], path, pathLen, result, returnSize, returnColumnSizes);
+    }
+}
+
+int** allPathsSourceTargetHelper(int** graph, int graphSize, int* graphColSize, int* returnSize, int** returnColumnSizes) {
+    int maxPaths = 1000;
+    int** result = (int**)malloc(maxPaths * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(maxPaths * sizeof(int));
+    *returnSize = 0;
+    int* path = (int*)malloc(graphSize * sizeof(int));
+    allPathsDfs(graph, graphColSize, graphSize, 0, path, 0, &result, returnSize, returnColumnSizes);
+    free(path);
+    return result;
+}
+
+
+
+void shortestBridgeDfs(int** grid, int m, int n, int i, int j, int** queue, int* rear) {
+    if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != 1) return;
+    grid[i][j] = 2;
+    queue[*rear][0] = i;
+    queue[(*rear)++][1] = j;
+    shortestBridgeDfs(grid, m, n, i + 1, j, queue, rear);
+    shortestBridgeDfs(grid, m, n, i - 1, j, queue, rear);
+    shortestBridgeDfs(grid, m, n, i, j + 1, queue, rear);
+    shortestBridgeDfs(grid, m, n, i, j - 1, queue, rear);
+}
+
+int shortestBridgeHelper(int** grid, int gridSize, int* gridColSize) {
+    int m = gridSize, n = gridColSize[0];
+    int** queue = (int**)malloc(m * n * sizeof(int*));
+    for (int i = 0; i < m * n; i++) {
+        queue[i] = (int*)malloc(2 * sizeof(int));
+    }
+    int front = 0, rear = 0;
+    int found = 0;
+    for (int i = 0; i < m && !found; i++) {
+        for (int j = 0; j < n && !found; j++) {
+            if (grid[i][j] == 1) {
+                shortestBridgeDfs(grid, m, n, i, j, queue, &rear);
+                found = 1;
+            }
+        }
+    }
+    int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    int steps = 0;
+    while (front < rear) {
+        int size = rear - front;
+        for (int i = 0; i < size; i++) {
+            int x = queue[front][0], y = queue[front++][1];
+            for (int d = 0; d < 4; d++) {
+                int nx = x + dirs[d][0], ny = y + dirs[d][1];
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n) {
+                    if (grid[nx][ny] == 1) {
+                        for (int k = 0; k < m * n; k++) free(queue[k]);
+                        free(queue);
+                        return steps;
+                    }
+                    if (grid[nx][ny] == 0) {
+                        grid[nx][ny] = 2;
+                        queue[rear][0] = nx;
+                        queue[rear++][1] = ny;
+                    }
+                }
+            }
+        }
+        steps++;
+    }
+    for (int k = 0; k < m * n; k++) free(queue[k]);
+    free(queue);
+    return -1;
+}
+
+
+
+int** colorBorderHelper(int** grid, int gridSize, int* gridColSize, int row, int col, int color, int* returnSize, int** returnColumnSizes) {
+    int m = gridSize, n = gridColSize[0];
+    int originalColor = grid[row][col];
+    int** visited = (int**)calloc(m, sizeof(int*));
+    for (int i = 0; i < m; i++) visited[i] = (int*)calloc(n, sizeof(int));
+    
+    int** borders = (int**)malloc(m * n * sizeof(int*));
+    int borderCount = 0;
+    
+    int stack[m * n][2];
+    int top = 0;
+    stack[top][0] = row;
+    stack[top++][1] = col;
+    
+    while (top > 0) {
+        int x = stack[--top][0], y = stack[top][1];
+        if (visited[x][y]) continue;
+        visited[x][y] = 1;
+        
+        int isBorder = 0;
+        int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dirs[d][0], ny = y + dirs[d][1];
+            if (nx < 0 || nx >= m || ny < 0 || ny >= n || grid[nx][ny] != originalColor) {
+                isBorder = 1;
+            } else if (!visited[nx][ny]) {
+                stack[top][0] = nx;
+                stack[top++][1] = ny;
+            }
+        }
+        if (isBorder) {
+            borders[borderCount] = (int*)malloc(2 * sizeof(int));
+            borders[borderCount][0] = x;
+            borders[borderCount++][1] = y;
+        }
+    }
+    
+    for (int i = 0; i < borderCount; i++) {
+        grid[borders[i][0]][borders[i][1]] = color;
+        free(borders[i]);
+    }
+    free(borders);
+    for (int i = 0; i < m; i++) free(visited[i]);
+    free(visited);
+    
+    *returnSize = gridSize;
+    *returnColumnSizes = gridColSize;
+    return grid;
+}

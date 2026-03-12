@@ -1,0 +1,44 @@
+[
+    {
+        "id": 1,
+        "title": "debounce",
+        "category": "function",
+        "code": "const debounce = (func, wait) => {\n  let timeout\n  return function executedFunction(...args) {\n    const later = () => {\n      clearTimeout(timeout)\n      func(...args)\n    }\n    clearTimeout(timeout)\n    timeout = setTimeout(later, wait)\n  }\n}"
+    },
+    {
+        "id": 2,
+        "title": "throttle",
+        "category": "function",
+        "code": "const throttle = (func, limit) => {\n  let inThrottle\n  return function(...args) {\n    if (!inThrottle) {\n      func.apply(this, args)\n      inThrottle = true\n      setTimeout(() => inThrottle = false, limit)\n    }\n  }\n}"
+    },
+    {
+        "id": 3,
+        "title": "deepClone",
+        "category": "function",
+        "code": "const deepClone = (obj) => {\n  if (obj === null || typeof obj !== 'object') {\n    return obj\n  }\n  if (Array.isArray(obj)) {\n    return obj.map(item => deepClone(item))\n  }\n  const cloned = {}\n  for (const key in obj) {\n    cloned[key] = deepClone(obj[key])\n  }\n  return cloned\n}"
+    },
+    {
+        "id": 4,
+        "title": "memoize",
+        "category": "function",
+        "code": "const memoize = (fn) => {\n  const cache = new Map()\n  return (...args) => {\n    const key = JSON.stringify(args)\n    if (cache.has(key)) {\n      return cache.get(key)\n    }\n    const result = fn(...args)\n    cache.set(key, result)\n    return result\n  }\n}"
+    },
+    {
+        "id": 5,
+        "title": "quickSort",
+        "category": "algorithm",
+        "code": "const quickSort = (arr) => {\n  if (arr.length <= 1) return arr\n  const pivot = arr[Math.floor(arr.length / 2)]\n  const left = arr.filter(x => x < pivot)\n  const middle = arr.filter(x => x === pivot)\n  const right = arr.filter(x => x > pivot)\n  return [...quickSort(left), ...middle, ...quickSort(right)]\n}"
+    },
+    {
+        "id": 6,
+        "title": "binarySearch",
+        "category": "algorithm",
+        "code": "const binarySearch = (arr, target) => {\n  let left = 0\n  let right = arr.length - 1\n  while (left <= right) {\n    const mid = Math.floor((left + right) / 2)\n    if (arr[mid] === target) return mid\n    if (arr[mid] < target) left = mid + 1\n    else right = mid - 1\n  }\n  return -1\n}"
+    },
+    {
+        "id": 7,
+        "title": "LinkedList",
+        "category": "data-structure",
+        "code": "class LinkedList {\n  constructor() {\n    this.head = null\n    this.size = 0\n  }\n  add(value) {\n    const node = { value, next: null }\n    if (!this.head) {\n      this.head = node\n    } else {\n      let current = this.head\n      while (current.next) {\n        current = current.next\n      }\n      current.next = node\n    }\n    this.size++\n  }\n}"
+    }
+]

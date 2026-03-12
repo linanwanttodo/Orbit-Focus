@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "title": "decorator",
+        "category": "function",
+        "code": "def timer_decorator(func):\n    import time\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        result = func(*args, **kwargs)\n        end = time.time()\n        print(f\"{func.__name__} took {end - start:.2f}s\")\n        return result\n    return wrapper"
+    },
+    {
+        "id": 2,
+        "title": "quicksort",
+        "category": "algorithm",
+        "code": "def quicksort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)"
+    },
+    {
+        "id": 3,
+        "title": "binary_search",
+        "category": "algorithm",
+        "code": "def binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1"
+    },
+    {
+        "id": 4,
+        "title": "LinkedList",
+        "category": "data-structure",
+        "code": "class Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None\n\nclass LinkedList:\n    def __init__(self):\n        self.head = None\n\n    def append(self, data):\n        new_node = Node(data)\n        if not self.head:\n            self.head = new_node\n            return\n        current = self.head\n        while current.next:\n            current = current.next\n        current.next = new_node"
+    },
+    {
+        "id": 5,
+        "title": "fibonacci",
+        "category": "algorithm",
+        "code": "def fibonacci(n, memo={}):\n    if n in memo:\n        return memo[n]\n    if n <= 1:\n        return n\n    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n    return memo[n]"
+    },
+    {
+        "id": 6,
+        "title": "context_manager",
+        "category": "function",
+        "code": "from contextlib import contextmanager\n\n@contextmanager\ndef file_manager(filename, mode):\n    f = open(filename, mode)\n    try:\n        yield f\n    finally:\n        f.close()"
+    }
+]

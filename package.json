@@ -1,0 +1,94 @@
+{
+    "name": "orbit-focus",
+    "version": "1.0.0",
+    "description": "Orbit Focus - A full-stack pomodoro timer application",
+    "private": true,
+    "workspaces": [
+        "client",
+        "server"
+    ],
+    "main": "dist-electron/electron/main.js",
+    "scripts": {
+        "dev": "npm run build:electron && (npm run dev:client & npm run electron:dev)",
+        "dev:client": "npm run dev --workspace=client",
+        "dev:server": "npm run dev --workspace=server",
+        "build": "npm run build:client && npm run build:server && npm run build:electron",
+        "build:client": "npm run build --workspace=client",
+        "build:server": "npm run build --workspace=server",
+        "build:electron": "tsc -p electron/tsconfig.json",
+        "install:all": "npm install && npm install --workspace=client && npm install --workspace=server",
+        "electron:dev": "NODE_ENV=development electron .",
+        "electron:build": "npm run build:client && npm run build:electron && electron-builder",
+        "electron:build:win": "npm run build:client && npm run build:electron && electron-builder --win",
+        "electron:build:mac": "npm run build:client && npm run build:electron && electron-builder --mac",
+        "electron:build:linux": "npm run build:client && npm run build:electron && electron-builder --linux"
+    },
+    "build": {
+        "appId": "com.orbitfocus.app",
+        "productName": "Orbit Focus",
+        "directories": {
+            "output": "dist-electron"
+        },
+        "files": [
+            "electron/**/*",
+            "client/dist/**/*"
+        ],
+        "win": {
+            "target": "nsis",
+            "icon": "build/icon.ico"
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "build/icon-1024.png"
+        },
+        "linux": {
+            "target": ["deb", "pacman", "AppImage"],
+            "icon": "build/icon.png",
+            "category": "Utility",
+            "desktop": {
+                "Name": "Orbit Focus",
+                "Comment": "A pomodoro timer application to boost productivity",
+                "Categories": "Utility;Office"
+            },
+            "deb": {
+                "depends": ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils", "libatspi2.0-21", "libdrm2", "libgbm1"],
+                "maintainer": "linan <linanwanttodo@gmail.com>",
+                "packageCategory": "utils"
+            },
+            "pacman": {
+                "depends": ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-atk", "libdrm", "mesa"],
+                "maintainer": "linan <linanwanttodo@gmail.com>"
+            }
+        }
+    },
+    "keywords": [
+        "pomodoro",
+        "timer",
+        "productivity",
+        "react",
+        "nodejs",
+        "express",
+        "electron"
+    ],
+    "author": "linan <linanwanttodo@gmail.com> (https://github.com/linanwanttodo)",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^39.2.7",
+        "electron-builder": "^26.4.0",
+        "electron-rebuild": "^3.2.9",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@types/uuid": "^10.0.0",
+        "bcryptjs": "^3.0.3",
+        "better-sqlite3": "^12.6.0",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "get-port": "^7.0.0",
+        "jsonwebtoken": "^9.0.3",
+        "ts-node": "^10.9.2",
+        "uuid": "^13.0.0",
+        "ws": "^8.19.0"
+    }
+}

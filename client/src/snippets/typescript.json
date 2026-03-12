@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "deepClone",
+        "category": "function",
+        "code": "const deepClone = <T>(obj: T): T => {\n  if (obj === null || typeof obj !== 'object') {\n    return obj\n  }\n  if (Array.isArray(obj)) {\n    return obj.map(item => deepClone(item)) as T\n  }\n  const cloned = {} as T\n  for (const key in obj) {\n    cloned[key] = deepClone(obj[key])\n  }\n  return cloned\n}"
+    },
+    {
+        "id": 2,
+        "title": "debounce",
+        "category": "function",
+        "code": "function debounce<T extends (...args: any[]) => any>(\n  func: T,\n  wait: number\n): (...args: Parameters<T>) => void {\n  let timeout: ReturnType<typeof setTimeout> | null = null\n  return (...args: Parameters<T>) => {\n    if (timeout) clearTimeout(timeout)\n    timeout = setTimeout(() => func(...args), wait)\n  }\n}"
+    },
+    {
+        "id": 3,
+        "title": "User Interface",
+        "category": "data-structure",
+        "code": "interface User {\n  id: number\n  name: string\n  email: string\n  createdAt: Date\n  roles: string[]\n}\n\nconst getUser = async (id: number): Promise<User> => {\n  const response = await fetch(`/api/users/${id}`)\n  return response.json()\n}"
+    },
+    {
+        "id": 4,
+        "title": "Generic Stack",
+        "category": "data-structure",
+        "code": "class Stack<T> {\n  private items: T[] = []\n\n  push(item: T): void {\n    this.items.push(item)\n  }\n\n  pop(): T | undefined {\n    return this.items.pop()\n  }\n\n  peek(): T | undefined {\n    return this.items[this.items.length - 1]\n  }\n\n  isEmpty(): boolean {\n    return this.items.length === 0\n  }\n}"
+    },
+    {
+        "id": 5,
+        "title": "mergeSort",
+        "category": "algorithm",
+        "code": "function mergeSort<T>(arr: T[]): T[] {\n  if (arr.length <= 1) return arr\n  const mid = Math.floor(arr.length / 2)\n  const left = mergeSort(arr.slice(0, mid))\n  const right = mergeSort(arr.slice(mid))\n  return merge(left, right)\n}\n\nfunction merge<T>(left: T[], right: T[]): T[] {\n  const result: T[] = []\n  while (left.length && right.length) {\n    result.push(left[0] < right[0] ? left.shift()! : right.shift()!)\n  }\n  return [...result, ...left, ...right]\n}"
+    }
+]

@@ -1,0 +1,3474 @@
+fn divide(a: f64, b: f64) -> Result<f64, String> {
+    if b == 0.0 {
+        Err(String::from("Division by zero"))
+    } else {
+        Ok(a / b)
+    }
+}
+
+
+
+fn filter_and_transform(nums: Vec<i32>) -> Vec<i32> {
+    nums.iter()
+        .filter(|&x| x % 2 == 0)
+        .map(|x| x * x)
+        .collect()
+}
+
+
+
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn new(width: u32, height: u32) -> Self {
+        Rectangle { width, height }
+    }
+
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+
+
+fn find_element(arr: &[i32], target: i32) -> Option<usize> {
+    for (i, &item) in arr.iter().enumerate() {
+        if item == target {
+            return Some(i);
+        }
+    }
+    None
+}
+
+
+
+trait Summary {
+    fn summarize(&self) -> String;
+}
+
+struct Article {
+    title: String,
+    author: String,
+    content: String,
+}
+
+impl Summary for Article {
+    fn summarize(&self) -> String {
+        format!("{} by {}", self.title, self.author)
+    }
+}
+
+
+
+fn binary_search<T: Ord>(arr: &[T], target: &T) -> Option<usize> {
+    let mut left = 0;
+    let mut right = arr.len();
+    while left < right {
+        let mid = left + (right - left) / 2;
+        match arr[mid].cmp(target) {
+            std::cmp::Ordering::Equal => return Some(mid),
+            std::cmp::Ordering::Less => left = mid + 1,
+            std::cmp::Ordering::Greater => right = mid,
+        }
+    }
+    None
+}
+
+
+
+fn quicksort<T: Ord + Clone>(arr: &mut [T]) {
+    if arr.len() <= 1 {
+        return;
+    }
+    let pivot_idx = partition(arr);
+    quicksort(&mut arr[..pivot_idx]);
+    quicksort(&mut arr[pivot_idx + 1..]);
+}
+
+fn partition<T: Ord + Clone>(arr: &mut [T]) -> usize {
+    let pivot = arr[arr.len() - 1].clone();
+    let mut i = 0;
+    for j in 0..arr.len() - 1 {
+        if arr[j] <= pivot {
+            arr.swap(i, j);
+            i += 1;
+        }
+    }
+    arr.swap(i, arr.len() - 1);
+    i
+}
+
+
+
+fn merge_sort<T: Ord + Clone>(arr: &mut [T]) {
+    if arr.len() <= 1 {
+        return;
+    }
+    let mid = arr.len() / 2;
+    merge_sort(&mut arr[..mid]);
+    merge_sort(&mut arr[mid..]);
+    let merged = merge(&arr[..mid], &arr[mid..]);
+    arr.clone_from_slice(&merged);
+}
+
+fn merge<T: Ord + Clone>(left: &[T], right: &[T]) -> Vec<T> {
+    let mut result = Vec::with_capacity(left.len() + right.len());
+    let (mut i, mut j) = (0, 0);
+    while i < left.len() && j < right.len() {
+        if left[i] <= right[j] {
+            result.push(left[i].clone());
+            i += 1;
+        } else {
+            result.push(right[j].clone());
+            j += 1;
+        }
+    }
+    result.extend_from_slice(&left[i..]);
+    result.extend_from_slice(&right[j..]);
+    result
+}
+
+
+
+struct Stack<T> {
+    items: Vec<T>,
+}
+
+impl<T> Stack<T> {
+    fn new() -> Self {
+        Stack { items: Vec::new() }
+    }
+
+    fn push(&mut self, item: T) {
+        self.items.push(item);
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        self.items.pop()
+    }
+
+    fn peek(&self) -> Option<&T> {
+        self.items.last()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+}
+
+
+
+struct Queue<T> {
+    items: Vec<T>,
+}
+
+impl<T> Queue<T> {
+    fn new() -> Self {
+        Queue { items: Vec::new() }
+    }
+
+    fn enqueue(&mut self, item: T) {
+        self.items.push(item);
+    }
+
+    fn dequeue(&mut self) -> Option<T> {
+        if self.items.is_empty() {
+            None
+        } else {
+            Some(self.items.remove(0))
+        }
+    }
+
+    fn front(&self) -> Option<&T> {
+        self.items.first()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+}
+
+
+
+struct Node<T> {
+    value: T,
+    next: Option<Box<Node<T>>>,
+}
+
+struct LinkedList<T> {
+    head: Option<Box<Node<T>>>,
+}
+
+impl<T> LinkedList<T> {
+    fn new() -> Self {
+        LinkedList { head: None }
+    }
+
+    fn push(&mut self, value: T) {
+        let new_node = Box::new(Node {
+            value,
+            next: self.head.take(),
+        });
+        self.head = Some(new_node);
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        self.head.take().map(|node| {
+            self.head = node.next;
+            node.value
+        })
+    }
+}
+
+
+
+use std::collections::HashMap;
+
+fn two_sum(nums: &[i32], target: i32) -> Option<(usize, usize)> {
+    let mut map: HashMap<i32, usize> = HashMap::new();
+    for (i, &num) in nums.iter().enumerate() {
+        let complement = target - num;
+        if let Some(&j) = map.get(&complement) {
+            return Some((j, i));
+        }
+        map.insert(num, i);
+    }
+    None
+}
+
+
+
+fn is_palindrome(s: &str) -> bool {
+    let cleaned: String = s.chars()
+        .filter(|c| c.is_alphanumeric())
+        .map(|c| c.to_lowercase().next().unwrap())
+        .collect();
+    cleaned == cleaned.chars().rev().collect::<String>()
+}
+
+
+
+fn fibonacci(n: u64) -> u64 {
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => {
+            let mut prev = 0;
+            let mut curr = 1;
+            for _ in 2..=n {
+                let next = prev + curr;
+                prev = curr;
+                curr = next;
+            }
+            curr
+        }
+    }
+}
+
+
+
+fn factorial(n: u64) -> u64 {
+    match n {
+        0 | 1 => 1,
+        _ => n * factorial(n - 1),
+    }
+}
+
+
+
+fn is_prime(n: u64) -> bool {
+    if n <= 1 {
+        return false;
+    }
+    if n <= 3 {
+        return true;
+    }
+    if n % 2 == 0 || n % 3 == 0 {
+        return false;
+    }
+    let mut i = 5;
+    while i * i <= n {
+        if n % i == 0 || n % (i + 2) == 0 {
+            return false;
+        }
+        i += 6;
+    }
+    true
+}
+
+
+
+fn gcd(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+
+
+fn lcm(a: u64, b: u64) -> u64 {
+    a * b / gcd(a, b)
+}
+
+
+
+fn max_subarray(nums: &[i32]) -> i32 {
+    let mut max_sum = nums[0];
+    let mut current_sum = nums[0];
+    for &num in &nums[1..] {
+        current_sum = std::cmp::max(num, current_sum + num);
+        max_sum = std::cmp::max(max_sum, current_sum);
+    }
+    max_sum
+}
+
+
+
+fn climb_stairs(n: u32) -> u32 {
+    if n <= 2 {
+        return n;
+    }
+    let mut prev = 1;
+    let mut curr = 2;
+    for _ in 3..=n {
+        let next = prev + curr;
+        prev = curr;
+        curr = next;
+    }
+    curr
+}
+
+
+
+fn coin_change(coins: &[i32], amount: i32) -> i32 {
+    let mut dp = vec![i32::MAX; (amount + 1) as usize];
+    dp[0] = 0;
+    for i in 1..=amount as usize {
+        for &coin in coins {
+            if coin as usize <= i && dp[i - coin as usize] != i32::MAX {
+                dp[i] = std::cmp::min(dp[i], dp[i - coin as usize] + 1);
+            }
+        }
+    }
+    if dp[amount as usize] == i32::MAX {
+        -1
+    } else {
+        dp[amount as usize]
+    }
+}
+
+
+
+fn is_valid_parentheses(s: &str) -> bool {
+    let mut stack = Vec::new();
+    for c in s.chars() {
+        match c {
+            '(' | '[' | '{' => stack.push(c),
+            ')' => {
+                if stack.pop() != Some('(') {
+                    return false;
+                }
+            }
+            ']' => {
+                if stack.pop() != Some('[') {
+                    return false;
+                }
+            }
+            '}' => {
+                if stack.pop() != Some('{') {
+                    return false;
+                }
+            }
+            _ => {}
+        }
+    }
+    stack.is_empty()
+}
+
+
+
+fn reverse_string(s: &str) -> String {
+    s.chars().rev().collect()
+}
+
+
+
+fn count_vowels(s: &str) -> usize {
+    s.chars()
+        .filter(|c| "aeiouAEIOU".contains(*c))
+        .count()
+}
+
+
+
+fn chunk<T: Clone>(arr: &[T], size: usize) -> Vec<Vec<T>> {
+    arr.chunks(size)
+        .map(|chunk| chunk.to_vec())
+        .collect()
+}
+
+
+
+fn flatten<T: Clone>(arr: &[Vec<T>]) -> Vec<T> {
+    arr.iter().flat_map(|v| v.clone()).collect()
+}
+
+
+
+fn unique<T: Eq + std::hash::Hash + Clone>(arr: &[T]) -> Vec<T> {
+    let mut seen = std::collections::HashSet::new();
+    arr.iter()
+        .filter(|x| seen.insert((*x).clone()))
+        .cloned()
+        .collect()
+}
+
+
+
+fn group_by<T, K, F>(arr: &[T], key_fn: F) -> HashMap<K, Vec<&T>>
+where
+    K: Eq + std::hash::Hash,
+    F: Fn(&T) -> K,
+{
+    let mut result: HashMap<K, Vec<&T>> = HashMap::new();
+    for item in arr {
+        let key = key_fn(item);
+        result.entry(key).or_insert_with(Vec::new).push(item);
+    }
+    result
+}
+
+
+
+fn partition<T, F>(arr: Vec<T>, predicate: F) -> (Vec<T>, Vec<T>)
+where
+    F: Fn(&T) -> bool,
+{
+    let mut true_vec = Vec::new();
+    let mut false_vec = Vec::new();
+    for item in arr {
+        if predicate(&item) {
+            true_vec.push(item);
+        } else {
+            false_vec.push(item);
+        }
+    }
+    (true_vec, false_vec)
+}
+
+
+
+fn intersection<T: Eq + std::hash::Hash + Clone>(a: &[T], b: &[T]) -> Vec<T> {
+    let set_b: std::collections::HashSet<_> = b.iter().collect();
+    a.iter()
+        .filter(|x| set_b.contains(x))
+        .cloned()
+        .collect()
+}
+
+
+
+fn difference<T: Eq + std::hash::Hash + Clone>(a: &[T], b: &[T]) -> Vec<T> {
+    let set_b: std::collections::HashSet<_> = b.iter().collect();
+    a.iter()
+        .filter(|x| !set_b.contains(x))
+        .cloned()
+        .collect()
+}
+
+
+
+fn shuffle<T>(arr: &mut [T]) {
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+    for i in (1..arr.len()).rev() {
+        let j = rng.gen_range(0..=i);
+        arr.swap(i, j);
+    }
+}
+
+
+
+fn clamp<T: Ord>(value: T, min: T, max: T) -> T {
+    if value < min {
+        min
+    } else if value > max {
+        max
+    } else {
+        value
+    }
+}
+
+
+
+async fn fetch_url(url: &str) -> Result<String, reqwest::Error> {
+    let response = reqwest::get(url).await?;
+    let body = response.text().await?;
+    Ok(body)
+}
+
+
+
+async fn retry_async<T, E, F, Fut>(
+    mut f: F,
+    max_retries: u32,
+    delay_ms: u64,
+) -> Result<T, E>
+where
+    F: FnMut() -> Fut,
+    Fut: std::future::Future<Output = Result<T, E>>,
+{
+    for _ in 0..max_retries {
+        match f().await {
+            Ok(value) => return Ok(value),
+            Err(_) => {
+                tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
+            }
+        }
+    }
+    f().await
+}
+
+
+
+struct LRUCache<K, V> {
+    capacity: usize,
+    cache: std::collections::HashMap<K, V>,
+    order: Vec<K>,
+}
+
+impl<K: Eq + std::hash::Hash + Clone, V> LRUCache<K, V> {
+    fn new(capacity: usize) -> Self {
+        LRUCache {
+            capacity,
+            cache: std::collections::HashMap::new(),
+            order: Vec::new(),
+        }
+    }
+
+    fn get(&mut self, key: &K) -> Option<&V> {
+        if self.cache.contains_key(key) {
+            self.order.retain(|k| k != key);
+            self.order.push(key.clone());
+            self.cache.get(key)
+        } else {
+            None
+        }
+    }
+
+    fn put(&mut self, key: K, value: V) {
+        if self.cache.contains_key(&key) {
+            self.order.retain(|k| k != &key);
+        } else if self.cache.len() >= self.capacity {
+            if let Some(oldest) = self.order.first().cloned() {
+                self.cache.remove(&oldest);
+                self.order.remove(0);
+            }
+        }
+        self.cache.insert(key.clone(), value);
+        self.order.push(key);
+    }
+}
+
+
+
+pub fn spiral_order(matrix: Vec<Vec<i32>>) -> Vec<i32> {
+    if matrix.is_empty() {
+        return vec![];
+    }
+    let mut result = Vec::new();
+    let (mut top, mut bottom) = (0i32, matrix.len() as i32 - 1);
+    let (mut left, mut right) = (0i32, matrix[0].len() as i32 - 1);
+    
+    while top <= bottom && left <= right {
+        for i in left..=right {
+            result.push(matrix[top as usize][i as usize]);
+        }
+        top += 1;
+        for i in top..=bottom {
+            result.push(matrix[i as usize][right as usize]);
+        }
+        right -= 1;
+        if top <= bottom {
+            for i in (left..=right).rev() {
+                result.push(matrix[bottom as usize][i as usize]);
+            }
+            bottom -= 1;
+        }
+        if left <= right {
+            for i in (top..=bottom).rev() {
+                result.push(matrix[i as usize][left as usize]);
+            }
+            left += 1;
+        }
+    }
+    result
+}
+
+
+
+pub fn merge_intervals(mut intervals: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    if intervals.len() <= 1 {
+        return intervals;
+    }
+    intervals.sort_by_key(|a| a[0]);
+    let mut result: Vec<Vec<i32>> = vec![intervals[0].clone()];
+    
+    for interval in intervals.iter().skip(1) {
+        let last = result.last_mut().unwrap();
+        if interval[0] <= last[1] {
+            last[1] = last[1].max(interval[1]);
+        } else {
+            result.push(interval.clone());
+        }
+    }
+    result
+}
+
+
+
+pub fn trap(height: Vec<i32>) -> i32 {
+    if height.is_empty() {
+        return 0;
+    }
+    let (mut left, mut right) = (0, height.len() - 1);
+    let (mut left_max, mut right_max) = (0, 0);
+    let mut result = 0;
+    
+    while left < right {
+        if height[left] < height[right] {
+            if height[left] >= left_max {
+                left_max = height[left];
+            } else {
+                result += left_max - height[left];
+            }
+            left += 1;
+        } else {
+            if height[right] >= right_max {
+                right_max = height[right];
+            } else {
+                result += right_max - height[right];
+            }
+            right -= 1;
+        }
+    }
+    result
+}
+
+
+
+pub fn largest_rectangle_area(heights: Vec<i32>) -> i32 {
+    let mut stack: Vec<usize> = Vec::new();
+    let mut max_area = 0;
+    let mut heights = heights;
+    heights.push(0);
+    
+    for i in 0..heights.len() {
+        while !stack.is_empty() && heights[*stack.last().unwrap()] > heights[i] {
+            let h = heights[stack.pop().unwrap()];
+            let w = if stack.is_empty() {
+                i as i32
+            } else {
+                (i - stack.last().unwrap() - 1) as i32
+            };
+            max_area = max_area.max(h * w);
+        }
+        stack.push(i);
+    }
+    max_area
+}
+
+
+
+pub fn next_greater_element(nums: Vec<i32>) -> Vec<i32> {
+    let n = nums.len();
+    let mut result = vec![-1; n];
+    let mut stack: Vec<usize> = Vec::new();
+    
+    for i in 0..n {
+        while !stack.is_empty() && nums[*stack.last().unwrap()] < nums[i] {
+            let idx = stack.pop().unwrap();
+            result[idx] = nums[i];
+        }
+        stack.push(i);
+    }
+    result
+}
+
+
+
+pub fn daily_temperatures(temperatures: Vec<i32>) -> Vec<i32> {
+    let n = temperatures.len();
+    let mut result = vec![0; n];
+    let mut stack: Vec<usize> = Vec::new();
+    
+    for i in 0..n {
+        while !stack.is_empty() && temperatures[*stack.last().unwrap()] < temperatures[i] {
+            let prev_idx = stack.pop().unwrap();
+            result[prev_idx] = (i - prev_idx) as i32;
+        }
+        stack.push(i);
+    }
+    result
+}
+
+
+
+pub fn length_of_longest_substring(s: String) -> i32 {
+    use std::collections::HashMap;
+    let mut seen: HashMap<char, usize> = HashMap::new();
+    let chars: Vec<char> = s.chars().collect();
+    let (mut max_len, mut start) = (0, 0);
+    
+    for (i, &c) in chars.iter().enumerate() {
+        if let Some(&pos) = seen.get(&c) {
+            if pos >= start {
+                start = pos + 1;
+            }
+        }
+        seen.insert(c, i);
+        max_len = max_len.max(i - start + 1);
+    }
+    max_len as i32
+}
+
+
+
+pub fn longest_palindrome(s: String) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    let n = chars.len();
+    if n < 2 {
+        return s;
+    }
+    
+    let (mut start, mut max_len) = (0, 1);
+    
+    let expand = |left: i32, right: i32| -> (usize, usize) {
+        let (mut l, mut r) = (left, right);
+        while l >= 0 && (r as usize) < n && chars[l as usize] == chars[r as usize] {
+            l -= 1;
+            r += 1;
+        }
+        ((l + 1) as usize, (r - l - 1) as usize)
+    };
+    
+    for i in 0..n {
+        let (s1, l1) = expand(i as i32, i as i32);
+        let (s2, l2) = expand(i as i32, (i + 1) as i32);
+        if l1 > max_len {
+            start = s1;
+            max_len = l1;
+        }
+        if l2 > max_len {
+            start = s2;
+            max_len = l2;
+        }
+    }
+    chars[start..start + max_len].iter().collect()
+}
+
+
+
+pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
+    use std::collections::HashMap;
+    let mut groups: HashMap<Vec<char>, Vec<String>> = HashMap::new();
+    
+    for s in strs {
+        let mut key: Vec<char> = s.chars().collect();
+        key.sort();
+        groups.entry(key).or_insert_with(Vec::new).push(s);
+    }
+    groups.into_values().collect()
+}
+
+
+
+pub fn word_break(s: String, word_dict: Vec<String>) -> bool {
+    use std::collections::HashSet;
+    let word_set: HashSet<String> = word_dict.into_iter().collect();
+    let n = s.len();
+    let mut dp = vec![false; n + 1];
+    dp[0] = true;
+    
+    for i in 1..=n {
+        for j in 0..i {
+            if dp[j] && word_set.contains(&s[j..i]) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    dp[n]
+}
+
+
+
+pub fn min_path_sum(grid: Vec<Vec<i32>>) -> i32 {
+    let (m, n) = (grid.len(), grid[0].len());
+    let mut dp = vec![vec![0; n]; m];
+    dp[0][0] = grid[0][0];
+    
+    for i in 1..m {
+        dp[i][0] = dp[i - 1][0] + grid[i][0];
+    }
+    for j in 1..n {
+        dp[0][j] = dp[0][j - 1] + grid[0][j];
+    }
+    for i in 1..m {
+        for j in 1..n {
+            dp[i][j] = dp[i - 1][j].min(dp[i][j - 1]) + grid[i][j];
+        }
+    }
+    dp[m - 1][n - 1]
+}
+
+
+
+pub fn edit_distance(word1: String, word2: String) -> i32 {
+    let (m, n) = (word1.len(), word2.len());
+    let chars1: Vec<char> = word1.chars().collect();
+    let chars2: Vec<char> = word2.chars().collect();
+    let mut dp = vec![vec![0; n + 1]; m + 1];
+    
+    for i in 0..=m {
+        dp[i][0] = i as i32;
+    }
+    for j in 0..=n {
+        dp[0][j] = j as i32;
+    }
+    
+    for i in 1..=m {
+        for j in 1..=n {
+            if chars1[i - 1] == chars2[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = 1 + dp[i - 1][j - 1].min(dp[i - 1][j]).min(dp[i][j - 1]);
+            }
+        }
+    }
+    dp[m][n]
+}
+
+
+
+pub fn longest_common_subsequence(text1: String, text2: String) -> i32 {
+    let (m, n) = (text1.len(), text2.len());
+    let chars1: Vec<char> = text1.chars().collect();
+    let chars2: Vec<char> = text2.chars().collect();
+    let mut dp = vec![vec![0; n + 1]; m + 1];
+    
+    for i in 1..=m {
+        for j in 1..=n {
+            if chars1[i - 1] == chars2[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = dp[i - 1][j].max(dp[i][j - 1]);
+            }
+        }
+    }
+    dp[m][n]
+}
+
+
+
+pub fn generate_parenthesis(n: i32) -> Vec<String> {
+    let mut result = Vec::new();
+    
+    fn backtrack(result: &mut Vec<String>, s: String, left: i32, right: i32, n: i32) {
+        if s.len() == (2 * n) as usize {
+            result.push(s);
+            return;
+        }
+        if left < n {
+            backtrack(result, format!("{}(", s), left + 1, right, n);
+        }
+        if right < left {
+            backtrack(result, format!("{})", s), left, right + 1, n);
+        }
+    }
+    
+    backtrack(&mut result, String::new(), 0, 0, n);
+    result
+}
+
+
+
+pub fn combination_sum(candidates: Vec<i32>, target: i32) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    
+    fn backtrack(
+        candidates: &[i32],
+        target: i32,
+        start: usize,
+        path: &mut Vec<i32>,
+        result: &mut Vec<Vec<i32>>,
+    ) {
+        if target == 0 {
+            result.push(path.clone());
+            return;
+        }
+        if target < 0 {
+            return;
+        }
+        for i in start..candidates.len() {
+            path.push(candidates[i]);
+            backtrack(candidates, target - candidates[i], i, path, result);
+            path.pop();
+        }
+    }
+    
+    backtrack(&candidates, target, 0, &mut Vec::new(), &mut result);
+    result
+}
+
+
+
+pub fn permute(nums: Vec<i32>) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    
+    fn backtrack(nums: &mut Vec<i32>, start: usize, result: &mut Vec<Vec<i32>>) {
+        if start == nums.len() {
+            result.push(nums.clone());
+            return;
+        }
+        for i in start..nums.len() {
+            nums.swap(start, i);
+            backtrack(nums, start + 1, result);
+            nums.swap(start, i);
+        }
+    }
+    
+    let mut nums = nums;
+    backtrack(&mut nums, 0, &mut result);
+    result
+}
+
+
+
+pub fn subsets(nums: Vec<i32>) -> Vec<Vec<i32>> {
+    let mut result = vec![vec![]];
+    
+    for num in nums {
+        let mut new_subsets: Vec<Vec<i32>> = result
+            .iter()
+            .map(|subset| {
+                let mut new = subset.clone();
+                new.push(num);
+                new
+            })
+            .collect();
+        result.append(&mut new_subsets);
+    }
+    result
+}
+
+
+
+pub fn word_search(board: Vec<Vec<char>>, word: String) -> bool {
+    let (m, n) = (board.len(), board[0].len());
+    let word: Vec<char> = word.chars().collect();
+    let mut visited = vec![vec![false; n]; m];
+    
+    fn dfs(
+        board: &[Vec<char>],
+        word: &[char],
+        visited: &mut [Vec<bool>],
+        i: i32,
+        j: i32,
+        k: usize,
+    ) -> bool {
+        if k == word.len() {
+            return true;
+        }
+        if i < 0
+            || i >= board.len() as i32
+            || j < 0
+            || j >= board[0].len() as i32
+            || visited[i as usize][j as usize]
+            || board[i as usize][j as usize] != word[k]
+        {
+            return false;
+        }
+        visited[i as usize][j as usize] = true;
+        let found = dfs(board, word, visited, i + 1, j, k + 1)
+            || dfs(board, word, visited, i - 1, j, k + 1)
+            || dfs(board, word, visited, i, j + 1, k + 1)
+            || dfs(board, word, visited, i, j - 1, k + 1);
+        visited[i as usize][j as usize] = false;
+        found
+    }
+    
+    for i in 0..m {
+        for j in 0..n {
+            if dfs(&board, &word, &mut visited, i as i32, j as i32, 0) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+
+
+pub fn course_schedule(num_courses: i32, prerequisites: Vec<Vec<i32>>) -> bool {
+    use std::collections::VecDeque;
+    let n = num_courses as usize;
+    let mut graph = vec![Vec::new(); n];
+    let mut in_degree = vec![0; n];
+    
+    for prereq in &prerequisites {
+        graph[prereq[1] as usize].push(prereq[0] as usize);
+        in_degree[prereq[0] as usize] += 1;
+    }
+    
+    let mut queue: VecDeque<usize> = VecDeque::new();
+    for i in 0..n {
+        if in_degree[i] == 0 {
+            queue.push_back(i);
+        }
+    }
+    
+    let mut count = 0;
+    while let Some(node) = queue.pop_front() {
+        count += 1;
+        for &neighbor in &graph[node] {
+            in_degree[neighbor] -= 1;
+            if in_degree[neighbor] == 0 {
+                queue.push_back(neighbor);
+            }
+        }
+    }
+    count == n
+}
+
+
+
+pub fn num_islands(grid: Vec<Vec<char>>) -> i32 {
+    if grid.is_empty() {
+        return 0;
+    }
+    let (m, n) = (grid.len(), grid[0].len());
+    let mut grid = grid;
+    let mut count = 0;
+    
+    fn dfs(grid: &mut Vec<Vec<char>>, i: i32, j: i32) {
+        if i < 0
+            || i >= grid.len() as i32
+            || j < 0
+            || j >= grid[0].len() as i32
+            || grid[i as usize][j as usize] == '0'
+        {
+            return;
+        }
+        grid[i as usize][j as usize] = '0';
+        dfs(grid, i + 1, j);
+        dfs(grid, i - 1, j);
+        dfs(grid, i, j + 1);
+        dfs(grid, i, j - 1);
+    }
+    
+    for i in 0..m {
+        for j in 0..n {
+            if grid[i][j] == '1' {
+                count += 1;
+                dfs(&mut grid, i as i32, j as i32);
+            }
+        }
+    }
+    count
+}
+
+
+
+pub fn calculate(s: String) -> i32 {
+    let mut stack: Vec<i32> = Vec::new();
+    let mut num = 0;
+    let mut sign = 1;
+    let mut result = 0;
+    
+    for c in s.chars() {
+        match c {
+            '0'..='9' => num = num * 10 + (c as i32 - '0' as i32),
+            '+' => {
+                result += sign * num;
+                num = 0;
+                sign = 1;
+            }
+            '-' => {
+                result += sign * num;
+                num = 0;
+                sign = -1;
+            }
+            '(' => {
+                stack.push(result);
+                stack.push(sign);
+                result = 0;
+                sign = 1;
+            }
+            ')' => {
+                result += sign * num;
+                num = 0;
+                result *= stack.pop().unwrap();
+                result += stack.pop().unwrap();
+            }
+            _ => {}
+        }
+    }
+    result + sign * num
+}
+
+
+
+pub fn eval_rpn(tokens: Vec<String>) -> i32 {
+    let mut stack: Vec<i32> = Vec::new();
+    
+    for token in tokens {
+        match token.as_str() {
+            "+" | "-" | "*" | "/" => {
+                let b = stack.pop().unwrap();
+                let a = stack.pop().unwrap();
+                let result = match token.as_str() {
+                    "+" => a + b,
+                    "-" => a - b,
+                    "*" => a * b,
+                    "/" => a / b,
+                    _ => unreachable!(),
+                };
+                stack.push(result);
+            }
+            _ => stack.push(token.parse().unwrap()),
+        }
+    }
+    stack.pop().unwrap()
+}
+
+
+
+pub fn decode_string(s: String) -> String {
+    let mut str_stack: Vec<String> = Vec::new();
+    let mut num_stack: Vec<usize> = Vec::new();
+    let mut current = String::new();
+    let mut num = 0;
+    
+    for c in s.chars() {
+        match c {
+            '0'..='9' => num = num * 10 + (c as usize - '0' as usize),
+            '[' => {
+                str_stack.push(current.clone());
+                num_stack.push(num);
+                current.clear();
+                num = 0;
+            }
+            ']' => {
+                let prev = str_stack.pop().unwrap();
+                let repeat = num_stack.pop().unwrap();
+                current = prev + &current.repeat(repeat);
+            }
+            _ => current.push(c),
+        }
+    }
+    current
+}
+
+
+
+pub fn simplify_path(path: String) -> String {
+    let mut stack: Vec<&str> = Vec::new();
+    
+    for part in path.split('/') {
+        match part {
+            ".." => { stack.pop(); }
+            "" | "." => {}
+            _ => stack.push(part),
+        }
+    }
+    format!("/{}", stack.join("/"))
+}
+
+
+
+pub fn asteroid_collision(asteroids: Vec<i32>) -> Vec<i32> {
+    let mut stack: Vec<i32> = Vec::new();
+    
+    for asteroid in asteroids {
+        let mut alive = true;
+        while !stack.is_empty() && asteroid < 0 && *stack.last().unwrap() > 0 {
+            if *stack.last().unwrap() < -asteroid {
+                stack.pop();
+                continue;
+            } else if *stack.last().unwrap() == -asteroid {
+                stack.pop();
+            }
+            alive = false;
+            break;
+        }
+        if alive {
+            stack.push(asteroid);
+        }
+    }
+    stack
+}
+
+
+
+pub fn remove_kdigits(num: String, mut k: i32) -> String {
+    let mut stack: Vec<char> = Vec::new();
+    
+    for c in num.chars() {
+        while !stack.is_empty() && k > 0 && *stack.last().unwrap() > c {
+            stack.pop();
+            k -= 1;
+        }
+        stack.push(c);
+    }
+    
+    while k > 0 {
+        stack.pop();
+        k -= 1;
+    }
+    
+    let result: String = stack.into_iter().skip_while(|&c| c == '0').collect();
+    if result.is_empty() { "0".to_string() } else { result }
+}
+
+
+
+pub fn least_interval(tasks: Vec<char>, n: i32) -> i32 {
+    let mut freq = [0; 26];
+    for task in &tasks {
+        freq[(*task as usize) - ('A' as usize)] += 1;
+    }
+    let max_freq = *freq.iter().max().unwrap();
+    let max_count = freq.iter().filter(|&&f| f == max_freq).count() as i32;
+    std::cmp::max(tasks.len() as i32, (max_freq - 1) * (n + 1) + max_count)
+}
+
+
+
+pub fn min_meeting_rooms(intervals: Vec<Vec<i32>>) -> i32 {
+    use std::collections::BinaryHeap;
+    use std::cmp::Reverse;
+    
+    if intervals.is_empty() {
+        return 0;
+    }
+    
+    let mut intervals = intervals;
+    intervals.sort_by_key(|a| a[0]);
+    
+    let mut heap = BinaryHeap::new();
+    heap.push(Reverse(intervals[0][1]));
+    
+    for i in 1..intervals.len() {
+        if let Some(&Reverse(min_end)) = heap.peek() {
+            if min_end <= intervals[i][0] {
+                heap.pop();
+            }
+        }
+        heap.push(Reverse(intervals[i][1]));
+    }
+    heap.len() as i32
+}
+
+
+
+pub fn interval_intersection(a: Vec<Vec<i32>>, b: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    let (mut i, mut j) = (0, 0);
+    
+    while i < a.len() && j < b.len() {
+        let lo = a[i][0].max(b[j][0]);
+        let hi = a[i][1].min(b[j][1]);
+        if lo <= hi {
+            result.push(vec![lo, hi]);
+        }
+        if a[i][1] < b[j][1] {
+            i += 1;
+        } else {
+            j += 1;
+        }
+    }
+    result
+}
+
+
+
+pub fn car_pooling(trips: Vec<Vec<i32>>, capacity: i32) -> bool {
+    let mut timeline = vec![0; 1001];
+    
+    for trip in &trips {
+        timeline[trip[1] as usize] += trip[0];
+        timeline[trip[2] as usize] -= trip[0];
+    }
+    
+    let mut current = 0;
+    for delta in timeline {
+        current += delta;
+        if current > capacity {
+            return false;
+        }
+    }
+    true
+}
+
+
+
+pub fn lowest_common_ancestor(
+    root: Option<Rc<RefCell<TreeNode>>>,
+    p: Option<Rc<RefCell<TreeNode>>>,
+    q: Option<Rc<RefCell<TreeNode>>>,
+) -> Option<Rc<RefCell<TreeNode>>> {
+    match root {
+        None => None,
+        Some(node) => {
+            if node == p.clone().unwrap() || node == q.clone().unwrap() {
+                return Some(node);
+            }
+            let left = Self::lowest_common_ancestor(node.borrow().left.clone(), p.clone(), q.clone());
+            let right = Self::lowest_common_ancestor(node.borrow().right.clone(), p, q);
+            match (&left, &right) {
+                (Some(_), Some(_)) => Some(node),
+                (Some(_), None) => left,
+                (None, Some(_)) => right,
+                (None, None) => None,
+            }
+        }
+    }
+}
+
+
+
+pub fn flatten(root: &mut Option<Box<TreeNode>>) {
+    fn helper(node: &mut Option<Box<TreeNode>>) {
+        if let Some(n) = node {
+            helper(&mut n.left);
+            helper(&mut n.right);
+            
+            let right = n.right.take();
+            n.right = n.left.take();
+            
+            let mut curr = n.as_mut();
+            while curr.right.is_some() {
+                curr = curr.right.as_mut().unwrap();
+            }
+            curr.right = right;
+        }
+    }
+    helper(root);
+}
+
+
+
+pub fn right_side_view(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    use std::collections::VecDeque;
+    
+    let mut result = Vec::new();
+    if root.is_none() {
+        return result;
+    }
+    
+    let mut queue = VecDeque::new();
+    queue.push_back(root.unwrap());
+    
+    while !queue.is_empty() {
+        let size = queue.len();
+        for i in 0..size {
+            let node = queue.pop_front().unwrap();
+            let node_ref = node.borrow();
+            if i == size - 1 {
+                result.push(node_ref.val);
+            }
+            if let Some(left) = node_ref.left.clone() {
+                queue.push_back(left);
+            }
+            if let Some(right) = node_ref.right.clone() {
+                queue.push_back(right);
+            }
+        }
+    }
+    result
+}
+
+
+
+pub fn zigzag_level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
+    use std::collections::VecDeque;
+    
+    let mut result = Vec::new();
+    if root.is_none() {
+        return result;
+    }
+    
+    let mut queue = VecDeque::new();
+    queue.push_back(root.unwrap());
+    let mut left_to_right = true;
+    
+    while !queue.is_empty() {
+        let size = queue.len();
+        let mut level = VecDeque::new();
+        
+        for _ in 0..size {
+            let node = queue.pop_front().unwrap();
+            let node_ref = node.borrow();
+            
+            if left_to_right {
+                level.push_back(node_ref.val);
+            } else {
+                level.push_front(node_ref.val);
+            }
+            
+            if let Some(left) = node_ref.left.clone() {
+                queue.push_back(left);
+            }
+            if let Some(right) = node_ref.right.clone() {
+                queue.push_back(right);
+            }
+        }
+        result.push(level.into_iter().collect());
+        left_to_right = !left_to_right;
+    }
+    result
+}
+
+
+
+pub fn surrounded_regions(board: &mut Vec<Vec<char>>) {
+    if board.is_empty() {
+        return;
+    }
+    let (m, n) = (board.len(), board[0].len());
+    
+    fn dfs(board: &mut Vec<Vec<char>>, i: i32, j: i32) {
+        if i < 0 || i >= board.len() as i32 || j < 0 || j >= board[0].len() as i32
+            || board[i as usize][j as usize] != 'O'
+        {
+            return;
+        }
+        board[i as usize][j as usize] = 'T';
+        dfs(board, i + 1, j);
+        dfs(board, i - 1, j);
+        dfs(board, i, j + 1);
+        dfs(board, i, j - 1);
+    }
+    
+    for i in 0..m {
+        dfs(board, i as i32, 0);
+        dfs(board, i as i32, n as i32 - 1);
+    }
+    for j in 0..n {
+        dfs(board, 0, j as i32);
+        dfs(board, m as i32 - 1, j as i32);
+    }
+    
+    for i in 0..m {
+        for j in 0..n {
+            if board[i][j] == 'O' {
+                board[i][j] = 'X';
+            } else if board[i][j] == 'T' {
+                board[i][j] = 'O';
+            }
+        }
+    }
+}
+
+
+
+pub fn ladder_length(begin_word: String, end_word: String, word_list: Vec<String>) -> i32 {
+    use std::collections::{HashSet, VecDeque};
+    
+    let mut word_set: HashSet<String> = word_list.into_iter().collect();
+    if !word_set.contains(&end_word) {
+        return 0;
+    }
+    
+    let mut queue = VecDeque::new();
+    queue.push_back(begin_word);
+    let mut level = 1;
+    
+    while !queue.is_empty() {
+        let size = queue.len();
+        for _ in 0..size {
+            let word = queue.pop_front().unwrap();
+            if word == end_word {
+                return level;
+            }
+            
+            let chars: Vec<char> = word.chars().collect();
+            for i in 0..chars.len() {
+                for c in 'a'..='z' {
+                    if c == chars[i] {
+                        continue;
+                    }
+                    let mut new_chars = chars.clone();
+                    new_chars[i] = c;
+                    let new_word: String = new_chars.into_iter().collect();
+                    if word_set.contains(&new_word) {
+                        queue.push_back(new_word.clone());
+                        word_set.remove(&new_word);
+                    }
+                }
+            }
+        }
+        level += 1;
+    }
+    0
+}
+
+
+
+pub fn longest_consecutive(nums: Vec<i32>) -> i32 {
+    use std::collections::HashSet;
+    let num_set: HashSet<i32> = nums.into_iter().collect();
+    let mut longest = 0;
+    
+    for &num in &num_set {
+        if !num_set.contains(&(num - 1)) {
+            let mut current = num;
+            let mut streak = 1;
+            while num_set.contains(&(current + 1)) {
+                current += 1;
+                streak += 1;
+            }
+            longest = longest.max(streak);
+        }
+    }
+    longest
+}
+
+
+
+pub fn subarray_sum(nums: Vec<i32>, k: i32) -> i32 {
+    use std::collections::HashMap;
+    let mut prefix_sum = HashMap::new();
+    prefix_sum.insert(0, 1);
+    let (mut sum, mut count) = (0, 0);
+    
+    for num in nums {
+        sum += num;
+        count += prefix_sum.get(&(sum - k)).unwrap_or(&0);
+        *prefix_sum.entry(sum).or_insert(0) += 1;
+    }
+    count
+}
+
+
+
+pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {
+    use std::collections::{BinaryHeap, HashMap};
+    use std::cmp::Reverse;
+    
+    let mut freq = HashMap::new();
+    for num in nums {
+        *freq.entry(num).or_insert(0) += 1;
+    }
+    
+    let mut heap = BinaryHeap::new();
+    for (num, count) in freq {
+        heap.push(Reverse((count, num)));
+        if heap.len() > k as usize {
+            heap.pop();
+        }
+    }
+    
+    heap.into_iter().map(|Reverse((_, num))| num).collect()
+}
+
+
+
+pub fn find_kth_largest(nums: Vec<i32>, k: i32) -> i32 {
+    use std::collections::BinaryHeap;
+    use std::cmp::Reverse;
+    
+    let mut heap = BinaryHeap::new();
+    for num in nums {
+        heap.push(Reverse(num));
+        if heap.len() > k as usize {
+            heap.pop();
+        }
+    }
+    heap.peek().unwrap().0
+}
+
+
+
+pub fn max_sliding_window(nums: Vec<i32>, k: i32) -> Vec<i32> {
+    use std::collections::VecDeque;
+    let k = k as usize;
+    let mut result = Vec::new();
+    let mut deque = VecDeque::new();
+    
+    for i in 0..nums.len() {
+        while !deque.is_empty() && *deque.front().unwrap() <= i as i32 - k as i32 {
+            deque.pop_front();
+        }
+        while !deque.is_empty() && nums[*deque.back().unwrap() as usize] < nums[i] {
+            deque.pop_back();
+        }
+        deque.push_back(i as i32);
+        if i >= k - 1 {
+            result.push(nums[*deque.front().unwrap() as usize]);
+        }
+    }
+    result
+}
+
+
+
+pub struct MedianFinder {
+    small: BinaryHeap<i32>,
+    large: BinaryHeap<Reverse<i32>>,
+}
+
+impl MedianFinder {
+    pub fn new() -> Self {
+        MedianFinder {
+            small: BinaryHeap::new(),
+            large: BinaryHeap::new(),
+        }
+    }
+    
+    pub fn add_num(&mut self, num: i32) {
+        self.small.push(num);
+        self.large.push(Reverse(self.small.pop().unwrap()));
+        if self.large.len() > self.small.len() {
+            self.small.push(self.large.pop().unwrap().0);
+        }
+    }
+    
+    pub fn find_median(&self) -> f64 {
+        if self.small.len() > self.large.len() {
+            *self.small.peek().unwrap() as f64
+        } else {
+            (*self.small.peek().unwrap() + self.large.peek().unwrap().0) as f64 / 2.0
+        }
+    }
+}
+
+
+
+pub fn copy_random_list(head: Option<Box<Node>>) -> Option<Box<Node>> {
+    use std::collections::HashMap;
+    
+    let mut map = HashMap::new();
+    let mut curr = &head;
+    while let Some(node) = curr {
+        map.insert(node.as_ref() as *const Node, Box::new(Node::new(node.val)));
+        curr = &node.next;
+    }
+    
+    curr = &head;
+    while let Some(node) = curr {
+        let ptr = node.as_ref() as *const Node;
+        if let Some(new_node) = map.get_mut(&ptr) {
+            new_node.next = node.next.as_ref().and_then(|n| {
+                map.get(&(n.as_ref() as *const Node)).map(|b| Box::clone(b))
+            });
+        }
+        curr = &node.next;
+    }
+    
+    head.as_ref().and_then(|h| map.remove(&(h.as_ref() as *const Node)))
+}
+
+
+
+pub fn detect_cycle(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    let mut slow = &head;
+    let mut fast = &head;
+    
+    loop {
+        slow = match slow {
+            Some(n) => &n.next,
+            None => return None,
+        };
+        fast = match fast {
+            Some(n) => match &n.next {
+                Some(nn) => &nn.next,
+                None => return None,
+            },
+            None => return None,
+        };
+        if slow == fast {
+            break;
+        }
+    }
+    
+    let mut ptr = &head;
+    while ptr != slow {
+        ptr = &ptr.as_ref().unwrap().next;
+        slow = &slow.as_ref().unwrap().next;
+    }
+    ptr.clone()
+}
+
+
+
+pub fn sort_list(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    if head.is_none() || head.as_ref().unwrap().next.is_none() {
+        return head;
+    }
+    
+    let mut slow = &head;
+    let mut fast = &head;
+    let mut count = 0;
+    
+    while fast.is_some() && fast.as_ref().unwrap().next.is_some() {
+        slow = &slow.as_ref().unwrap().next;
+        fast = &fast.as_ref().unwrap().next.as_ref().unwrap().next;
+        count += 1;
+    }
+    
+    let mut head = head;
+    let mut current = &mut head;
+    for _ in 0..count {
+        current = &mut current.as_mut().unwrap().next;
+    }
+    let mid = current.take();
+    
+    let left = sort_list(head);
+    let right = sort_list(mid);
+    merge_list(left, right)
+}
+
+fn merge_list(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    match (l1, l2) {
+        (None, r) => r,
+        (l, None) => l,
+        (Some(mut l), Some(mut r)) => {
+            if l.val < r.val {
+                l.next = merge_list(l.next, Some(r));
+                Some(l)
+            } else {
+                r.next = merge_list(Some(l), r.next);
+                Some(r)
+            }
+        }
+    }
+}
+
+
+
+pub fn next_permutation(nums: &mut Vec<i32>) {
+    let n = nums.len();
+    let mut i = n as i32 - 2;
+    
+    while i >= 0 && nums[i as usize] >= nums[i as usize + 1] {
+        i -= 1;
+    }
+    
+    if i >= 0 {
+        let mut j = n - 1;
+        while nums[j] <= nums[i as usize] {
+            j -= 1;
+        }
+        nums.swap(i as usize, j);
+    }
+    
+    nums[i as usize + 1..].reverse();
+}
+
+
+
+pub fn min_window(s: String, t: String) -> String {
+    use std::collections::HashMap;
+    
+    if s.len() < t.len() {
+        return String::new();
+    }
+    
+    let mut need: HashMap<char, i32> = HashMap::new();
+    for c in t.chars() {
+        *need.entry(c).or_insert(0) += 1;
+    }
+    
+    let mut window: HashMap<char, i32> = HashMap::new();
+    let s: Vec<char> = s.chars().collect();
+    let (mut left, mut valid) = (0, 0);
+    let (mut start, mut min_len) = (0, usize::MAX);
+    
+    for right in 0..s.len() {
+        let c = s[right];
+        if need.contains_key(&c) {
+            *window.entry(c).or_insert(0) += 1;
+            if window[&c] == need[&c] {
+                valid += 1;
+            }
+        }
+        
+        while valid == need.len() {
+            if right - left + 1 < min_len {
+                start = left;
+                min_len = right - left + 1;
+            }
+            let d = s[left];
+            left += 1;
+            if need.contains_key(&d) {
+                if window[&d] == need[&d] {
+                    valid -= 1;
+                }
+                *window.get_mut(&d).unwrap() -= 1;
+            }
+        }
+    }
+    
+    if min_len == usize::MAX {
+        String::new()
+    } else {
+        s[start..start + min_len].iter().collect()
+    }
+}
+
+
+
+pub fn find_anagrams(s: String, p: String) -> Vec<i32> {
+    if s.len() < p.len() {
+        return vec![];
+    }
+    
+    let mut result = Vec::new();
+    let mut p_count = [0; 26];
+    let mut s_count = [0; 26];
+    let s: Vec<char> = s.chars().collect();
+    
+    for c in p.chars() {
+        p_count[(c as u8 - b'a') as usize] += 1;
+    }
+    
+    for i in 0..s.len() {
+        s_count[(s[i] as u8 - b'a') as usize] += 1;
+        if i >= p.len() {
+            s_count[(s[i - p.len()] as u8 - b'a') as usize] -= 1;
+        }
+        if i >= p.len() - 1 && p_count == s_count {
+            result.push((i - p.len() + 1) as i32);
+        }
+    }
+    result
+}
+
+
+
+pub fn character_replacement(s: String, k: i32) -> i32 {
+    let s: Vec<char> = s.chars().collect();
+    let mut count = [0; 26];
+    let (mut left, mut max_count, mut result) = (0, 0, 0);
+    
+    for right in 0..s.len() {
+        let idx = (s[right] as u8 - b'A') as usize;
+        count[idx] += 1;
+        max_count = max_count.max(count[idx]);
+        
+        while (right - left + 1) as i32 - max_count > k {
+            let left_idx = (s[left] as u8 - b'A') as usize;
+            count[left_idx] -= 1;
+            left += 1;
+        }
+        result = result.max(right - left + 1);
+    }
+    result as i32
+}
+
+
+
+pub fn length_of_longest_substring_k_distinct(s: String, k: i32) -> i32 {
+    use std::collections::HashMap;
+    
+    let s: Vec<char> = s.chars().collect();
+    let mut count: HashMap<char, i32> = HashMap::new();
+    let (mut left, mut max_len) = (0, 0);
+    
+    for right in 0..s.len() {
+        *count.entry(s[right]).or_insert(0) += 1;
+        
+        while count.len() > k as usize {
+            let c = s[left];
+            *count.get_mut(&c).unwrap() -= 1;
+            if count[&c] == 0 {
+                count.remove(&c);
+            }
+            left += 1;
+        }
+        max_len = max_len.max(right - left + 1);
+    }
+    max_len as i32
+}
+
+
+
+pub fn unique_paths(m: i32, n: i32) -> i32 {
+    let (m, n) = (m as usize, n as usize);
+    let mut dp = vec![vec![1; n]; m];
+    for i in 1..m {
+        for j in 1..n {
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+    dp[m - 1][n - 1]
+}
+
+
+
+pub fn unique_paths_with_obstacles(obstacle_grid: Vec<Vec<i32>>) -> i32 {
+    let (m, n) = (obstacle_grid.len(), obstacle_grid[0].len());
+    if obstacle_grid[0][0] == 1 {
+        return 0;
+    }
+    let mut dp = vec![vec![0; n]; m];
+    dp[0][0] = 1;
+    for i in 1..m {
+        dp[i][0] = if obstacle_grid[i][0] == 1 { 0 } else { dp[i - 1][0] };
+    }
+    for j in 1..n {
+        dp[0][j] = if obstacle_grid[0][j] == 1 { 0 } else { dp[0][j - 1] };
+    }
+    for i in 1..m {
+        for j in 1..n {
+            dp[i][j] = if obstacle_grid[i][j] == 1 {
+                0
+            } else {
+                dp[i - 1][j] + dp[i][j - 1]
+            };
+        }
+    }
+    dp[m - 1][n - 1]
+}
+
+
+
+pub fn oranges_rotting(mut grid: Vec<Vec<i32>>) -> i32 {
+    use std::collections::VecDeque;
+    let (m, n) = (grid.len(), grid[0].len());
+    let mut queue = VecDeque::new();
+    let mut fresh = 0;
+    
+    for i in 0..m {
+        for j in 0..n {
+            if grid[i][j] == 2 {
+                queue.push_back((i, j));
+            } else if grid[i][j] == 1 {
+                fresh += 1;
+            }
+        }
+    }
+    
+    if fresh == 0 {
+        return 0;
+    }
+    
+    let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+    let mut minutes = -1;
+    
+    while !queue.is_empty() {
+        let size = queue.len();
+        minutes += 1;
+        for _ in 0..size {
+            let (x, y) = queue.pop_front().unwrap();
+            for (dx, dy) in &dirs {
+                let nx = x as i32 + dx;
+                let ny = y as i32 + dy;
+                if nx >= 0 && nx < m as i32 && ny >= 0 && ny < n as i32
+                    && grid[nx as usize][ny as usize] == 1
+                {
+                    grid[nx as usize][ny as usize] = 2;
+                    fresh -= 1;
+                    queue.push_back((nx as usize, ny as usize));
+                }
+            }
+        }
+    }
+    
+    if fresh == 0 { minutes } else { -1 }
+}
+
+
+
+pub fn can_jump(nums: Vec<i32>) -> bool {
+    let mut max_reach = 0;
+    for (i, &num) in nums.iter().enumerate() {
+        if i > max_reach {
+            return false;
+        }
+        max_reach = max_reach.max(i + num as usize);
+    }
+    true
+}
+
+
+
+pub fn jump(nums: Vec<i32>) -> i32 {
+    let (mut jumps, mut cur_end, mut cur_far) = (0, 0, 0);
+    for i in 0..nums.len() - 1 {
+        cur_far = cur_far.max(i + nums[i] as usize);
+        if i == cur_end {
+            jumps += 1;
+            cur_end = cur_far;
+        }
+    }
+    jumps
+}
+
+
+
+pub fn can_complete_circuit(gas: Vec<i32>, cost: Vec<i32>) -> i32 {
+    let (mut total_tank, mut curr_tank, mut start) = (0, 0, 0);
+    for i in 0..gas.len() {
+        total_tank += gas[i] - cost[i];
+        curr_tank += gas[i] - cost[i];
+        if curr_tank < 0 {
+            start = i as i32 + 1;
+            curr_tank = 0;
+        }
+    }
+    if total_tank >= 0 { start } else { -1 }
+}
+
+
+
+pub fn candy(ratings: Vec<i32>) -> i32 {
+    let n = ratings.len();
+    let mut candies = vec![1; n];
+    
+    for i in 1..n {
+        if ratings[i] > ratings[i - 1] {
+            candies[i] = candies[i - 1] + 1;
+        }
+    }
+    
+    for i in (0..n - 1).rev() {
+        if ratings[i] > ratings[i + 1] {
+            candies[i] = candies[i].max(candies[i + 1] + 1);
+        }
+    }
+    
+    candies.iter().sum()
+}
+
+
+
+pub fn three_sum(mut nums: Vec<i32>) -> Vec<Vec<i32>> {
+    nums.sort();
+    let mut result = Vec::new();
+    let n = nums.len();
+    
+    for i in 0..n.saturating_sub(2) {
+        if i > 0 && nums[i] == nums[i - 1] {
+            continue;
+        }
+        let (mut left, mut right) = (i + 1, n - 1);
+        while left < right {
+            let sum = nums[i] + nums[left] + nums[right];
+            if sum == 0 {
+                result.push(vec![nums[i], nums[left], nums[right]]);
+                while left < right && nums[left] == nums[left + 1] {
+                    left += 1;
+                }
+                while left < right && nums[right] == nums[right - 1] {
+                    right -= 1;
+                }
+                left += 1;
+                right -= 1;
+            } else if sum < 0 {
+                left += 1;
+            } else {
+                right -= 1;
+            }
+        }
+    }
+    result
+}
+
+
+
+pub fn three_sum_closest(mut nums: Vec<i32>, target: i32) -> i32 {
+    nums.sort();
+    let mut closest = nums[0] + nums[1] + nums[2];
+    
+    for i in 0..nums.len() - 2 {
+        let (mut left, mut right) = (i + 1, nums.len() - 1);
+        while left < right {
+            let sum = nums[i] + nums[left] + nums[right];
+            if (sum - target).abs() < (closest - target).abs() {
+                closest = sum;
+            }
+            if sum < target {
+                left += 1;
+            } else if sum > target {
+                right -= 1;
+            } else {
+                return target;
+            }
+        }
+    }
+    closest
+}
+
+
+
+pub fn max_area(height: Vec<i32>) -> i32 {
+    let (mut left, mut right) = (0, height.len() - 1);
+    let mut max_area = 0;
+    
+    while left < right {
+        let area = height[left].min(height[right]) * (right - left) as i32;
+        max_area = max_area.max(area);
+        if height[left] < height[right] {
+            left += 1;
+        } else {
+            right -= 1;
+        }
+    }
+    max_area
+}
+
+
+
+pub fn trap_rain(height: Vec<i32>) -> i32 {
+    if height.is_empty() {
+        return 0;
+    }
+    let (mut left, mut right) = (0, height.len() - 1);
+    let (mut left_max, mut right_max) = (0, 0);
+    let mut result = 0;
+    
+    while left < right {
+        if height[left] < height[right] {
+            if height[left] >= left_max {
+                left_max = height[left];
+            } else {
+                result += left_max - height[left];
+            }
+            left += 1;
+        } else {
+            if height[right] >= right_max {
+                right_max = height[right];
+            } else {
+                result += right_max - height[right];
+            }
+            right -= 1;
+        }
+    }
+    result
+}
+
+
+
+pub fn search_matrix(matrix: Vec<Vec<i32>>, target: i32) -> bool {
+    if matrix.is_empty() || matrix[0].is_empty() {
+        return false;
+    }
+    let (m, n) = (matrix.len(), matrix[0].len());
+    let (mut left, mut right) = (0, m * n - 1);
+    
+    while left <= right {
+        let mid = left + (right - left) / 2;
+        let val = matrix[mid / n][mid % n];
+        if val == target {
+            return true;
+        } else if val < target {
+            left = mid + 1;
+        } else {
+            if mid == 0 { break; }
+            right = mid - 1;
+        }
+    }
+    false
+}
+
+
+
+pub fn search_matrix_2(matrix: Vec<Vec<i32>>, target: i32) -> bool {
+    if matrix.is_empty() || matrix[0].is_empty() {
+        return false;
+    }
+    let (m, n) = (matrix.len(), matrix[0].len());
+    let (mut row, mut col) = (0, n as i32 - 1);
+    
+    while row < m && col >= 0 {
+        let val = matrix[row][col as usize];
+        if val == target {
+            return true;
+        } else if val > target {
+            col -= 1;
+        } else {
+            row += 1;
+        }
+    }
+    false
+}
+
+
+
+pub fn find_peak_element(nums: Vec<i32>) -> i32 {
+    let (mut left, mut right) = (0, nums.len() - 1);
+    while left < right {
+        let mid = left + (right - left) / 2;
+        if nums[mid] > nums[mid + 1] {
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+    left as i32
+}
+
+
+
+pub fn search_rotated(nums: Vec<i32>, target: i32) -> i32 {
+    let (mut left, mut right) = (0, nums.len() as i32 - 1);
+    while left <= right {
+        let mid = left + (right - left) / 2;
+        if nums[mid as usize] == target {
+            return mid;
+        }
+        if nums[left as usize] <= nums[mid as usize] {
+            if target >= nums[left as usize] && target < nums[mid as usize] {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if target > nums[mid as usize] && target <= nums[right as usize] {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+    }
+    -1
+}
+
+
+
+pub fn find_min(nums: Vec<i32>) -> i32 {
+    let (mut left, mut right) = (0, nums.len() - 1);
+    while left < right {
+        let mid = left + (right - left) / 2;
+        if nums[mid] > nums[right] {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    nums[left]
+}
+
+
+
+pub fn is_valid_parentheses(s: String) -> bool {
+    let mut stack = Vec::new();
+    for c in s.chars() {
+        match c {
+            '(' | '[' | '{' => stack.push(c),
+            ')' => if stack.pop() != Some('(') { return false; },
+            ']' => if stack.pop() != Some('[') { return false; },
+            '}' => if stack.pop() != Some('{') { return false; },
+            _ => {}
+        }
+    }
+    stack.is_empty()
+}
+
+
+
+pub fn longest_valid_parentheses(s: String) -> i32 {
+    let mut stack = vec![-1i32];
+    let mut max_len = 0;
+    
+    for (i, c) in s.chars().enumerate() {
+        if c == '(' {
+            stack.push(i as i32);
+        } else {
+            stack.pop();
+            if stack.is_empty() {
+                stack.push(i as i32);
+            } else {
+                max_len = max_len.max(i as i32 - stack.last().unwrap());
+            }
+        }
+    }
+    max_len
+}
+
+
+
+pub struct MinStack {
+    stack: Vec<i32>,
+    min_stack: Vec<i32>,
+}
+
+impl MinStack {
+    pub fn new() -> Self {
+        MinStack {
+            stack: Vec::new(),
+            min_stack: Vec::new(),
+        }
+    }
+    
+    pub fn push(&mut self, val: i32) {
+        self.stack.push(val);
+        if self.min_stack.is_empty() || val <= *self.min_stack.last().unwrap() {
+            self.min_stack.push(val);
+        }
+    }
+    
+    pub fn pop(&mut self) {
+        if self.stack.pop() == self.min_stack.last().copied() {
+            self.min_stack.pop();
+        }
+    }
+    
+    pub fn top(&self) -> i32 {
+        *self.stack.last().unwrap()
+    }
+    
+    pub fn get_min(&self) -> i32 {
+        *self.min_stack.last().unwrap()
+    }
+}
+
+
+
+pub fn daily_temperatures(temperatures: Vec<i32>) -> Vec<i32> {
+    let n = temperatures.len();
+    let mut result = vec![0; n];
+    let mut stack = Vec::new();
+    
+    for i in 0..n {
+        while !stack.is_empty() && temperatures[i] > temperatures[*stack.last().unwrap()] {
+            let idx = stack.pop().unwrap();
+            result[idx] = (i - idx) as i32;
+        }
+        stack.push(i);
+    }
+    result
+}
+
+
+
+pub fn next_greater_element(nums1: Vec<i32>, nums2: Vec<i32>) -> Vec<i32> {
+    use std::collections::HashMap;
+    let mut map = HashMap::new();
+    let mut stack = Vec::new();
+    
+    for num in nums2 {
+        while !stack.is_empty() && num > *stack.last().unwrap() {
+            map.insert(stack.pop().unwrap(), num);
+        }
+        stack.push(num);
+    }
+    
+    nums1.iter().map(|&num| *map.get(&num).unwrap_or(&-1)).collect()
+}
+
+
+
+pub fn largest_rectangle_area(heights: Vec<i32>) -> i32 {
+    let mut stack = Vec::new();
+    let mut max_area = 0;
+    
+    for i in 0..=heights.len() {
+        let h = if i == heights.len() { 0 } else { heights[i] };
+        while !stack.is_empty() && h < heights[*stack.last().unwrap()] {
+            let height = heights[stack.pop().unwrap()];
+            let width = if stack.is_empty() { i } else { i - stack.last().unwrap() - 1 };
+            max_area = max_area.max(height * width as i32);
+        }
+        stack.push(i);
+    }
+    max_area
+}
+
+
+
+pub fn can_finish(num_courses: i32, prerequisites: Vec<Vec<i32>>) -> bool {
+    let n = num_courses as usize;
+    let mut in_degree = vec![0; n];
+    let mut adj = vec![Vec::new(); n];
+    
+    for pre in &prerequisites {
+        adj[pre[1] as usize].push(pre[0] as usize);
+        in_degree[pre[0] as usize] += 1;
+    }
+    
+    let mut queue: std::collections::VecDeque<usize> = in_degree.iter()
+        .enumerate()
+        .filter(|(_, &d)| d == 0)
+        .map(|(i, _)| i)
+        .collect();
+    
+    let mut count = 0;
+    while let Some(course) = queue.pop_front() {
+        count += 1;
+        for &next in &adj[course] {
+            in_degree[next] -= 1;
+            if in_degree[next] == 0 {
+                queue.push_back(next);
+            }
+        }
+    }
+    count == n
+}
+
+
+
+pub fn find_order(num_courses: i32, prerequisites: Vec<Vec<i32>>) -> Vec<i32> {
+    let n = num_courses as usize;
+    let mut in_degree = vec![0; n];
+    let mut adj = vec![Vec::new(); n];
+    
+    for pre in &prerequisites {
+        adj[pre[1] as usize].push(pre[0] as usize);
+        in_degree[pre[0] as usize] += 1;
+    }
+    
+    let mut queue: std::collections::VecDeque<usize> = in_degree.iter()
+        .enumerate()
+        .filter(|(_, &d)| d == 0)
+        .map(|(i, _)| i)
+        .collect();
+    
+    let mut result = Vec::new();
+    while let Some(course) = queue.pop_front() {
+        result.push(course as i32);
+        for &next in &adj[course] {
+            in_degree[next] -= 1;
+            if in_degree[next] == 0 {
+                queue.push_back(next);
+            }
+        }
+    }
+    
+    if result.len() == n { result } else { vec![] }
+}
+
+
+
+pub fn set_zeroes(matrix: &mut Vec<Vec<i32>>) {
+    let (m, n) = (matrix.len(), matrix[0].len());
+    let first_row_zero = matrix[0].iter().any(|&x| x == 0);
+    let first_col_zero = matrix.iter().any(|row| row[0] == 0);
+    
+    for i in 1..m {
+        for j in 1..n {
+            if matrix[i][j] == 0 {
+                matrix[i][0] = 0;
+                matrix[0][j] = 0;
+            }
+        }
+    }
+    
+    for i in 1..m {
+        for j in 1..n {
+            if matrix[i][0] == 0 || matrix[0][j] == 0 {
+                matrix[i][j] = 0;
+            }
+        }
+    }
+    
+    if first_row_zero {
+        for j in 0..n {
+            matrix[0][j] = 0;
+        }
+    }
+    if first_col_zero {
+        for i in 0..m {
+            matrix[i][0] = 0;
+        }
+    }
+}
+
+
+
+pub fn rotate_matrix(matrix: &mut Vec<Vec<i32>>) {
+    let n = matrix.len();
+    for i in 0..n / 2 {
+        for j in i..n - 1 - i {
+            let temp = matrix[i][j];
+            matrix[i][j] = matrix[n - 1 - j][i];
+            matrix[n - 1 - j][i] = matrix[n - 1 - i][n - 1 - j];
+            matrix[n - 1 - i][n - 1 - j] = matrix[j][n - 1 - i];
+            matrix[j][n - 1 - i] = temp;
+        }
+    }
+}
+
+
+
+pub fn spiral_order(matrix: Vec<Vec<i32>>) -> Vec<i32> {
+    if matrix.is_empty() {
+        return vec![];
+    }
+    let (mut top, mut bottom) = (0, matrix.len() as i32 - 1);
+    let (mut left, mut right) = (0, matrix[0].len() as i32 - 1);
+    let mut result = Vec::new();
+    
+    while top <= bottom && left <= right {
+        for j in left..=right {
+            result.push(matrix[top as usize][j as usize]);
+        }
+        top += 1;
+        for i in top..=bottom {
+            result.push(matrix[i as usize][right as usize]);
+        }
+        right -= 1;
+        if top <= bottom {
+            for j in (left..=right).rev() {
+                result.push(matrix[bottom as usize][j as usize]);
+            }
+            bottom -= 1;
+        }
+        if left <= right {
+            for i in (top..=bottom).rev() {
+                result.push(matrix[i as usize][left as usize]);
+            }
+            left += 1;
+        }
+    }
+    result
+}
+
+
+
+pub fn generate_matrix(n: i32) -> Vec<Vec<i32>> {
+    let n = n as usize;
+    let mut matrix = vec![vec![0; n]; n];
+    let (mut top, mut bottom) = (0, n - 1);
+    let (mut left, mut right) = (0, n - 1);
+    let mut num = 1;
+    
+    while top <= bottom && left <= right {
+        for j in left..=right {
+            matrix[top][j] = num;
+            num += 1;
+        }
+        top += 1;
+        for i in top..=bottom {
+            matrix[i][right] = num;
+            num += 1;
+        }
+        if right > 0 { right -= 1; }
+        if top <= bottom {
+            for j in (left..=right).rev() {
+                matrix[bottom][j] = num;
+                num += 1;
+            }
+            if bottom > 0 { bottom -= 1; }
+        }
+        if left <= right {
+            for i in (top..=bottom).rev() {
+                matrix[i][left] = num;
+                num += 1;
+            }
+            left += 1;
+        }
+    }
+    matrix.iter().map(|row| row.iter().map(|&x| x as i32).collect()).collect()
+}
+
+
+
+pub fn is_valid_sudoku(board: Vec<Vec<char>>) -> bool {
+    use std::collections::HashSet;
+    let mut seen = HashSet::new();
+    
+    for i in 0..9 {
+        for j in 0..9 {
+            let c = board[i][j];
+            if c != '.' {
+                let row = format!("{} row {}", c, i);
+                let col = format!("{} col {}", c, j);
+                let box_key = format!("{} box {}-{}", c, i / 3, j / 3);
+                if !seen.insert(row) || !seen.insert(col) || !seen.insert(box_key) {
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
+
+
+pub fn word_search(board: Vec<Vec<char>>, word: String) -> bool {
+    let (m, n) = (board.len(), board[0].len());
+    let word: Vec<char> = word.chars().collect();
+    let mut board = board;
+    
+    fn dfs(board: &mut Vec<Vec<char>>, word: &[char], i: i32, j: i32, k: usize) -> bool {
+        if k == word.len() {
+            return true;
+        }
+        if i < 0 || i >= board.len() as i32 || j < 0 || j >= board[0].len() as i32 {
+            return false;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if board[ui][uj] != word[k] {
+            return false;
+        }
+        let temp = board[ui][uj];
+        board[ui][uj] = '#';
+        let found = dfs(board, word, i + 1, j, k + 1)
+            || dfs(board, word, i - 1, j, k + 1)
+            || dfs(board, word, i, j + 1, k + 1)
+            || dfs(board, word, i, j - 1, k + 1);
+        board[ui][uj] = temp;
+        found
+    }
+    
+    for i in 0..m {
+        for j in 0..n {
+            if dfs(&mut board, &word, i as i32, j as i32, 0) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+
+
+pub fn num_islands(mut grid: Vec<Vec<char>>) -> i32 {
+    if grid.is_empty() {
+        return 0;
+    }
+    let (m, n) = (grid.len(), grid[0].len());
+    
+    fn dfs(grid: &mut Vec<Vec<char>>, i: i32, j: i32, m: usize, n: usize) {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if grid[ui][uj] != '1' {
+            return;
+        }
+        grid[ui][uj] = '0';
+        dfs(grid, i + 1, j, m, n);
+        dfs(grid, i - 1, j, m, n);
+        dfs(grid, i, j + 1, m, n);
+        dfs(grid, i, j - 1, m, n);
+    }
+    
+    let mut count = 0;
+    for i in 0..m {
+        for j in 0..n {
+            if grid[i][j] == '1' {
+                count += 1;
+                dfs(&mut grid, i as i32, j as i32, m, n);
+            }
+        }
+    }
+    count
+}
+
+
+
+pub fn solve_surrounded(board: &mut Vec<Vec<char>>) {
+    if board.is_empty() {
+        return;
+    }
+    let (m, n) = (board.len(), board[0].len());
+    
+    fn dfs(board: &mut Vec<Vec<char>>, i: i32, j: i32, m: usize, n: usize) {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if board[ui][uj] != 'O' {
+            return;
+        }
+        board[ui][uj] = 'T';
+        dfs(board, i + 1, j, m, n);
+        dfs(board, i - 1, j, m, n);
+        dfs(board, i, j + 1, m, n);
+        dfs(board, i, j - 1, m, n);
+    }
+    
+    for i in 0..m {
+        dfs(board, i as i32, 0, m, n);
+        dfs(board, i as i32, (n - 1) as i32, m, n);
+    }
+    for j in 0..n {
+        dfs(board, 0, j as i32, m, n);
+        dfs(board, (m - 1) as i32, j as i32, m, n);
+    }
+    
+    for i in 0..m {
+        for j in 0..n {
+            if board[i][j] == 'O' {
+                board[i][j] = 'X';
+            } else if board[i][j] == 'T' {
+                board[i][j] = 'O';
+            }
+        }
+    }
+}
+
+
+
+pub fn max_area_of_island(mut grid: Vec<Vec<i32>>) -> i32 {
+    if grid.is_empty() {
+        return 0;
+    }
+    let (m, n) = (grid.len(), grid[0].len());
+    
+    fn dfs(grid: &mut Vec<Vec<i32>>, i: i32, j: i32, m: usize, n: usize) -> i32 {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return 0;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if grid[ui][uj] != 1 {
+            return 0;
+        }
+        grid[ui][uj] = 0;
+        1 + dfs(grid, i + 1, j, m, n)
+            + dfs(grid, i - 1, j, m, n)
+            + dfs(grid, i, j + 1, m, n)
+            + dfs(grid, i, j - 1, m, n)
+    }
+    
+    let mut max_area = 0;
+    for i in 0..m {
+        for j in 0..n {
+            if grid[i][j] == 1 {
+                max_area = max_area.max(dfs(&mut grid, i as i32, j as i32, m, n));
+            }
+        }
+    }
+    max_area
+}
+
+
+
+pub fn walls_and_gates(rooms: &mut Vec<Vec<i32>>) {
+    use std::collections::VecDeque;
+    if rooms.is_empty() {
+        return;
+    }
+    let (m, n) = (rooms.len(), rooms[0].len());
+    let mut queue = VecDeque::new();
+    
+    for i in 0..m {
+        for j in 0..n {
+            if rooms[i][j] == 0 {
+                queue.push_back((i, j));
+            }
+        }
+    }
+    
+    let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+    while let Some((x, y)) = queue.pop_front() {
+        for (dx, dy) in &dirs {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx >= 0 && nx < m as i32 && ny >= 0 && ny < n as i32 {
+                let (nx, ny) = (nx as usize, ny as usize);
+                if rooms[nx][ny] == i32::MAX {
+                    rooms[nx][ny] = rooms[x][y] + 1;
+                    queue.push_back((nx, ny));
+                }
+            }
+        }
+    }
+}
+
+
+
+pub fn open_lock(deadends: Vec<String>, target: String) -> i32 {
+    use std::collections::{HashSet, VecDeque};
+    let dead: HashSet<String> = deadends.into_iter().collect();
+    if dead.contains("0000") {
+        return -1;
+    }
+    let mut visited = HashSet::new();
+    let mut queue = VecDeque::new();
+    queue.push_back("0000".to_string());
+    visited.insert("0000".to_string());
+    let mut steps = 0;
+    
+    while !queue.is_empty() {
+        let size = queue.len();
+        for _ in 0..size {
+            let curr = queue.pop_front().unwrap();
+            if curr == target {
+                return steps;
+            }
+            for j in 0..4 {
+                for delta in &[-1, 1] {
+                    let mut chars: Vec<char> = curr.chars().collect();
+                    let digit = ((chars[j] as i32 - '0' as i32 + delta + 10) % 10) as u8;
+                    chars[j] = (b'0' + digit) as char;
+                    let next: String = chars.into_iter().collect();
+                    if !visited.contains(&next) && !dead.contains(&next) {
+                        visited.insert(next.clone());
+                        queue.push_back(next);
+                    }
+                }
+            }
+        }
+        steps += 1;
+    }
+    -1
+}
+
+
+
+pub fn minimum_effort_path(heights: Vec<Vec<i32>>) -> i32 {
+    use std::cmp::Reverse;
+    use std::collections::BinaryHeap;
+    
+    let (m, n) = (heights.len(), heights[0].len());
+    let mut dist = vec![vec![i32::MAX; n]; m];
+    dist[0][0] = 0;
+    let mut pq = BinaryHeap::new();
+    pq.push(Reverse((0, 0, 0)));
+    let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+    
+    while let Some(Reverse((effort, x, y))) = pq.pop() {
+        if x == m - 1 && y == n - 1 {
+            return effort;
+        }
+        if effort > dist[x][y] {
+            continue;
+        }
+        for (dx, dy) in &dirs {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx >= 0 && nx < m as i32 && ny >= 0 && ny < n as i32 {
+                let (nx, ny) = (nx as usize, ny as usize);
+                let new_effort = effort.max((heights[nx][ny] - heights[x][y]).abs());
+                if new_effort < dist[nx][ny] {
+                    dist[nx][ny] = new_effort;
+                    pq.push(Reverse((new_effort, nx, ny)));
+                }
+            }
+        }
+    }
+    -1
+}
+
+
+
+pub fn network_delay_time(times: Vec<Vec<i32>>, n: i32, k: i32) -> i32 {
+    use std::cmp::Reverse;
+    use std::collections::BinaryHeap;
+    
+    let n = n as usize;
+    let k = k as usize;
+    let mut graph = vec![vec![]; n + 1];
+    for t in &times {
+        graph[t[0] as usize].push((t[1] as usize, t[2]));
+    }
+    
+    let mut dist = vec![i32::MAX; n + 1];
+    dist[k] = 0;
+    let mut pq = BinaryHeap::new();
+    pq.push(Reverse((0, k)));
+    
+    while let Some(Reverse((d, u))) = pq.pop() {
+        if d > dist[u] {
+            continue;
+        }
+        for &(v, w) in &graph[u] {
+            if dist[u] + w < dist[v] {
+                dist[v] = dist[u] + w;
+                pq.push(Reverse((dist[v], v)));
+            }
+        }
+    }
+    
+    let max_time = dist[1..=n].iter().max().unwrap_or(&i32::MAX);
+    if *max_time == i32::MAX { -1 } else { *max_time }
+}
+
+
+
+pub fn find_cheapest_price(n: i32, flights: Vec<Vec<i32>>, src: i32, dst: i32, k: i32) -> i32 {
+    let n = n as usize;
+    let mut dist = vec![i32::MAX; n];
+    dist[src as usize] = 0;
+    
+    for _ in 0..=k {
+        let mut temp = dist.clone();
+        for f in &flights {
+            let (from, to, price) = (f[0] as usize, f[1] as usize, f[2]);
+            if dist[from] != i32::MAX && dist[from] + price < temp[to] {
+                temp[to] = dist[from] + price;
+            }
+        }
+        dist = temp;
+    }
+    
+    if dist[dst as usize] == i32::MAX { -1 } else { dist[dst as usize] }
+}
+
+
+
+pub fn longest_increasing_path(matrix: Vec<Vec<i32>>) -> i32 {
+    if matrix.is_empty() {
+        return 0;
+    }
+    let (m, n) = (matrix.len(), matrix[0].len());
+    let mut cache = vec![vec![0; n]; m];
+    
+    fn dfs(matrix: &Vec<Vec<i32>>, cache: &mut Vec<Vec<i32>>, i: usize, j: usize) -> i32 {
+        if cache[i][j] != 0 {
+            return cache[i][j];
+        }
+        let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+        let mut max_len = 1;
+        for (dx, dy) in &dirs {
+            let ni = i as i32 + dx;
+            let nj = j as i32 + dy;
+            if ni >= 0 && ni < matrix.len() as i32 && nj >= 0 && nj < matrix[0].len() as i32 {
+                let (ni, nj) = (ni as usize, nj as usize);
+                if matrix[ni][nj] > matrix[i][j] {
+                    max_len = max_len.max(1 + dfs(matrix, cache, ni, nj));
+                }
+            }
+        }
+        cache[i][j] = max_len;
+        max_len
+    }
+    
+    let mut result = 0;
+    for i in 0..m {
+        for j in 0..n {
+            result = result.max(dfs(&matrix, &mut cache, i, j));
+        }
+    }
+    result
+}
+
+
+
+pub fn merge_intervals(mut intervals: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    if intervals.is_empty() {
+        return vec![];
+    }
+    intervals.sort_by_key(|i| i[0]);
+    let mut result = vec![intervals[0].clone()];
+    
+    for i in 1..intervals.len() {
+        let last = result.last_mut().unwrap();
+        if intervals[i][0] <= last[1] {
+            last[1] = last[1].max(intervals[i][1]);
+        } else {
+            result.push(intervals[i].clone());
+        }
+    }
+    result
+}
+
+
+
+pub fn insert_interval(intervals: Vec<Vec<i32>>, new_interval: Vec<i32>) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    let mut new_interval = new_interval;
+    let mut i = 0;
+    
+    while i < intervals.len() && intervals[i][1] < new_interval[0] {
+        result.push(intervals[i].clone());
+        i += 1;
+    }
+    
+    while i < intervals.len() && intervals[i][0] <= new_interval[1] {
+        new_interval[0] = new_interval[0].min(intervals[i][0]);
+        new_interval[1] = new_interval[1].max(intervals[i][1]);
+        i += 1;
+    }
+    result.push(new_interval);
+    
+    while i < intervals.len() {
+        result.push(intervals[i].clone());
+        i += 1;
+    }
+    result
+}
+
+
+
+pub fn min_meeting_rooms(mut intervals: Vec<Vec<i32>>) -> i32 {
+    use std::cmp::Reverse;
+    use std::collections::BinaryHeap;
+    
+    if intervals.is_empty() {
+        return 0;
+    }
+    intervals.sort_by_key(|i| i[0]);
+    let mut pq = BinaryHeap::new();
+    pq.push(Reverse(intervals[0][1]));
+    
+    for i in 1..intervals.len() {
+        if let Some(&Reverse(earliest_end)) = pq.peek() {
+            if intervals[i][0] >= earliest_end {
+                pq.pop();
+            }
+        }
+        pq.push(Reverse(intervals[i][1]));
+    }
+    pq.len() as i32
+}
+
+
+
+pub fn can_attend_meetings(mut intervals: Vec<Vec<i32>>) -> bool {
+    intervals.sort_by_key(|i| i[0]);
+    for i in 1..intervals.len() {
+        if intervals[i][0] < intervals[i - 1][1] {
+            return false;
+        }
+    }
+    true
+}
+
+
+
+pub fn erase_overlap_intervals(mut intervals: Vec<Vec<i32>>) -> i32 {
+    if intervals.is_empty() {
+        return 0;
+    }
+    intervals.sort_by_key(|i| i[1]);
+    let (mut count, mut end) = (0, intervals[0][1]);
+    for i in 1..intervals.len() {
+        if intervals[i][0] < end {
+            count += 1;
+        } else {
+            end = intervals[i][1];
+        }
+    }
+    count
+}
+
+
+
+pub fn find_circle_num(is_connected: Vec<Vec<i32>>) -> i32 {
+    let n = is_connected.len();
+    let mut visited = vec![false; n];
+    let mut count = 0;
+    
+    fn dfs(is_connected: &Vec<Vec<i32>>, visited: &mut Vec<bool>, i: usize) {
+        visited[i] = true;
+        for j in 0..is_connected.len() {
+            if is_connected[i][j] == 1 && !visited[j] {
+                dfs(is_connected, visited, j);
+            }
+        }
+    }
+    
+    for i in 0..n {
+        if !visited[i] {
+            dfs(&is_connected, &mut visited, i);
+            count += 1;
+        }
+    }
+    count
+}
+
+
+
+pub fn find_redundant_connection(edges: Vec<Vec<i32>>) -> Vec<i32> {
+    let n = edges.len();
+    let mut parent: Vec<usize> = (0..=n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    for edge in &edges {
+        let (u, v) = (edge[0] as usize, edge[1] as usize);
+        if find(&mut parent, u) == find(&mut parent, v) {
+            return edge.clone();
+        }
+        let pu = find(&mut parent, u);
+        let pv = find(&mut parent, v);
+        parent[pu] = pv;
+    }
+    vec![]
+}
+
+
+
+pub fn count_components(n: i32, edges: Vec<Vec<i32>>) -> i32 {
+    let n = n as usize;
+    let mut parent: Vec<usize> = (0..n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    let mut count = n as i32;
+    for edge in &edges {
+        let (u, v) = (edge[0] as usize, edge[1] as usize);
+        let p1 = find(&mut parent, u);
+        let p2 = find(&mut parent, v);
+        if p1 != p2 {
+            parent[p1] = p2;
+            count -= 1;
+        }
+    }
+    count
+}
+
+
+
+pub fn valid_tree(n: i32, edges: Vec<Vec<i32>>) -> bool {
+    let n = n as usize;
+    if edges.len() != n - 1 {
+        return false;
+    }
+    let mut parent: Vec<usize> = (0..n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    for edge in &edges {
+        let (u, v) = (edge[0] as usize, edge[1] as usize);
+        let p1 = find(&mut parent, u);
+        let p2 = find(&mut parent, v);
+        if p1 == p2 {
+            return false;
+        }
+        parent[p1] = p2;
+    }
+    true
+}
+
+
+
+pub fn earliest_acq(mut logs: Vec<Vec<i32>>, n: i32) -> i32 {
+    logs.sort_by_key(|l| l[0]);
+    let n = n as usize;
+    let mut parent: Vec<usize> = (0..n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    let mut groups = n;
+    for log in &logs {
+        let (t, a, b) = (log[0], log[1] as usize, log[2] as usize);
+        let p1 = find(&mut parent, a);
+        let p2 = find(&mut parent, b);
+        if p1 != p2 {
+            parent[p1] = p2;
+            groups -= 1;
+            if groups == 1 {
+                return t;
+            }
+        }
+    }
+    -1
+}
+
+
+
+pub fn smallest_string_with_swaps(s: String, pairs: Vec<Vec<i32>>) -> String {
+    let n = s.len();
+    let mut parent: Vec<usize> = (0..n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    for pair in &pairs {
+        let (a, b) = (pair[0] as usize, pair[1] as usize);
+        let pa = find(&mut parent, a);
+        let pb = find(&mut parent, b);
+        parent[pa] = pb;
+    }
+    
+    use std::collections::HashMap;
+    let mut groups: HashMap<usize, Vec<usize>> = HashMap::new();
+    for i in 0..n {
+        let root = find(&mut parent, i);
+        groups.entry(root).or_default().push(i);
+    }
+    
+    let mut bytes: Vec<u8> = s.bytes().collect();
+    for indices in groups.values() {
+        let mut chars: Vec<u8> = indices.iter().map(|&i| bytes[i]).collect();
+        chars.sort();
+        let mut sorted_indices = indices.clone();
+        sorted_indices.sort();
+        for (i, &idx) in sorted_indices.iter().enumerate() {
+            bytes[idx] = chars[i];
+        }
+    }
+    String::from_utf8(bytes).unwrap()
+}
+
+
+
+pub fn make_connected(n: i32, connections: Vec<Vec<i32>>) -> i32 {
+    let n = n as usize;
+    if connections.len() < n - 1 {
+        return -1;
+    }
+    let mut parent: Vec<usize> = (0..n).collect();
+    
+    fn find(parent: &mut Vec<usize>, x: usize) -> usize {
+        if parent[x] != x {
+            parent[x] = find(parent, parent[x]);
+        }
+        parent[x]
+    }
+    
+    let mut components = n as i32;
+    for conn in &connections {
+        let (a, b) = (conn[0] as usize, conn[1] as usize);
+        let p1 = find(&mut parent, a);
+        let p2 = find(&mut parent, b);
+        if p1 != p2 {
+            parent[p1] = p2;
+            components -= 1;
+        }
+    }
+    components - 1
+}
+
+
+
+pub fn all_paths_source_target(graph: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    let mut path = vec![0];
+    
+    fn dfs(graph: &Vec<Vec<i32>>, node: usize, path: &mut Vec<i32>, result: &mut Vec<Vec<i32>>) {
+        if node == graph.len() - 1 {
+            result.push(path.clone());
+            return;
+        }
+        for &next in &graph[node] {
+            path.push(next);
+            dfs(graph, next as usize, path, result);
+            path.pop();
+        }
+    }
+    
+    dfs(&graph, 0, &mut path, &mut result);
+    result
+}
+
+
+
+pub fn shortest_path_binary_matrix(mut grid: Vec<Vec<i32>>) -> i32 {
+    let n = grid.len();
+    if grid[0][0] == 1 || grid[n - 1][n - 1] == 1 {
+        return -1;
+    }
+    
+    use std::collections::VecDeque;
+    let dirs = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)];
+    let mut queue = VecDeque::new();
+    queue.push_back((0, 0, 1));
+    grid[0][0] = 1;
+    
+    while let Some((x, y, dist)) = queue.pop_front() {
+        if x == n - 1 && y == n - 1 {
+            return dist;
+        }
+        for (dx, dy) in &dirs {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx >= 0 && nx < n as i32 && ny >= 0 && ny < n as i32 {
+                let (nx, ny) = (nx as usize, ny as usize);
+                if grid[nx][ny] == 0 {
+                    grid[nx][ny] = 1;
+                    queue.push_back((nx, ny, dist + 1));
+                }
+            }
+        }
+    }
+    -1
+}
+
+
+
+pub fn num_enclaves(mut grid: Vec<Vec<i32>>) -> i32 {
+    let (m, n) = (grid.len(), grid[0].len());
+    
+    fn dfs(grid: &mut Vec<Vec<i32>>, i: i32, j: i32, m: usize, n: usize) {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if grid[ui][uj] != 1 {
+            return;
+        }
+        grid[ui][uj] = 0;
+        dfs(grid, i + 1, j, m, n);
+        dfs(grid, i - 1, j, m, n);
+        dfs(grid, i, j + 1, m, n);
+        dfs(grid, i, j - 1, m, n);
+    }
+    
+    for i in 0..m {
+        dfs(&mut grid, i as i32, 0, m, n);
+        dfs(&mut grid, i as i32, (n - 1) as i32, m, n);
+    }
+    for j in 0..n {
+        dfs(&mut grid, 0, j as i32, m, n);
+        dfs(&mut grid, (m - 1) as i32, j as i32, m, n);
+    }
+    
+    grid.iter().flatten().filter(|&&x| x == 1).count() as i32
+}
+
+
+
+pub fn closed_island(mut grid: Vec<Vec<i32>>) -> i32 {
+    let (m, n) = (grid.len(), grid[0].len());
+    
+    fn dfs(grid: &mut Vec<Vec<i32>>, i: i32, j: i32, m: usize, n: usize) {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if grid[ui][uj] != 0 {
+            return;
+        }
+        grid[ui][uj] = 1;
+        dfs(grid, i + 1, j, m, n);
+        dfs(grid, i - 1, j, m, n);
+        dfs(grid, i, j + 1, m, n);
+        dfs(grid, i, j - 1, m, n);
+    }
+    
+    for i in 0..m {
+        dfs(&mut grid, i as i32, 0, m, n);
+        dfs(&mut grid, i as i32, (n - 1) as i32, m, n);
+    }
+    for j in 0..n {
+        dfs(&mut grid, 0, j as i32, m, n);
+        dfs(&mut grid, (m - 1) as i32, j as i32, m, n);
+    }
+    
+    let mut count = 0;
+    for i in 1..m - 1 {
+        for j in 1..n - 1 {
+            if grid[i][j] == 0 {
+                count += 1;
+                dfs(&mut grid, i as i32, j as i32, m, n);
+            }
+        }
+    }
+    count
+}
+
+
+
+pub fn shortest_bridge(mut grid: Vec<Vec<i32>>) -> i32 {
+    use std::collections::VecDeque;
+    let (m, n) = (grid.len(), grid[0].len());
+    let mut queue = VecDeque::new();
+    
+    fn dfs(grid: &mut Vec<Vec<i32>>, i: i32, j: i32, m: usize, n: usize, queue: &mut VecDeque<(usize, usize)>) {
+        if i < 0 || i >= m as i32 || j < 0 || j >= n as i32 {
+            return;
+        }
+        let (ui, uj) = (i as usize, j as usize);
+        if grid[ui][uj] != 1 {
+            return;
+        }
+        grid[ui][uj] = 2;
+        queue.push_back((ui, uj));
+        dfs(grid, i + 1, j, m, n, queue);
+        dfs(grid, i - 1, j, m, n, queue);
+        dfs(grid, i, j + 1, m, n, queue);
+        dfs(grid, i, j - 1, m, n, queue);
+    }
+    
+    'outer: for i in 0..m {
+        for j in 0..n {
+            if grid[i][j] == 1 {
+                dfs(&mut grid, i as i32, j as i32, m, n, &mut queue);
+                break 'outer;
+            }
+        }
+    }
+    
+    let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+    let mut steps = 0;
+    while !queue.is_empty() {
+        let size = queue.len();
+        for _ in 0..size {
+            let (x, y) = queue.pop_front().unwrap();
+            for (dx, dy) in &dirs {
+                let nx = x as i32 + dx;
+                let ny = y as i32 + dy;
+                if nx >= 0 && nx < m as i32 && ny >= 0 && ny < n as i32 {
+                    let (nx, ny) = (nx as usize, ny as usize);
+                    if grid[nx][ny] == 1 {
+                        return steps;
+                    }
+                    if grid[nx][ny] == 0 {
+                        grid[nx][ny] = 2;
+                        queue.push_back((nx, ny));
+                    }
+                }
+            }
+        }
+        steps += 1;
+    }
+    -1
+}
+
+
+
+pub fn shortest_path_k(grid: Vec<Vec<i32>>, k: i32) -> i32 {
+    use std::collections::VecDeque;
+    let (m, n) = (grid.len(), grid[0].len());
+    if m == 1 && n == 1 {
+        return 0;
+    }
+    
+    let k = k as usize;
+    let mut visited = vec![vec![vec![false; k + 1]; n]; m];
+    let mut queue = VecDeque::new();
+    queue.push_back((0, 0, 0, 0));
+    visited[0][0][0] = true;
+    let dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+    
+    while let Some((x, y, obs, steps)) = queue.pop_front() {
+        for (dx, dy) in &dirs {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx >= 0 && nx < m as i32 && ny >= 0 && ny < n as i32 {
+                let (nx, ny) = (nx as usize, ny as usize);
+                let new_obs = obs + grid[nx][ny] as usize;
+                if new_obs <= k && !visited[nx][ny][new_obs] {
+                    if nx == m - 1 && ny == n - 1 {
+                        return steps + 1;
+                    }
+                    visited[nx][ny][new_obs] = true;
+                    queue.push_back((nx, ny, new_obs, steps + 1));
+                }
+            }
+        }
+    }
+    -1
+}

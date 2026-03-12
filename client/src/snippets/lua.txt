@@ -1,0 +1,3393 @@
+local function filter(tbl, predicate)
+    local result = {}
+    for i, v in ipairs(tbl) do
+        if predicate(v) then
+            table.insert(result, v)
+        end
+    end
+    return result
+end
+
+
+
+local function map(tbl, fn)
+    local result = {}
+    for i, v in ipairs(tbl) do
+        result[i] = fn(v)
+    end
+    return result
+end
+
+
+
+local function reduce(tbl, fn, initial)
+    local acc = initial
+    for i, v in ipairs(tbl) do
+        acc = fn(acc, v)
+    end
+    return acc
+end
+
+
+
+local function forEach(tbl, fn)
+    for i, v in ipairs(tbl) do
+        fn(v, i)
+    end
+end
+
+
+
+local Vector = {}
+Vector.__index = Vector
+
+function Vector.new(x, y)
+    local self = setmetatable({}, Vector)
+    self.x = x or 0
+    self.y = y or 0
+    return self
+end
+
+function Vector:__add(other)
+    return Vector.new(self.x + other.x, self.y + other.y)
+end
+
+function Vector:__sub(other)
+    return Vector.new(self.x - other.x, self.y - other.y)
+end
+
+function Vector:magnitude()
+    return math.sqrt(self.x^2 + self.y^2)
+end
+
+function Vector:normalize()
+    local mag = self:magnitude()
+    return Vector.new(self.x / mag, self.y / mag)
+end
+
+
+
+local function createCounter(start)
+    local count = start or 0
+    return {
+        increment = function()
+            count = count + 1
+            return count
+        end,
+        decrement = function()
+            count = count - 1
+            return count
+        end,
+        get = function()
+            return count
+        end,
+        reset = function()
+            count = start or 0
+            return count
+        end
+    }
+end
+
+
+
+local function producer()
+    return coroutine.create(function()
+        for i = 1, 10 do
+            coroutine.yield(i * i)
+        end
+    end)
+end
+
+
+
+local M = {}
+
+function M.greet(name)
+    return string.format("Hello, %s!", name)
+end
+
+function M.sum(...)
+    local total = 0
+    for _, v in ipairs({...}) do
+        total = total + v
+    end
+    return total
+end
+
+function M.average(...)
+    local args = {...}
+    return M.sum(...) / #args
+end
+
+return M
+
+
+
+local function deepCopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepCopy(orig_key)] = deepCopy(orig_value)
+        end
+        setmetatable(copy, deepCopy(getmetatable(orig)))
+    else
+        copy = orig
+    end
+    return copy
+end
+
+
+
+local function merge(t1, t2)
+    local result = {}
+    for k, v in pairs(t1) do
+        result[k] = v
+    end
+    for k, v in pairs(t2) do
+        result[k] = v
+    end
+    return result
+end
+
+
+
+local function keys(tbl)
+    local result = {}
+    for k in pairs(tbl) do
+        table.insert(result, k)
+    end
+    return result
+end
+
+
+
+local function values(tbl)
+    local result = {}
+    for _, v in pairs(tbl) do
+        table.insert(result, v)
+    end
+    return result
+end
+
+
+
+local function find(tbl, predicate)
+    for i, v in ipairs(tbl) do
+        if predicate(v) then
+            return v, i
+        end
+    end
+    return nil
+end
+
+
+
+local function contains(tbl, value)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+
+
+local function reverse(tbl)
+    local result = {}
+    for i = #tbl, 1, -1 do
+        table.insert(result, tbl[i])
+    end
+    return result
+end
+
+
+
+local function flatten(tbl)
+    local result = {}
+    local function flattenHelper(t)
+        for _, v in ipairs(t) do
+            if type(v) == "table" then
+                flattenHelper(v)
+            else
+                table.insert(result, v)
+            end
+        end
+    end
+    flattenHelper(tbl)
+    return result
+end
+
+
+
+local function chunk(tbl, size)
+    local result = {}
+    for i = 1, #tbl, size do
+        local chunk = {}
+        for j = i, math.min(i + size - 1, #tbl) do
+            table.insert(chunk, tbl[j])
+        end
+        table.insert(result, chunk)
+    end
+    return result
+end
+
+
+
+local function unique(tbl)
+    local seen = {}
+    local result = {}
+    for _, v in ipairs(tbl) do
+        if not seen[v] then
+            seen[v] = true
+            table.insert(result, v)
+        end
+    end
+    return result
+end
+
+
+
+local function groupBy(tbl, keyFn)
+    local result = {}
+    for _, v in ipairs(tbl) do
+        local key = keyFn(v)
+        if not result[key] then
+            result[key] = {}
+        end
+        table.insert(result[key], v)
+    end
+    return result
+end
+
+
+
+local function partition(tbl, predicate)
+    local trueList = {}
+    local falseList = {}
+    for _, v in ipairs(tbl) do
+        if predicate(v) then
+            table.insert(trueList, v)
+        else
+            table.insert(falseList, v)
+        end
+    end
+    return trueList, falseList
+end
+
+
+
+local function shuffle(tbl)
+    local result = {}
+    for i, v in ipairs(tbl) do
+        result[i] = v
+    end
+    for i = #result, 2, -1 do
+        local j = math.random(i)
+        result[i], result[j] = result[j], result[i]
+    end
+    return result
+end
+
+
+
+local function sample(tbl)
+    return tbl[math.random(#tbl)]
+end
+
+
+
+local function range(start, stop, step)
+    step = step or 1
+    local result = {}
+    for i = start, stop, step do
+        table.insert(result, i)
+    end
+    return result
+end
+
+
+
+local function fibonacci(n)
+    if n <= 1 then return n end
+    local prev, curr = 0, 1
+    for i = 2, n do
+        prev, curr = curr, prev + curr
+    end
+    return curr
+end
+
+
+
+local function factorial(n)
+    if n <= 1 then return 1 end
+    return n * factorial(n - 1)
+end
+
+
+
+local function isPrime(n)
+    if n <= 1 then return false end
+    if n <= 3 then return true end
+    if n % 2 == 0 or n % 3 == 0 then return false end
+    local i = 5
+    while i * i <= n do
+        if n % i == 0 or n % (i + 2) == 0 then return false end
+        i = i + 6
+    end
+    return true
+end
+
+
+
+local function gcd(a, b)
+    while b ~= 0 do
+        a, b = b, a % b
+    end
+    return a
+end
+
+
+
+local function lcm(a, b)
+    return a * b / gcd(a, b)
+end
+
+
+
+local function binarySearch(arr, target)
+    local left, right = 1, #arr
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        if arr[mid] == target then
+            return mid
+        elseif arr[mid] < target then
+            left = mid + 1
+        else
+            right = mid - 1
+        end
+    end
+    return nil
+end
+
+
+
+local function quickSort(arr)
+    if #arr <= 1 then return arr end
+    local pivot = arr[math.ceil(#arr / 2)]
+    local left, middle, right = {}, {}, {}
+    for _, v in ipairs(arr) do
+        if v < pivot then
+            table.insert(left, v)
+        elseif v > pivot then
+            table.insert(right, v)
+        else
+            table.insert(middle, v)
+        end
+    end
+    local result = quickSort(left)
+    for _, v in ipairs(middle) do table.insert(result, v) end
+    for _, v in ipairs(quickSort(right)) do table.insert(result, v) end
+    return result
+end
+
+
+
+local function bubbleSort(arr)
+    local n = #arr
+    for i = 1, n - 1 do
+        for j = 1, n - i do
+            if arr[j] > arr[j + 1] then
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+            end
+        end
+    end
+    return arr
+end
+
+
+
+local Stack = {}
+Stack.__index = Stack
+
+function Stack.new()
+    return setmetatable({items = {}}, Stack)
+end
+
+function Stack:push(item)
+    table.insert(self.items, item)
+end
+
+function Stack:pop()
+    return table.remove(self.items)
+end
+
+function Stack:peek()
+    return self.items[#self.items]
+end
+
+function Stack:isEmpty()
+    return #self.items == 0
+end
+
+function Stack:size()
+    return #self.items
+end
+
+
+
+local Queue = {}
+Queue.__index = Queue
+
+function Queue.new()
+    return setmetatable({items = {}}, Queue)
+end
+
+function Queue:enqueue(item)
+    table.insert(self.items, item)
+end
+
+function Queue:dequeue()
+    return table.remove(self.items, 1)
+end
+
+function Queue:front()
+    return self.items[1]
+end
+
+function Queue:isEmpty()
+    return #self.items == 0
+end
+
+function Queue:size()
+    return #self.items
+end
+
+
+
+local function memoize(fn)
+    local cache = {}
+    return function(...)
+        local key = table.concat({...}, ",")
+        if cache[key] == nil then
+            cache[key] = fn(...)
+        end
+        return cache[key]
+    end
+end
+
+
+
+local function debounce(fn, wait)
+    local timer = nil
+    return function(...)
+        local args = {...}
+        if timer then
+            timer:stop()
+        end
+        timer = vim.loop.new_timer()
+        timer:start(wait, 0, function()
+            fn(unpack(args))
+        end)
+    end
+end
+
+
+
+local function throttle(fn, limit)
+    local inThrottle = false
+    return function(...)
+        if not inThrottle then
+            fn(...)
+            inThrottle = true
+            vim.defer_fn(function()
+                inThrottle = false
+            end, limit)
+        end
+    end
+end
+
+
+
+local function clamp(value, min, max)
+    return math.max(min, math.min(value, max))
+end
+
+
+
+local function lerp(a, b, t)
+    return a + (b - a) * t
+end
+
+
+
+local function randomInt(min, max)
+    return math.random(min, max)
+end
+
+
+
+local function split(str, delimiter)
+    local result = {}
+    for match in (str .. delimiter):gmatch("(.-)" .. delimiter) do
+        table.insert(result, match)
+    end
+    return result
+end
+
+
+
+local function trim(str)
+    return str:match("^%s*(.-)%s*$")
+end
+
+
+
+local function startsWith(str, prefix)
+    return str:sub(1, #prefix) == prefix
+end
+
+
+
+local function endsWith(str, suffix)
+    return str:sub(-#suffix) == suffix
+end
+
+
+
+local function capitalize(str)
+    return str:sub(1, 1):upper() .. str:sub(2):lower()
+end
+
+
+
+local function isPalindrome(str)
+    local cleaned = str:lower():gsub("%s+", "")
+    return cleaned == cleaned:reverse()
+end
+
+
+
+local function reverseString(str)
+    return str:reverse()
+end
+
+
+
+function spiralOrder(matrix)
+    if #matrix == 0 then return {} end
+    local result = {}
+    local m, n = #matrix, #matrix[1]
+    local top, bottom, left, right = 1, m, 1, n
+    
+    while top <= bottom and left <= right do
+        for i = left, right do
+            table.insert(result, matrix[top][i])
+        end
+        top = top + 1
+        for i = top, bottom do
+            table.insert(result, matrix[i][right])
+        end
+        right = right - 1
+        if top <= bottom then
+            for i = right, left, -1 do
+                table.insert(result, matrix[bottom][i])
+            end
+            bottom = bottom - 1
+        end
+        if left <= right then
+            for i = bottom, top, -1 do
+                table.insert(result, matrix[i][left])
+            end
+            left = left + 1
+        end
+    end
+    return result
+end
+
+
+
+function mergeIntervals(intervals)
+    if #intervals <= 1 then return intervals end
+    table.sort(intervals, function(a, b) return a[1] < b[1] end)
+    local result = {intervals[1]}
+    
+    for i = 2, #intervals do
+        local last = result[#result]
+        if intervals[i][1] <= last[2] then
+            last[2] = math.max(last[2], intervals[i][2])
+        else
+            table.insert(result, intervals[i])
+        end
+    end
+    return result
+end
+
+
+
+function trap(height)
+    if #height == 0 then return 0 end
+    local left, right = 1, #height
+    local leftMax, rightMax = 0, 0
+    local result = 0
+    
+    while left < right do
+        if height[left] < height[right] then
+            if height[left] >= leftMax then
+                leftMax = height[left]
+            else
+                result = result + leftMax - height[left]
+            end
+            left = left + 1
+        else
+            if height[right] >= rightMax then
+                rightMax = height[right]
+            else
+                result = result + rightMax - height[right]
+            end
+            right = right - 1
+        end
+    end
+    return result
+end
+
+
+
+function nextGreaterElement(nums)
+    local n = #nums
+    local result = {}
+    for i = 1, n do result[i] = -1 end
+    local stack = {}
+    
+    for i = 1, n do
+        while #stack > 0 and nums[stack[#stack]] < nums[i] do
+            local idx = table.remove(stack)
+            result[idx] = nums[i]
+        end
+        table.insert(stack, i)
+    end
+    return result
+end
+
+
+
+function dailyTemperatures(temperatures)
+    local n = #temperatures
+    local result = {}
+    for i = 1, n do result[i] = 0 end
+    local stack = {}
+    
+    for i = 1, n do
+        while #stack > 0 and temperatures[stack[#stack]] < temperatures[i] do
+            local prevIdx = table.remove(stack)
+            result[prevIdx] = i - prevIdx
+        end
+        table.insert(stack, i)
+    end
+    return result
+end
+
+
+
+function lengthOfLongestSubstring(s)
+    local seen = {}
+    local maxLen, start = 0, 1
+    
+    for i = 1, #s do
+        local c = s:sub(i, i)
+        if seen[c] and seen[c] >= start then
+            start = seen[c] + 1
+        end
+        seen[c] = i
+        maxLen = math.max(maxLen, i - start + 1)
+    end
+    return maxLen
+end
+
+
+
+function longestPalindrome(s)
+    local n = #s
+    if n < 2 then return s end
+    local start, maxLen = 1, 1
+    
+    local function expand(left, right)
+        while left >= 1 and right <= n and s:sub(left, left) == s:sub(right, right) do
+            if right - left + 1 > maxLen then
+                start = left
+                maxLen = right - left + 1
+            end
+            left = left - 1
+            right = right + 1
+        end
+    end
+    
+    for i = 1, n do
+        expand(i, i)
+        expand(i, i + 1)
+    end
+    return s:sub(start, start + maxLen - 1)
+end
+
+
+
+function groupAnagrams(strs)
+    local groups = {}
+    
+    for _, s in ipairs(strs) do
+        local chars = {}
+        for i = 1, #s do
+            table.insert(chars, s:sub(i, i))
+        end
+        table.sort(chars)
+        local key = table.concat(chars)
+        if not groups[key] then groups[key] = {} end
+        table.insert(groups[key], s)
+    end
+    
+    local result = {}
+    for _, v in pairs(groups) do
+        table.insert(result, v)
+    end
+    return result
+end
+
+
+
+function wordBreak(s, wordDict)
+    local wordSet = {}
+    for _, word in ipairs(wordDict) do
+        wordSet[word] = true
+    end
+    local n = #s
+    local dp = {}
+    dp[0] = true
+    
+    for i = 1, n do
+        for j = 0, i - 1 do
+            if dp[j] and wordSet[s:sub(j + 1, i)] then
+                dp[i] = true
+                break
+            end
+        end
+    end
+    return dp[n] == true
+end
+
+
+
+function minPathSum(grid)
+    local m, n = #grid, #grid[1]
+    local dp = {}
+    for i = 1, m do dp[i] = {} end
+    dp[1][1] = grid[1][1]
+    
+    for i = 2, m do
+        dp[i][1] = dp[i-1][1] + grid[i][1]
+    end
+    for j = 2, n do
+        dp[1][j] = dp[1][j-1] + grid[1][j]
+    end
+    
+    for i = 2, m do
+        for j = 2, n do
+            dp[i][j] = math.min(dp[i-1][j], dp[i][j-1]) + grid[i][j]
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function editDistance(word1, word2)
+    local m, n = #word1, #word2
+    local dp = {}
+    for i = 0, m do
+        dp[i] = {}
+        dp[i][0] = i
+    end
+    for j = 0, n do dp[0][j] = j end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if word1:sub(i, i) == word2:sub(j, j) then
+                dp[i][j] = dp[i-1][j-1]
+            else
+                dp[i][j] = 1 + math.min(dp[i-1][j-1], math.min(dp[i-1][j], dp[i][j-1]))
+            end
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function longestCommonSubsequence(text1, text2)
+    local m, n = #text1, #text2
+    local dp = {}
+    for i = 0, m do
+        dp[i] = {}
+        for j = 0, n do dp[i][j] = 0 end
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if text1:sub(i, i) == text2:sub(j, j) then
+                dp[i][j] = dp[i-1][j-1] + 1
+            else
+                dp[i][j] = math.max(dp[i-1][j], dp[i][j-1])
+            end
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function generateParenthesis(n)
+    local result = {}
+    
+    local function backtrack(s, left, right)
+        if #s == 2 * n then
+            table.insert(result, s)
+            return
+        end
+        if left < n then
+            backtrack(s .. "(", left + 1, right)
+        end
+        if right < left then
+            backtrack(s .. ")", left, right + 1)
+        end
+    end
+    
+    backtrack("", 0, 0)
+    return result
+end
+
+
+
+function combinationSum(candidates, target)
+    local result = {}
+    
+    local function backtrack(start, remaining, path)
+        if remaining == 0 then
+            local copy = {}
+            for _, v in ipairs(path) do table.insert(copy, v) end
+            table.insert(result, copy)
+            return
+        end
+        if remaining < 0 then return end
+        
+        for i = start, #candidates do
+            table.insert(path, candidates[i])
+            backtrack(i, remaining - candidates[i], path)
+            table.remove(path)
+        end
+    end
+    
+    backtrack(1, target, {})
+    return result
+end
+
+
+
+function permute(nums)
+    local result = {}
+    
+    local function backtrack(start)
+        if start > #nums then
+            local copy = {}
+            for _, v in ipairs(nums) do table.insert(copy, v) end
+            table.insert(result, copy)
+            return
+        end
+        for i = start, #nums do
+            nums[start], nums[i] = nums[i], nums[start]
+            backtrack(start + 1)
+            nums[start], nums[i] = nums[i], nums[start]
+        end
+    end
+    
+    backtrack(1)
+    return result
+end
+
+
+
+function subsets(nums)
+    local result = {{}}
+    
+    for _, num in ipairs(nums) do
+        local size = #result
+        for i = 1, size do
+            local subset = {}
+            for _, v in ipairs(result[i]) do table.insert(subset, v) end
+            table.insert(subset, num)
+            table.insert(result, subset)
+        end
+    end
+    return result
+end
+
+
+
+function numIslands(grid)
+    if #grid == 0 then return 0 end
+    local m, n = #grid, #grid[1]
+    local count = 0
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] == "0" then return end
+        grid[i][j] = "0"
+        dfs(i + 1, j)
+        dfs(i - 1, j)
+        dfs(i, j + 1)
+        dfs(i, j - 1)
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == "1" then
+                count = count + 1
+                dfs(i, j)
+            end
+        end
+    end
+    return count
+end
+
+
+
+function maxProfit(prices)
+    if #prices < 2 then return 0 end
+    local minPrice = prices[1]
+    local maxProfit = 0
+    
+    for i = 2, #prices do
+        minPrice = math.min(minPrice, prices[i])
+        maxProfit = math.max(maxProfit, prices[i] - minPrice)
+    end
+    return maxProfit
+end
+
+
+
+function maxSubArray(nums)
+    local maxSum = nums[1]
+    local currentSum = nums[1]
+    
+    for i = 2, #nums do
+        currentSum = math.max(nums[i], currentSum + nums[i])
+        maxSum = math.max(maxSum, currentSum)
+    end
+    return maxSum
+end
+
+
+
+function productExceptSelf(nums)
+    local n = #nums
+    local result = {}
+    for i = 1, n do result[i] = 1 end
+    
+    local left = 1
+    for i = 1, n do
+        result[i] = result[i] * left
+        left = left * nums[i]
+    end
+    
+    local right = 1
+    for i = n, 1, -1 do
+        result[i] = result[i] * right
+        right = right * nums[i]
+    end
+    return result
+end
+
+
+
+function searchInRotatedArray(nums, target)
+    local left, right = 1, #nums
+    
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        if nums[mid] == target then return mid end
+        
+        if nums[left] <= nums[mid] then
+            if target >= nums[left] and target < nums[mid] then
+                right = mid - 1
+            else
+                left = mid + 1
+            end
+        else
+            if target > nums[mid] and target <= nums[right] then
+                left = mid + 1
+            else
+                right = mid - 1
+            end
+        end
+    end
+    return -1
+end
+
+
+
+function rob(nums)
+    if #nums == 0 then return 0 end
+    if #nums == 1 then return nums[1] end
+    local prev, curr = 0, 0
+    
+    for i = 1, #nums do
+        local temp = curr
+        curr = math.max(curr, prev + nums[i])
+        prev = temp
+    end
+    return curr
+end
+
+
+
+function climbStairs(n)
+    if n <= 2 then return n end
+    local prev, curr = 1, 2
+    
+    for i = 3, n do
+        prev, curr = curr, prev + curr
+    end
+    return curr
+end
+
+
+
+function coinChange(coins, amount)
+    local dp = {}
+    for i = 0, amount do dp[i] = amount + 1 end
+    dp[0] = 0
+    
+    for _, coin in ipairs(coins) do
+        for i = coin, amount do
+            dp[i] = math.min(dp[i], dp[i - coin] + 1)
+        end
+    end
+    return dp[amount] > amount and -1 or dp[amount]
+end
+
+
+
+function calculate(s)
+    local stack = {}
+    local num, sign, result = 0, 1, 0
+    for i = 1, #s do
+        local c = s:sub(i, i)
+        if c:match("%d") then
+            num = num * 10 + tonumber(c)
+        elseif c == "+" then
+            result = result + sign * num
+            num = 0
+            sign = 1
+        elseif c == "-" then
+            result = result + sign * num
+            num = 0
+            sign = -1
+        elseif c == "(" then
+            table.insert(stack, result)
+            table.insert(stack, sign)
+            result = 0
+            sign = 1
+        elseif c == ")" then
+            result = result + sign * num
+            num = 0
+            result = result * table.remove(stack)
+            result = result + table.remove(stack)
+        end
+    end
+    return result + sign * num
+end
+
+
+
+function evalRPN(tokens)
+    local stack = {}
+    for _, token in ipairs(tokens) do
+        if token == "+" or token == "-" or token == "*" or token == "/" then
+            local b = table.remove(stack)
+            local a = table.remove(stack)
+            if token == "+" then
+                table.insert(stack, a + b)
+            elseif token == "-" then
+                table.insert(stack, a - b)
+            elseif token == "*" then
+                table.insert(stack, a * b)
+            else
+                table.insert(stack, math.floor(a / b))
+            end
+        else
+            table.insert(stack, tonumber(token))
+        end
+    end
+    return stack[1]
+end
+
+
+
+function simplifyPath(path)
+    local stack = {}
+    for part in path:gmatch("[^/]+") do
+        if part == ".." then
+            if #stack > 0 then table.remove(stack) end
+        elseif part ~= "" and part ~= "." then
+            table.insert(stack, part)
+        end
+    end
+    return "/" .. table.concat(stack, "/")
+end
+
+
+
+function asteroidCollision(asteroids)
+    local stack = {}
+    for _, asteroid in ipairs(asteroids) do
+        local alive = true
+        while #stack > 0 and asteroid < 0 and stack[#stack] > 0 do
+            if stack[#stack] < -asteroid then
+                table.remove(stack)
+            elseif stack[#stack] == -asteroid then
+                table.remove(stack)
+                alive = false
+                break
+            else
+                alive = false
+                break
+            end
+        end
+        if alive then table.insert(stack, asteroid) end
+    end
+    return stack
+end
+
+
+
+function removeKdigits(num, k)
+    local stack = {}
+    for i = 1, #num do
+        local c = num:sub(i, i)
+        while #stack > 0 and k > 0 and stack[#stack] > c do
+            table.remove(stack)
+            k = k - 1
+        end
+        table.insert(stack, c)
+    end
+    while k > 0 do
+        table.remove(stack)
+        k = k - 1
+    end
+    local result = table.concat(stack):gsub("^0+", "")
+    return result == "" and "0" or result
+end
+
+
+
+function leastInterval(tasks, n)
+    local freq = {}
+    for _, task in ipairs(tasks) do
+        freq[task] = (freq[task] or 0) + 1
+    end
+    local maxFreq = 0
+    for _, f in pairs(freq) do
+        maxFreq = math.max(maxFreq, f)
+    end
+    local maxCount = 0
+    for _, f in pairs(freq) do
+        if f == maxFreq then maxCount = maxCount + 1 end
+    end
+    return math.max(#tasks, (maxFreq - 1) * (n + 1) + maxCount)
+end
+
+
+
+function carPooling(trips, capacity)
+    local timeline = {}
+    for i = 0, 1000 do timeline[i] = 0 end
+    for _, trip in ipairs(trips) do
+        timeline[trip[2]] = timeline[trip[2]] + trip[1]
+        timeline[trip[3]] = timeline[trip[3]] - trip[1]
+    end
+    local current = 0
+    for i = 0, 1000 do
+        current = current + timeline[i]
+        if current > capacity then return false end
+    end
+    return true
+end
+
+
+
+function lowestCommonAncestor(root, p, q)
+    if root == nil or root == p or root == q then return root end
+    local left = lowestCommonAncestor(root.left, p, q)
+    local right = lowestCommonAncestor(root.right, p, q)
+    if left and right then return root end
+    return left or right
+end
+
+
+
+function flatten(root)
+    if root == nil then return end
+    flatten(root.left)
+    flatten(root.right)
+    local right = root.right
+    root.right = root.left
+    root.left = nil
+    local node = root
+    while node.right do node = node.right end
+    node.right = right
+end
+
+
+
+function maxPathSum(root)
+    local maxSum = -math.huge
+    local function dfs(node)
+        if node == nil then return 0 end
+        local left = math.max(0, dfs(node.left))
+        local right = math.max(0, dfs(node.right))
+        maxSum = math.max(maxSum, left + right + node.val)
+        return math.max(left, right) + node.val
+    end
+    dfs(root)
+    return maxSum
+end
+
+
+
+function rightSideView(root)
+    if root == nil then return {} end
+    local result = {}
+    local queue = {root}
+    while #queue > 0 do
+        local size = #queue
+        for i = 1, size do
+            local node = table.remove(queue, 1)
+            if i == size then table.insert(result, node.val) end
+            if node.left then table.insert(queue, node.left) end
+            if node.right then table.insert(queue, node.right) end
+        end
+    end
+    return result
+end
+
+
+
+function zigzagLevelOrder(root)
+    if root == nil then return {} end
+    local result = {}
+    local queue = {root}
+    local leftToRight = true
+    while #queue > 0 do
+        local size = #queue
+        local level = {}
+        for i = 1, size do
+            local node = table.remove(queue, 1)
+            if leftToRight then
+                table.insert(level, node.val)
+            else
+                table.insert(level, 1, node.val)
+            end
+            if node.left then table.insert(queue, node.left) end
+            if node.right then table.insert(queue, node.right) end
+        end
+        table.insert(result, level)
+        leftToRight = not leftToRight
+    end
+    return result
+end
+
+
+
+function surroundedRegions(board)
+    if #board == 0 then return end
+    local m, n = #board, #board[1]
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or board[i][j] ~= "O" then return end
+        board[i][j] = "T"
+        dfs(i + 1, j)
+        dfs(i - 1, j)
+        dfs(i, j + 1)
+        dfs(i, j - 1)
+    end
+    
+    for i = 1, m do
+        dfs(i, 1)
+        dfs(i, n)
+    end
+    for j = 1, n do
+        dfs(1, j)
+        dfs(m, j)
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if board[i][j] == "O" then board[i][j] = "X"
+            elseif board[i][j] == "T" then board[i][j] = "O" end
+        end
+    end
+end
+
+
+
+function ladderLength(beginWord, endWord, wordList)
+    local wordSet = {}
+    for _, word in ipairs(wordList) do
+        wordSet[word] = true
+    end
+    if not wordSet[endWord] then return 0 end
+    
+    local queue = {beginWord}
+    local level = 1
+    
+    while #queue > 0 do
+        local size = #queue
+        for _ = 1, size do
+            local word = table.remove(queue, 1)
+            if word == endWord then return level end
+            
+            for i = 1, #word do
+                for c = 97, 122 do
+                    local newChar = string.char(c)
+                    if newChar ~= word:sub(i, i) then
+                        local newWord = word:sub(1, i - 1) .. newChar .. word:sub(i + 1)
+                        if wordSet[newWord] then
+                            table.insert(queue, newWord)
+                            wordSet[newWord] = nil
+                        end
+                    end
+                end
+            end
+        end
+        level = level + 1
+    end
+    return 0
+end
+
+
+
+function subarraySum(nums, k)
+    local count, sum = 0, 0
+    local prefixSum = {[0] = 1}
+    for _, num in ipairs(nums) do
+        sum = sum + num
+        if prefixSum[sum - k] then
+            count = count + prefixSum[sum - k]
+        end
+        prefixSum[sum] = (prefixSum[sum] or 0) + 1
+    end
+    return count
+end
+
+
+
+function maxSlidingWindow(nums, k)
+    local result = {}
+    local deque = {}
+    for i = 1, #nums do
+        while #deque > 0 and deque[1] <= i - k do
+            table.remove(deque, 1)
+        end
+        while #deque > 0 and nums[deque[#deque]] < nums[i] do
+            table.remove(deque)
+        end
+        table.insert(deque, i)
+        if i >= k then
+            table.insert(result, nums[deque[1]])
+        end
+    end
+    return result
+end
+
+
+
+function findKthLargest(nums, k)
+    local function partition(left, right)
+        local pivot = nums[right]
+        local i = left
+        for j = left, right - 1 do
+            if nums[j] >= pivot then
+                nums[i], nums[j] = nums[j], nums[i]
+                i = i + 1
+            end
+        end
+        nums[i], nums[right] = nums[right], nums[i]
+        return i
+    end
+    
+    local function quickSelect(left, right, k)
+        if left == right then return nums[left] end
+        local pivotIdx = partition(left, right)
+        if k == pivotIdx then
+            return nums[k]
+        elseif k < pivotIdx then
+            return quickSelect(left, pivotIdx - 1, k)
+        else
+            return quickSelect(pivotIdx + 1, right, k)
+        end
+    end
+    
+    return quickSelect(1, #nums, k)
+end
+
+
+
+function topKFrequent(nums, k)
+    local freq = {}
+    for _, num in ipairs(nums) do
+        freq[num] = (freq[num] or 0) + 1
+    end
+    
+    local buckets = {}
+    for num, count in pairs(freq) do
+        if not buckets[count] then buckets[count] = {} end
+        table.insert(buckets[count], num)
+    end
+    
+    local result = {}
+    for i = #nums, 1, -1 do
+        if buckets[i] then
+            for _, num in ipairs(buckets[i]) do
+                table.insert(result, num)
+                if #result == k then return result end
+            end
+        end
+    end
+    return result
+end
+
+
+
+function longestConsecutive(nums)
+    local numSet = {}
+    for _, num in ipairs(nums) do
+        numSet[num] = true
+    end
+    
+    local longest = 0
+    for num, _ in pairs(numSet) do
+        if not numSet[num - 1] then
+            local current = num
+            local streak = 1
+            while numSet[current + 1] do
+                current = current + 1
+                streak = streak + 1
+            end
+            longest = math.max(longest, streak)
+        end
+    end
+    return longest
+end
+
+
+
+function minWindow(s, t)
+    if #s < #t then return "" end
+    local need = {}
+    for i = 1, #t do
+        local c = t:sub(i, i)
+        need[c] = (need[c] or 0) + 1
+    end
+    local window = {}
+    local left, valid = 1, 0
+    local start, minLen = 1, #s + 1
+    local needCount = 0
+    for _ in pairs(need) do needCount = needCount + 1 end
+    
+    for right = 1, #s do
+        local c = s:sub(right, right)
+        if need[c] then
+            window[c] = (window[c] or 0) + 1
+            if window[c] == need[c] then valid = valid + 1 end
+        end
+        while valid == needCount do
+            if right - left + 1 < minLen then
+                start = left
+                minLen = right - left + 1
+            end
+            local d = s:sub(left, left)
+            left = left + 1
+            if need[d] then
+                if window[d] == need[d] then valid = valid - 1 end
+                window[d] = window[d] - 1
+            end
+        end
+    end
+    return minLen == #s + 1 and "" or s:sub(start, start + minLen - 1)
+end
+
+
+
+function findAnagrams(s, p)
+    local result = {}
+    if #s < #p then return result end
+    local pCount, sCount = {}, {}
+    for i = 0, 25 do pCount[i], sCount[i] = 0, 0 end
+    for i = 1, #p do
+        pCount[p:byte(i) - 97] = pCount[p:byte(i) - 97] + 1
+    end
+    for i = 1, #s do
+        sCount[s:byte(i) - 97] = sCount[s:byte(i) - 97] + 1
+        if i > #p then
+            sCount[s:byte(i - #p) - 97] = sCount[s:byte(i - #p) - 97] - 1
+        end
+        if i >= #p then
+            local match = true
+            for j = 0, 25 do
+                if pCount[j] ~= sCount[j] then match = false break end
+            end
+            if match then table.insert(result, i - #p + 1) end
+        end
+    end
+    return result
+end
+
+
+
+function characterReplacement(s, k)
+    local count = {}
+    for i = 0, 25 do count[i] = 0 end
+    local left, maxCount, result = 1, 0, 0
+    for right = 1, #s do
+        local idx = s:byte(right) - 65
+        count[idx] = count[idx] + 1
+        maxCount = math.max(maxCount, count[idx])
+        while right - left + 1 - maxCount > k do
+            local leftIdx = s:byte(left) - 65
+            count[leftIdx] = count[leftIdx] - 1
+            left = left + 1
+        end
+        result = math.max(result, right - left + 1)
+    end
+    return result
+end
+
+
+
+function lengthOfLongestSubstringKDistinct(s, k)
+    local count = {}
+    local left, maxLen, distinct = 1, 0, 0
+    for right = 1, #s do
+        local c = s:sub(right, right)
+        if not count[c] or count[c] == 0 then distinct = distinct + 1 end
+        count[c] = (count[c] or 0) + 1
+        while distinct > k do
+            local d = s:sub(left, left)
+            count[d] = count[d] - 1
+            if count[d] == 0 then distinct = distinct - 1 end
+            left = left + 1
+        end
+        maxLen = math.max(maxLen, right - left + 1)
+    end
+    return maxLen
+end
+
+
+
+function detectCycle(head)
+    local slow, fast = head, head
+    while fast and fast.next do
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast then
+            local ptr = head
+            while ptr ~= slow do
+                ptr = ptr.next
+                slow = slow.next
+            end
+            return ptr
+        end
+    end
+    return nil
+end
+
+
+
+function reorderList(head)
+    if not head or not head.next then return end
+    local slow, fast = head, head
+    while fast.next and fast.next.next do
+        slow = slow.next
+        fast = fast.next.next
+    end
+    local second = slow.next
+    slow.next = nil
+    local prev = nil
+    while second do
+        local nxt = second.next
+        second.next = prev
+        prev = second
+        second = nxt
+    end
+    local first = head
+    second = prev
+    while second do
+        local tmp1, tmp2 = first.next, second.next
+        first.next = second
+        second.next = tmp1
+        first = tmp1
+        second = tmp2
+    end
+end
+
+
+
+function sortList(head)
+    if not head or not head.next then return head end
+    local slow, fast = head, head.next
+    while fast and fast.next do
+        slow = slow.next
+        fast = fast.next.next
+    end
+    local mid = slow.next
+    slow.next = nil
+    local left = sortList(head)
+    local right = sortList(mid)
+    local dummy = {next = nil}
+    local curr = dummy
+    while left and right do
+        if left.val < right.val then
+            curr.next = left
+            left = left.next
+        else
+            curr.next = right
+            right = right.next
+        end
+        curr = curr.next
+    end
+    curr.next = left or right
+    return dummy.next
+end
+
+
+
+function nextPermutation(nums)
+    local i = #nums - 1
+    while i >= 1 and nums[i] >= nums[i + 1] do i = i - 1 end
+    if i >= 1 then
+        local j = #nums
+        while nums[j] <= nums[i] do j = j - 1 end
+        nums[i], nums[j] = nums[j], nums[i]
+    end
+    local left, right = i + 1, #nums
+    while left < right do
+        nums[left], nums[right] = nums[right], nums[left]
+        left = left + 1
+        right = right - 1
+    end
+end
+
+
+
+function uniquePathsWithObstacles(grid)
+    local m, n = #grid, #grid[1]
+    if grid[1][1] == 1 then return 0 end
+    local dp = {}
+    for i = 1, m do dp[i] = {} for j = 1, n do dp[i][j] = 0 end end
+    dp[1][1] = 1
+    for i = 2, m do
+        dp[i][1] = grid[i][1] == 1 and 0 or dp[i-1][1]
+    end
+    for j = 2, n do
+        dp[1][j] = grid[1][j] == 1 and 0 or dp[1][j-1]
+    end
+    for i = 2, m do
+        for j = 2, n do
+            if grid[i][j] == 1 then
+                dp[i][j] = 0
+            else
+                dp[i][j] = dp[i-1][j] + dp[i][j-1]
+            end
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function orangesRotting(grid)
+    local m, n = #grid, #grid[1]
+    local queue = {}
+    local fresh = 0
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == 2 then
+                table.insert(queue, {i, j})
+            elseif grid[i][j] == 1 then
+                fresh = fresh + 1
+            end
+        end
+    end
+    if fresh == 0 then return 0 end
+    local dirs = {{0,1},{0,-1},{1,0},{-1,0}}
+    local minutes = -1
+    while #queue > 0 do
+        local size = #queue
+        minutes = minutes + 1
+        for _ = 1, size do
+            local cell = table.remove(queue, 1)
+            local x, y = cell[1], cell[2]
+            for _, d in ipairs(dirs) do
+                local nx, ny = x + d[1], y + d[2]
+                if nx >= 1 and nx <= m and ny >= 1 and ny <= n and grid[nx][ny] == 1 then
+                    grid[nx][ny] = 2
+                    fresh = fresh - 1
+                    table.insert(queue, {nx, ny})
+                end
+            end
+        end
+    end
+    return fresh == 0 and minutes or -1
+end
+
+
+
+function shortestPath(grid)
+    local m, n = #grid, #grid[1]
+    if grid[1][1] == 1 or grid[m][n] == 1 then return -1 end
+    local dirs = {{0,1},{0,-1},{1,0},{-1,0}}
+    local dist = {}
+    for i = 1, m do dist[i] = {} for j = 1, n do dist[i][j] = math.huge end end
+    dist[1][1] = 1
+    local queue = {{1, 1}}
+    while #queue > 0 do
+        local cell = table.remove(queue, 1)
+        local x, y = cell[1], cell[2]
+        for _, d in ipairs(dirs) do
+            local nx, ny = x + d[1], y + d[2]
+            if nx >= 1 and nx <= m and ny >= 1 and ny <= n and 
+               grid[nx][ny] == 0 and dist[x][y] + 1 < dist[nx][ny] then
+                dist[nx][ny] = dist[x][y] + 1
+                table.insert(queue, {nx, ny})
+            end
+        end
+    end
+    return dist[m][n] == math.huge and -1 or dist[m][n]
+end
+
+
+
+function copyRandomList(head)
+    if not head then return nil end
+    local map = {}
+    local curr = head
+    while curr do
+        map[curr] = {val = curr.val}
+        curr = curr.next
+    end
+    curr = head
+    while curr do
+        map[curr].next = map[curr.next]
+        map[curr].random = map[curr.random]
+        curr = curr.next
+    end
+    return map[head]
+end
+
+
+
+function mergeKLists(lists)
+    if #lists == 0 then return nil end
+    while #lists > 1 do
+        local merged = {}
+        for i = 1, #lists, 2 do
+            local l1 = lists[i]
+            local l2 = lists[i + 1]
+            table.insert(merged, mergeTwoLists(l1, l2))
+        end
+        lists = merged
+    end
+    return lists[1]
+end
+
+function mergeTwoLists(l1, l2)
+    local dummy = {next = nil}
+    local curr = dummy
+    while l1 and l2 do
+        if l1.val < l2.val then
+            curr.next = l1
+            l1 = l1.next
+        else
+            curr.next = l2
+            l2 = l2.next
+        end
+        curr = curr.next
+    end
+    curr.next = l1 or l2
+    return dummy.next
+end
+
+
+
+function reverseKGroup(head, k)
+    local curr = head
+    local count = 0
+    while curr and count < k do
+        curr = curr.next
+        count = count + 1
+    end
+    if count < k then return head end
+    local prev = nil
+    curr = head
+    for i = 1, k do
+        local nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    end
+    head.next = reverseKGroup(curr, k)
+    return prev
+end
+
+
+
+function medianFinder()
+    local small = {}
+    local large = {}
+    
+    local function addNum(num)
+        table.insert(small, -num)
+        table.sort(small)
+        table.insert(large, -table.remove(small, 1))
+        table.sort(large)
+        if #large > #small then
+            table.insert(small, -table.remove(large, 1))
+            table.sort(small)
+        end
+    end
+    
+    local function findMedian()
+        if #small > #large then
+            return -small[1]
+        end
+        return (-small[1] + large[1]) / 2
+    end
+    
+    return {addNum = addNum, findMedian = findMedian}
+end
+
+
+
+function uniquePaths(m, n)
+    local dp = {}
+    for i = 1, m do
+        dp[i] = {}
+        for j = 1, n do
+            dp[i][j] = 1
+        end
+    end
+    for i = 2, m do
+        for j = 2, n do
+            dp[i][j] = dp[i-1][j] + dp[i][j-1]
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function uniquePathsWithObstacles(grid)
+    local m, n = #grid, #grid[1]
+    if grid[1][1] == 1 then return 0 end
+    local dp = {}
+    for i = 1, m do dp[i] = {} for j = 1, n do dp[i][j] = 0 end end
+    dp[1][1] = 1
+    for i = 2, m do
+        dp[i][1] = grid[i][1] == 1 and 0 or dp[i-1][1]
+    end
+    for j = 2, n do
+        dp[1][j] = grid[1][j] == 1 and 0 or dp[1][j-1]
+    end
+    for i = 2, m do
+        for j = 2, n do
+            dp[i][j] = grid[i][j] == 1 and 0 or (dp[i-1][j] + dp[i][j-1])
+        end
+    end
+    return dp[m][n]
+end
+
+
+
+function canJump(nums)
+    local maxReach = 1
+    for i = 1, #nums do
+        if i > maxReach then return false end
+        maxReach = math.max(maxReach, i + nums[i])
+    end
+    return true
+end
+
+
+
+function jump(nums)
+    local jumps, curEnd, curFar = 0, 1, 1
+    for i = 1, #nums - 1 do
+        curFar = math.max(curFar, i + nums[i])
+        if i == curEnd then
+            jumps = jumps + 1
+            curEnd = curFar
+        end
+    end
+    return jumps
+end
+
+
+
+function canCompleteCircuit(gas, cost)
+    local totalTank, currTank, start = 0, 0, 1
+    for i = 1, #gas do
+        totalTank = totalTank + gas[i] - cost[i]
+        currTank = currTank + gas[i] - cost[i]
+        if currTank < 0 then
+            start = i + 1
+            currTank = 0
+        end
+    end
+    return totalTank >= 0 and start or -1
+end
+
+
+
+function candy(ratings)
+    local n = #ratings
+    local candies = {}
+    for i = 1, n do candies[i] = 1 end
+    for i = 2, n do
+        if ratings[i] > ratings[i-1] then
+            candies[i] = candies[i-1] + 1
+        end
+    end
+    for i = n - 1, 1, -1 do
+        if ratings[i] > ratings[i+1] and candies[i] <= candies[i+1] then
+            candies[i] = candies[i+1] + 1
+        end
+    end
+    local sum = 0
+    for i = 1, n do sum = sum + candies[i] end
+    return sum
+end
+
+
+
+function threeSum(nums)
+    table.sort(nums)
+    local result = {}
+    for i = 1, #nums - 2 do
+        if i > 1 and nums[i] == nums[i-1] then goto continue end
+        local left, right = i + 1, #nums
+        while left < right do
+            local sum = nums[i] + nums[left] + nums[right]
+            if sum == 0 then
+                table.insert(result, {nums[i], nums[left], nums[right]})
+                while left < right and nums[left] == nums[left+1] do left = left + 1 end
+                while left < right and nums[right] == nums[right-1] do right = right - 1 end
+                left = left + 1
+                right = right - 1
+            elseif sum < 0 then
+                left = left + 1
+            else
+                right = right - 1
+            end
+        end
+        ::continue::
+    end
+    return result
+end
+
+
+
+function threeSumClosest(nums, target)
+    table.sort(nums)
+    local closest = nums[1] + nums[2] + nums[3]
+    for i = 1, #nums - 2 do
+        local left, right = i + 1, #nums
+        while left < right do
+            local sum = nums[i] + nums[left] + nums[right]
+            if math.abs(sum - target) < math.abs(closest - target) then
+                closest = sum
+            end
+            if sum < target then
+                left = left + 1
+            elseif sum > target then
+                right = right - 1
+            else
+                return target
+            end
+        end
+    end
+    return closest
+end
+
+
+
+function maxArea(height)
+    local left, right = 1, #height
+    local maxArea = 0
+    while left < right do
+        local h = math.min(height[left], height[right])
+        local area = h * (right - left)
+        maxArea = math.max(maxArea, area)
+        if height[left] < height[right] then
+            left = left + 1
+        else
+            right = right - 1
+        end
+    end
+    return maxArea
+end
+
+
+
+function trap(height)
+    if #height == 0 then return 0 end
+    local left, right = 1, #height
+    local leftMax, rightMax = 0, 0
+    local result = 0
+    while left < right do
+        if height[left] < height[right] then
+            if height[left] >= leftMax then
+                leftMax = height[left]
+            else
+                result = result + leftMax - height[left]
+            end
+            left = left + 1
+        else
+            if height[right] >= rightMax then
+                rightMax = height[right]
+            else
+                result = result + rightMax - height[right]
+            end
+            right = right - 1
+        end
+    end
+    return result
+end
+
+
+
+function searchMatrix(matrix, target)
+    if #matrix == 0 or #matrix[1] == 0 then return false end
+    local m, n = #matrix, #matrix[1]
+    local left, right = 0, m * n - 1
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        local row = math.floor(mid / n) + 1
+        local col = mid % n + 1
+        local val = matrix[row][col]
+        if val == target then return true
+        elseif val < target then left = mid + 1
+        else right = mid - 1
+        end
+    end
+    return false
+end
+
+
+
+function searchMatrixII(matrix, target)
+    if #matrix == 0 or #matrix[1] == 0 then return false end
+    local m, n = #matrix, #matrix[1]
+    local row, col = 1, n
+    while row <= m and col >= 1 do
+        if matrix[row][col] == target then return true
+        elseif matrix[row][col] > target then col = col - 1
+        else row = row + 1
+        end
+    end
+    return false
+end
+
+
+
+function findPeakElement(nums)
+    local left, right = 1, #nums
+    while left < right do
+        local mid = math.floor((left + right) / 2)
+        if nums[mid] > nums[mid + 1] then
+            right = mid
+        else
+            left = mid + 1
+        end
+    end
+    return left
+end
+
+
+
+function searchRotatedArray(nums, target)
+    local left, right = 1, #nums
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        if nums[mid] == target then return mid end
+        if nums[left] <= nums[mid] then
+            if target >= nums[left] and target < nums[mid] then
+                right = mid - 1
+            else
+                left = mid + 1
+            end
+        else
+            if target > nums[mid] and target <= nums[right] then
+                left = mid + 1
+            else
+                right = mid - 1
+            end
+        end
+    end
+    return -1
+end
+
+
+
+function findMin(nums)
+    local left, right = 1, #nums
+    while left < right do
+        local mid = math.floor((left + right) / 2)
+        if nums[mid] > nums[right] then
+            left = mid + 1
+        else
+            right = mid
+        end
+    end
+    return nums[left]
+end
+
+
+
+function isValidParentheses(s)
+    local stack = {}
+    local pairs = {[")"] = "(", ["]"] = "[", ["}"] = "{"}
+    for i = 1, #s do
+        local c = s:sub(i, i)
+        if c == "(" or c == "[" or c == "{" then
+            table.insert(stack, c)
+        else
+            if #stack == 0 or stack[#stack] ~= pairs[c] then
+                return false
+            end
+            table.remove(stack)
+        end
+    end
+    return #stack == 0
+end
+
+
+
+function longestValidParentheses(s)
+    local stack = {0}
+    local maxLen = 0
+    for i = 1, #s do
+        if s:sub(i, i) == "(" then
+            table.insert(stack, i)
+        else
+            table.remove(stack)
+            if #stack == 0 then
+                table.insert(stack, i)
+            else
+                maxLen = math.max(maxLen, i - stack[#stack])
+            end
+        end
+    end
+    return maxLen
+end
+
+
+
+function minStackNew()
+    local stack, minStack = {}, {}
+    
+    local function push(val)
+        table.insert(stack, val)
+        if #minStack == 0 or val <= minStack[#minStack] then
+            table.insert(minStack, val)
+        end
+    end
+    
+    local function pop()
+        if stack[#stack] == minStack[#minStack] then
+            table.remove(minStack)
+        end
+        table.remove(stack)
+    end
+    
+    local function top()
+        return stack[#stack]
+    end
+    
+    local function getMin()
+        return minStack[#minStack]
+    end
+    
+    return {push = push, pop = pop, top = top, getMin = getMin}
+end
+
+
+
+function dailyTemperatures(temperatures)
+    local n = #temperatures
+    local result = {}
+    for i = 1, n do result[i] = 0 end
+    local stack = {}
+    for i = 1, n do
+        while #stack > 0 and temperatures[i] > temperatures[stack[#stack]] do
+            local idx = table.remove(stack)
+            result[idx] = i - idx
+        end
+        table.insert(stack, i)
+    end
+    return result
+end
+
+
+
+function nextGreaterElement(nums1, nums2)
+    local map = {}
+    local stack = {}
+    for _, num in ipairs(nums2) do
+        while #stack > 0 and num > stack[#stack] do
+            map[table.remove(stack)] = num
+        end
+        table.insert(stack, num)
+    end
+    local result = {}
+    for _, num in ipairs(nums1) do
+        table.insert(result, map[num] or -1)
+    end
+    return result
+end
+
+
+
+function largestRectangleArea(heights)
+    local stack = {}
+    local maxArea = 0
+    for i = 1, #heights + 1 do
+        local h = heights[i] or 0
+        while #stack > 0 and h < heights[stack[#stack]] do
+            local height = heights[table.remove(stack)]
+            local width = #stack == 0 and i - 1 or i - stack[#stack] - 1
+            maxArea = math.max(maxArea, height * width)
+        end
+        table.insert(stack, i)
+    end
+    return maxArea
+end
+
+
+
+function canFinish(numCourses, prerequisites)
+    local inDegree = {}
+    local adj = {}
+    for i = 1, numCourses do
+        inDegree[i] = 0
+        adj[i] = {}
+    end
+    for _, pre in ipairs(prerequisites) do
+        table.insert(adj[pre[2] + 1], pre[1] + 1)
+        inDegree[pre[1] + 1] = inDegree[pre[1] + 1] + 1
+    end
+    local queue = {}
+    for i = 1, numCourses do
+        if inDegree[i] == 0 then table.insert(queue, i) end
+    end
+    local count = 0
+    while #queue > 0 do
+        local course = table.remove(queue, 1)
+        count = count + 1
+        for _, next in ipairs(adj[course]) do
+            inDegree[next] = inDegree[next] - 1
+            if inDegree[next] == 0 then table.insert(queue, next) end
+        end
+    end
+    return count == numCourses
+end
+
+
+
+function findCourseOrder(numCourses, prerequisites)
+    local inDegree = {}
+    local adj = {}
+    for i = 1, numCourses do
+        inDegree[i] = 0
+        adj[i] = {}
+    end
+    for _, pre in ipairs(prerequisites) do
+        table.insert(adj[pre[2] + 1], pre[1] + 1)
+        inDegree[pre[1] + 1] = inDegree[pre[1] + 1] + 1
+    end
+    local queue = {}
+    for i = 1, numCourses do
+        if inDegree[i] == 0 then table.insert(queue, i) end
+    end
+    local result = {}
+    while #queue > 0 do
+        local course = table.remove(queue, 1)
+        table.insert(result, course - 1)
+        for _, next in ipairs(adj[course]) do
+            inDegree[next] = inDegree[next] - 1
+            if inDegree[next] == 0 then table.insert(queue, next) end
+        end
+    end
+    return #result == numCourses and result or {}
+end
+
+
+
+function setZeroes(matrix)
+    local m, n = #matrix, #matrix[1]
+    local firstRowZero, firstColZero = false, false
+    
+    for j = 1, n do
+        if matrix[1][j] == 0 then firstRowZero = true end
+    end
+    for i = 1, m do
+        if matrix[i][1] == 0 then firstColZero = true end
+    end
+    
+    for i = 2, m do
+        for j = 2, n do
+            if matrix[i][j] == 0 then
+                matrix[i][1] = 0
+                matrix[1][j] = 0
+            end
+        end
+    end
+    
+    for i = 2, m do
+        for j = 2, n do
+            if matrix[i][1] == 0 or matrix[1][j] == 0 then
+                matrix[i][j] = 0
+            end
+        end
+    end
+    
+    if firstRowZero then
+        for j = 1, n do matrix[1][j] = 0 end
+    end
+    if firstColZero then
+        for i = 1, m do matrix[i][1] = 0 end
+    end
+end
+
+
+
+function rotateImage(matrix)
+    local n = #matrix
+    for i = 1, math.floor(n / 2) do
+        for j = i, n - i do
+            local temp = matrix[i][j]
+            matrix[i][j] = matrix[n + 1 - j][i]
+            matrix[n + 1 - j][i] = matrix[n + 1 - i][n + 1 - j]
+            matrix[n + 1 - i][n + 1 - j] = matrix[j][n + 1 - i]
+            matrix[j][n + 1 - i] = temp
+        end
+    end
+end
+
+
+
+function spiralOrder(matrix)
+    if #matrix == 0 or #matrix[1] == 0 then return {} end
+    local result = {}
+    local top, bottom, left, right = 1, #matrix, 1, #matrix[1]
+    
+    while top <= bottom and left <= right do
+        for j = left, right do table.insert(result, matrix[top][j]) end
+        top = top + 1
+        for i = top, bottom do table.insert(result, matrix[i][right]) end
+        right = right - 1
+        if top <= bottom then
+            for j = right, left, -1 do table.insert(result, matrix[bottom][j]) end
+            bottom = bottom - 1
+        end
+        if left <= right then
+            for i = bottom, top, -1 do table.insert(result, matrix[i][left]) end
+            left = left + 1
+        end
+    end
+    return result
+end
+
+
+
+function cloneGraph(node)
+    if not node then return nil end
+    local visited = {}
+    
+    local function dfs(n)
+        if visited[n] then return visited[n] end
+        local clone = {val = n.val, neighbors = {}}
+        visited[n] = clone
+        for _, neighbor in ipairs(n.neighbors) do
+            table.insert(clone.neighbors, dfs(neighbor))
+        end
+        return clone
+    end
+    
+    return dfs(node)
+end
+
+
+
+function generateMatrix(n)
+    local matrix = {}
+    for i = 1, n do matrix[i] = {} for j = 1, n do matrix[i][j] = 0 end end
+    local top, bottom, left, right = 1, n, 1, n
+    local num = 1
+    while top <= bottom and left <= right do
+        for j = left, right do matrix[top][j] = num num = num + 1 end
+        top = top + 1
+        for i = top, bottom do matrix[i][right] = num num = num + 1 end
+        right = right - 1
+        for j = right, left, -1 do matrix[bottom][j] = num num = num + 1 end
+        bottom = bottom - 1
+        for i = bottom, top, -1 do matrix[i][left] = num num = num + 1 end
+        left = left + 1
+    end
+    return matrix
+end
+
+
+
+function gameOfLife(board)
+    local m, n = #board, #board[1]
+    local dx = {-1, -1, -1, 0, 0, 1, 1, 1}
+    local dy = {-1, 0, 1, -1, 1, -1, 0, 1}
+    
+    for i = 1, m do
+        for j = 1, n do
+            local count = 0
+            for k = 1, 8 do
+                local ni, nj = i + dx[k], j + dy[k]
+                if ni >= 1 and ni <= m and nj >= 1 and nj <= n then
+                    if board[ni][nj] % 2 == 1 then count = count + 1 end
+                end
+            end
+            if board[i][j] % 2 == 1 then
+                if count == 2 or count == 3 then board[i][j] = board[i][j] + 2 end
+            else
+                if count == 3 then board[i][j] = board[i][j] + 2 end
+            end
+        end
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            board[i][j] = math.floor(board[i][j] / 2)
+        end
+    end
+end
+
+
+
+function isValidSudoku(board)
+    local seen = {}
+    for i = 1, 9 do
+        for j = 1, 9 do
+            local c = board[i][j]
+            if c ~= "." then
+                local row = c .. " row " .. i
+                local col = c .. " col " .. j
+                local boxKey = c .. " box " .. math.floor((i-1)/3) .. "-" .. math.floor((j-1)/3)
+                if seen[row] or seen[col] or seen[boxKey] then return false end
+                seen[row], seen[col], seen[boxKey] = true, true, true
+            end
+        end
+    end
+    return true
+end
+
+
+
+function wordSearch(board, word)
+    local m, n = #board, #board[1]
+    
+    local function dfs(i, j, k)
+        if k > #word then return true end
+        if i < 1 or i > m or j < 1 or j > n then return false end
+        if board[i][j] ~= word:sub(k, k) then return false end
+        local temp = board[i][j]
+        board[i][j] = "#"
+        local found = dfs(i+1, j, k+1) or dfs(i-1, j, k+1) or dfs(i, j+1, k+1) or dfs(i, j-1, k+1)
+        board[i][j] = temp
+        return found
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if dfs(i, j, 1) then return true end
+        end
+    end
+    return false
+end
+
+
+
+function numIslands(grid)
+    if #grid == 0 then return 0 end
+    local m, n = #grid, #grid[1]
+    local count = 0
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] ~= "1" then return end
+        grid[i][j] = "0"
+        dfs(i+1, j) dfs(i-1, j) dfs(i, j+1) dfs(i, j-1)
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == "1" then
+                count = count + 1
+                dfs(i, j)
+            end
+        end
+    end
+    return count
+end
+
+
+
+function solveSurrounded(board)
+    if #board == 0 then return end
+    local m, n = #board, #board[1]
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or board[i][j] ~= "O" then return end
+        board[i][j] = "T"
+        dfs(i+1, j) dfs(i-1, j) dfs(i, j+1) dfs(i, j-1)
+    end
+    
+    for i = 1, m do dfs(i, 1) dfs(i, n) end
+    for j = 1, n do dfs(1, j) dfs(m, j) end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if board[i][j] == "O" then board[i][j] = "X"
+            elseif board[i][j] == "T" then board[i][j] = "O" end
+        end
+    end
+end
+
+
+
+function maxAreaOfIsland(grid)
+    if #grid == 0 then return 0 end
+    local m, n = #grid, #grid[1]
+    local maxArea = 0
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] ~= 1 then return 0 end
+        grid[i][j] = 0
+        return 1 + dfs(i+1, j) + dfs(i-1, j) + dfs(i, j+1) + dfs(i, j-1)
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == 1 then
+                maxArea = math.max(maxArea, dfs(i, j))
+            end
+        end
+    end
+    return maxArea
+end
+
+
+
+function pacificAtlantic(heights)
+    if #heights == 0 then return {} end
+    local m, n = #heights, #heights[1]
+    local pacific, atlantic = {}, {}
+    for i = 1, m do pacific[i], atlantic[i] = {}, {} end
+    
+    local function dfs(ocean, i, j)
+        ocean[i][j] = true
+        local dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+        for _, d in ipairs(dirs) do
+            local ni, nj = i + d[1], j + d[2]
+            if ni >= 1 and ni <= m and nj >= 1 and nj <= n then
+                if not ocean[ni][nj] and heights[ni][nj] >= heights[i][j] then
+                    dfs(ocean, ni, nj)
+                end
+            end
+        end
+    end
+    
+    for i = 1, m do dfs(pacific, i, 1) dfs(atlantic, i, n) end
+    for j = 1, n do dfs(pacific, 1, j) dfs(atlantic, m, j) end
+    
+    local result = {}
+    for i = 1, m do
+        for j = 1, n do
+            if pacific[i][j] and atlantic[i][j] then
+                table.insert(result, {i - 1, j - 1})
+            end
+        end
+    end
+    return result
+end
+
+
+
+function wallsAndGates(rooms)
+    if #rooms == 0 then return end
+    local m, n = #rooms, #rooms[1]
+    local INF = 2147483647
+    local queue = {}
+    
+    for i = 1, m do
+        for j = 1, n do
+            if rooms[i][j] == 0 then
+                table.insert(queue, {i, j})
+            end
+        end
+    end
+    
+    local dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+    while #queue > 0 do
+        local cell = table.remove(queue, 1)
+        local x, y = cell[1], cell[2]
+        for _, d in ipairs(dirs) do
+            local nx, ny = x + d[1], y + d[2]
+            if nx >= 1 and nx <= m and ny >= 1 and ny <= n and rooms[nx][ny] == INF then
+                rooms[nx][ny] = rooms[x][y] + 1
+                table.insert(queue, {nx, ny})
+            end
+        end
+    end
+end
+
+
+
+function mergeIntervals(intervals)
+    if #intervals == 0 then return {} end
+    table.sort(intervals, function(a, b) return a[1] < b[1] end)
+    local result = {{intervals[1][1], intervals[1][2]}}
+    for i = 2, #intervals do
+        local last = result[#result]
+        if intervals[i][1] <= last[2] then
+            last[2] = math.max(last[2], intervals[i][2])
+        else
+            table.insert(result, {intervals[i][1], intervals[i][2]})
+        end
+    end
+    return result
+end
+
+
+
+function insertInterval(intervals, newInterval)
+    local result = {}
+    local i = 1
+    while i <= #intervals and intervals[i][2] < newInterval[1] do
+        table.insert(result, intervals[i])
+        i = i + 1
+    end
+    while i <= #intervals and intervals[i][1] <= newInterval[2] do
+        newInterval[1] = math.min(newInterval[1], intervals[i][1])
+        newInterval[2] = math.max(newInterval[2], intervals[i][2])
+        i = i + 1
+    end
+    table.insert(result, newInterval)
+    while i <= #intervals do
+        table.insert(result, intervals[i])
+        i = i + 1
+    end
+    return result
+end
+
+
+
+function minMeetingRooms(intervals)
+    if #intervals == 0 then return 0 end
+    local events = {}
+    for _, interval in ipairs(intervals) do
+        table.insert(events, {interval[1], 1})
+        table.insert(events, {interval[2], -1})
+    end
+    table.sort(events, function(a, b)
+        if a[1] ~= b[1] then return a[1] < b[1] end
+        return a[2] < b[2]
+    end)
+    local rooms, maxRooms = 0, 0
+    for _, event in ipairs(events) do
+        rooms = rooms + event[2]
+        maxRooms = math.max(maxRooms, rooms)
+    end
+    return maxRooms
+end
+
+
+
+function longestIncreasingPath(matrix)
+    if #matrix == 0 then return 0 end
+    local m, n = #matrix, #matrix[1]
+    local cache = {}
+    for i = 1, m do cache[i] = {} end
+    
+    local function dfs(i, j)
+        if cache[i][j] then return cache[i][j] end
+        local dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+        local maxLen = 1
+        for _, d in ipairs(dirs) do
+            local ni, nj = i + d[1], j + d[2]
+            if ni >= 1 and ni <= m and nj >= 1 and nj <= n and matrix[ni][nj] > matrix[i][j] then
+                maxLen = math.max(maxLen, 1 + dfs(ni, nj))
+            end
+        end
+        cache[i][j] = maxLen
+        return maxLen
+    end
+    
+    local result = 0
+    for i = 1, m do
+        for j = 1, n do
+            result = math.max(result, dfs(i, j))
+        end
+    end
+    return result
+end
+
+
+
+function ladderLength(beginWord, endWord, wordList)
+    local wordSet = {}
+    for _, word in ipairs(wordList) do
+        wordSet[word] = true
+    end
+    if not wordSet[endWord] then return 0 end
+    
+    local queue = {beginWord}
+    local level = 1
+    while #queue > 0 do
+        local size = #queue
+        for _ = 1, size do
+            local word = table.remove(queue, 1)
+            if word == endWord then return level end
+            for j = 1, #word do
+                local original = word:sub(j, j)
+                for c = string.byte("a"), string.byte("z") do
+                    if string.char(c) ~= original then
+                        local newWord = word:sub(1, j-1) .. string.char(c) .. word:sub(j+1)
+                        if wordSet[newWord] then
+                            table.insert(queue, newWord)
+                            wordSet[newWord] = nil
+                        end
+                    end
+                end
+            end
+        end
+        level = level + 1
+    end
+    return 0
+end
+
+
+
+function openLock(deadends, target)
+    local dead = {}
+    for _, d in ipairs(deadends) do dead[d] = true end
+    if dead["0000"] then return -1 end
+    
+    local visited = {["0000"] = true}
+    local queue = {"0000"}
+    local steps = 0
+    
+    while #queue > 0 do
+        local size = #queue
+        for _ = 1, size do
+            local curr = table.remove(queue, 1)
+            if curr == target then return steps end
+            for j = 1, 4 do
+                for _, delta in ipairs({-1, 1}) do
+                    local digit = (tonumber(curr:sub(j, j)) + delta + 10) % 10
+                    local next = curr:sub(1, j-1) .. tostring(digit) .. curr:sub(j+1)
+                    if not visited[next] and not dead[next] then
+                        visited[next] = true
+                        table.insert(queue, next)
+                    end
+                end
+            end
+        end
+        steps = steps + 1
+    end
+    return -1
+end
+
+
+
+function numEnclaves(grid)
+    if #grid == 0 then return 0 end
+    local m, n = #grid, #grid[1]
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] ~= 1 then return end
+        grid[i][j] = 0
+        dfs(i+1, j) dfs(i-1, j) dfs(i, j+1) dfs(i, j-1)
+    end
+    
+    for i = 1, m do dfs(i, 1) dfs(i, n) end
+    for j = 1, n do dfs(1, j) dfs(m, j) end
+    
+    local count = 0
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == 1 then count = count + 1 end
+        end
+    end
+    return count
+end
+
+
+
+function closedIsland(grid)
+    if #grid == 0 then return 0 end
+    local m, n = #grid, #grid[1]
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] ~= 0 then return end
+        grid[i][j] = 1
+        dfs(i+1, j) dfs(i-1, j) dfs(i, j+1) dfs(i, j-1)
+    end
+    
+    for i = 1, m do dfs(i, 1) dfs(i, n) end
+    for j = 1, n do dfs(1, j) dfs(m, j) end
+    
+    local count = 0
+    for i = 2, m-1 do
+        for j = 2, n-1 do
+            if grid[i][j] == 0 then
+                count = count + 1
+                dfs(i, j)
+            end
+        end
+    end
+    return count
+end
+
+
+
+function colorBorder(grid, row, col, color)
+    if #grid == 0 then return grid end
+    local m, n = #grid, #grid[1]
+    local originalColor = grid[row][col]
+    local visited = {}
+    for i = 1, m do visited[i] = {} end
+    local borders = {}
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n then return false end
+        if visited[i][j] then return true end
+        if grid[i][j] ~= originalColor then return false end
+        visited[i][j] = true
+        local up = dfs(i-1, j)
+        local down = dfs(i+1, j)
+        local left = dfs(i, j-1)
+        local right = dfs(i, j+1)
+        if not (up and down and left and right) then
+            table.insert(borders, {i, j})
+        end
+        return true
+    end
+    
+    dfs(row, col)
+    for _, pos in ipairs(borders) do
+        grid[pos[1]][pos[2]] = color
+    end
+    return grid
+end
+
+
+
+function shortestPath(grid, k)
+    if #grid == 0 then return -1 end
+    local m, n = #grid, #grid[1]
+    if m == 1 and n == 1 then return 0 end
+    
+    local visited = {}
+    for i = 1, m do
+        visited[i] = {}
+        for j = 1, n do
+            visited[i][j] = -1
+        end
+    end
+    
+    local queue = {{1, 1, 0}}
+    visited[1][1] = 0
+    local steps = 0
+    local dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+    
+    while #queue > 0 do
+        steps = steps + 1
+        local size = #queue
+        for _ = 1, size do
+            local curr = table.remove(queue, 1)
+            local x, y, obs = curr[1], curr[2], curr[3]
+            for _, d in ipairs(dirs) do
+                local nx, ny = x + d[1], y + d[2]
+                if nx >= 1 and nx <= m and ny >= 1 and ny <= n then
+                    local newObs = obs + grid[nx][ny]
+                    if newObs <= k and (visited[nx][ny] == -1 or visited[nx][ny] > newObs) then
+                        if nx == m and ny == n then return steps end
+                        visited[nx][ny] = newObs
+                        table.insert(queue, {nx, ny, newObs})
+                    end
+                end
+            end
+        end
+    end
+    return -1
+end
+
+
+
+function canAttendMeetings(intervals)
+    table.sort(intervals, function(a, b) return a[1] < b[1] end)
+    for i = 2, #intervals do
+        if intervals[i][1] < intervals[i-1][2] then
+            return false
+        end
+    end
+    return true
+end
+
+
+
+function eraseOverlapIntervals(intervals)
+    if #intervals == 0 then return 0 end
+    table.sort(intervals, function(a, b) return a[2] < b[2] end)
+    local count = 0
+    local endTime = intervals[1][2]
+    for i = 2, #intervals do
+        if intervals[i][1] < endTime then
+            count = count + 1
+        else
+            endTime = intervals[i][2]
+        end
+    end
+    return count
+end
+
+
+
+function findCircleNum(isConnected)
+    local n = #isConnected
+    local visited = {}
+    local count = 0
+    
+    local function dfs(i)
+        visited[i] = true
+        for j = 1, n do
+            if isConnected[i][j] == 1 and not visited[j] then
+                dfs(j)
+            end
+        end
+    end
+    
+    for i = 1, n do
+        if not visited[i] then
+            dfs(i)
+            count = count + 1
+        end
+    end
+    return count
+end
+
+
+
+function UnionFind(n)
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then
+            parent[x] = find(parent[x])
+        end
+        return parent[x]
+    end
+    
+    local function union(x, y)
+        parent[find(x)] = find(y)
+    end
+    
+    return {find = find, union = union}
+end
+
+
+
+function findRedundantConnection(edges)
+    local n = #edges
+    local uf = UnionFind(n)
+    
+    for _, edge in ipairs(edges) do
+        if uf.find(edge[1]) == uf.find(edge[2]) then
+            return edge
+        end
+        uf.union(edge[1], edge[2])
+    end
+    return {}
+end
+
+
+
+function countComponents(n, edges)
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    local count = n
+    for _, edge in ipairs(edges) do
+        local p1, p2 = find(edge[1] + 1), find(edge[2] + 1)
+        if p1 ~= p2 then
+            parent[p1] = p2
+            count = count - 1
+        end
+    end
+    return count
+end
+
+
+
+function validTree(n, edges)
+    if #edges ~= n - 1 then return false end
+    
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    for _, edge in ipairs(edges) do
+        local p1, p2 = find(edge[1] + 1), find(edge[2] + 1)
+        if p1 == p2 then return false end
+        parent[p1] = p2
+    end
+    return true
+end
+
+
+
+function makeConnected(n, connections)
+    if #connections < n - 1 then return -1 end
+    
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    local components = n
+    for _, conn in ipairs(connections) do
+        local p1, p2 = find(conn[1] + 1), find(conn[2] + 1)
+        if p1 ~= p2 then
+            parent[p1] = p2
+            components = components - 1
+        end
+    end
+    return components - 1
+end
+
+
+
+function earliestAcq(logs, n)
+    table.sort(logs, function(a, b) return a[1] < b[1] end)
+    
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    local groups = n
+    for _, log in ipairs(logs) do
+        local p1, p2 = find(log[2] + 1), find(log[3] + 1)
+        if p1 ~= p2 then
+            parent[p1] = p2
+            groups = groups - 1
+            if groups == 1 then return log[1] end
+        end
+    end
+    return -1
+end
+
+
+
+function smallestStringWithSwaps(s, pairs)
+    local n = #s
+    local parent = {}
+    for i = 1, n do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    for _, pair in ipairs(pairs) do
+        parent[find(pair[1] + 1)] = find(pair[2] + 1)
+    end
+    
+    local groups = {}
+    for i = 1, n do
+        local root = find(i)
+        if not groups[root] then groups[root] = {} end
+        table.insert(groups[root], i)
+    end
+    
+    local chars = {}
+    for i = 1, n do chars[i] = s:sub(i, i) end
+    
+    for _, indices in pairs(groups) do
+        local groupChars = {}
+        for _, idx in ipairs(indices) do
+            table.insert(groupChars, chars[idx])
+        end
+        table.sort(groupChars)
+        table.sort(indices)
+        for i, idx in ipairs(indices) do
+            chars[idx] = groupChars[i]
+        end
+    end
+    
+    return table.concat(chars)
+end
+
+
+
+function allPathsSourceTarget(graph)
+    local result = {}
+    local n = #graph
+    
+    local function dfs(node, path)
+        table.insert(path, node)
+        if node == n then
+            local copy = {}
+            for _, v in ipairs(path) do table.insert(copy, v) end
+            table.insert(result, copy)
+        else
+            for _, next in ipairs(graph[node]) do
+                dfs(next, path)
+            end
+        end
+        table.remove(path)
+    end
+    
+    dfs(1, {})
+    return result
+end
+
+
+
+function shortestPathBinaryMatrix(grid)
+    local n = #grid
+    if grid[1][1] == 1 or grid[n][n] == 1 then return -1 end
+    
+    local dirs = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}
+    local queue = {{1, 1, 1}}
+    grid[1][1] = 1
+    
+    while #queue > 0 do
+        local curr = table.remove(queue, 1)
+        local x, y, dist = curr[1], curr[2], curr[3]
+        if x == n and y == n then return dist end
+        for _, d in ipairs(dirs) do
+            local nx, ny = x + d[1], y + d[2]
+            if nx >= 1 and nx <= n and ny >= 1 and ny <= n and grid[nx][ny] == 0 then
+                grid[nx][ny] = 1
+                table.insert(queue, {nx, ny, dist + 1})
+            end
+        end
+    end
+    return -1
+end
+
+
+
+function shortestBridge(grid)
+    local m, n = #grid, #grid[1]
+    local queue = {}
+    
+    local function dfs(i, j)
+        if i < 1 or i > m or j < 1 or j > n or grid[i][j] ~= 1 then return end
+        grid[i][j] = 2
+        table.insert(queue, {i, j})
+        dfs(i+1, j) dfs(i-1, j) dfs(i, j+1) dfs(i, j-1)
+    end
+    
+    for i = 1, m do
+        for j = 1, n do
+            if grid[i][j] == 1 then
+                dfs(i, j)
+                goto done
+            end
+        end
+    end
+    ::done::
+    
+    local dirs = {{0,1},{0,-1},{1,0},{-1,0}}
+    local steps = 0
+    while #queue > 0 do
+        local size = #queue
+        for _ = 1, size do
+            local curr = table.remove(queue, 1)
+            for _, d in ipairs(dirs) do
+                local nx, ny = curr[1] + d[1], curr[2] + d[2]
+                if nx >= 1 and nx <= m and ny >= 1 and ny <= n then
+                    if grid[nx][ny] == 1 then return steps end
+                    if grid[nx][ny] == 0 then
+                        grid[nx][ny] = 2
+                        table.insert(queue, {nx, ny})
+                    end
+                end
+            end
+        end
+        steps = steps + 1
+    end
+    return -1
+end
+
+
+
+function criticalConnections(n, connections)
+    local graph = {}
+    for i = 1, n do graph[i] = {} end
+    for _, conn in ipairs(connections) do
+        table.insert(graph[conn[1] + 1], conn[2] + 1)
+        table.insert(graph[conn[2] + 1], conn[1] + 1)
+    end
+    
+    local disc = {}
+    local low = {}
+    local timer = 0
+    local result = {}
+    
+    local function dfs(u, parent)
+        timer = timer + 1
+        disc[u] = timer
+        low[u] = timer
+        for _, v in ipairs(graph[u]) do
+            if not disc[v] then
+                dfs(v, u)
+                low[u] = math.min(low[u], low[v])
+                if low[v] > disc[u] then
+                    table.insert(result, {u - 1, v - 1})
+                end
+            elseif v ~= parent then
+                low[u] = math.min(low[u], disc[v])
+            end
+        end
+    end
+    
+    for i = 1, n do
+        if not disc[i] then
+            dfs(i, -1)
+        end
+    end
+    return result
+end
+
+
+
+function accountsMerge(accounts)
+    local parent = {}
+    local emailToName = {}
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    for _, account in ipairs(accounts) do
+        local name = account[1]
+        for i = 2, #account do
+            local email = account[i]
+            if not parent[email] then parent[email] = email end
+            emailToName[email] = name
+            if i > 2 then
+                parent[find(account[2])] = find(email)
+            end
+        end
+    end
+    
+    local groups = {}
+    for email in pairs(parent) do
+        local root = find(email)
+        if not groups[root] then groups[root] = {} end
+        table.insert(groups[root], email)
+    end
+    
+    local result = {}
+    for root, emails in pairs(groups) do
+        table.sort(emails)
+        table.insert(emails, 1, emailToName[root])
+        table.insert(result, emails)
+    end
+    return result
+end
+
+
+
+function regionsBySlashes(grid)
+    local n = #grid
+    local parent = {}
+    local totalCells = n * n * 4
+    for i = 1, totalCells do parent[i] = i end
+    
+    local function find(x)
+        if parent[x] ~= x then parent[x] = find(parent[x]) end
+        return parent[x]
+    end
+    
+    local function union(x, y)
+        parent[find(x)] = find(y)
+    end
+    
+    local function getIndex(row, col, region)
+        return ((row - 1) * n + (col - 1)) * 4 + region
+    end
+    
+    for i = 1, n do
+        for j = 1, n do
+            local char = grid[i]:sub(j, j)
+            if char == "/" then
+                union(getIndex(i, j, 1), getIndex(i, j, 2))
+                union(getIndex(i, j, 3), getIndex(i, j, 4))
+            elseif char == "\\" then
+                union(getIndex(i, j, 1), getIndex(i, j, 4))
+                union(getIndex(i, j, 2), getIndex(i, j, 3))
+            else
+                union(getIndex(i, j, 1), getIndex(i, j, 2))
+                union(getIndex(i, j, 2), getIndex(i, j, 3))
+                union(getIndex(i, j, 3), getIndex(i, j, 4))
+            end
+            if j < n then
+                union(getIndex(i, j, 4), getIndex(i, j + 1, 2))
+            end
+            if i < n then
+                union(getIndex(i, j, 3), getIndex(i + 1, j, 1))
+            end
+        end
+    end
+    
+    local count = 0
+    for i = 1, totalCells do
+        if find(i) == i then count = count + 1 end
+    end
+    return count
+end

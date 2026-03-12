@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "title": "table operations",
+        "category": "data-structure",
+        "code": "local function filter(tbl, predicate)\n    local result = {}\n    for i, v in ipairs(tbl) do\n        if predicate(v) then\n            table.insert(result, v)\n        end\n    end\n    return result\nend\n\nlocal numbers = {1, 2, 3, 4, 5, 6}\nlocal even = filter(numbers, function(x) return x % 2 == 0 end)"
+    },
+    {
+        "id": 2,
+        "title": "metatable",
+        "category": "data-structure",
+        "code": "local Vector = {}\nVector.__index = Vector\n\nfunction Vector.new(x, y)\n    local self = setmetatable({}, Vector)\n    self.x = x or 0\n    self.y = y or 0\n    return self\nend\n\nfunction Vector:__add(other)\n    return Vector.new(self.x + other.x, self.y + other.y)\nend\n\nfunction Vector:magnitude()\n    return math.sqrt(self.x^2 + self.y^2)\nend"
+    },
+    {
+        "id": 3,
+        "title": "closure",
+        "category": "function",
+        "code": "local function createCounter(start)\n    local count = start or 0\n    return {\n        increment = function()\n            count = count + 1\n            return count\n        end,\n        decrement = function()\n            count = count - 1\n            return count\n        end,\n        get = function()\n            return count\n        end\n    }\nend"
+    },
+    {
+        "id": 4,
+        "title": "coroutine",
+        "category": "function",
+        "code": "local function producer()\n    return coroutine.create(function()\n        for i = 1, 5 do\n            coroutine.yield(i * i)\n        end\n    end)\nend\n\nlocal co = producer()\nfor i = 1, 5 do\n    local status, value = coroutine.resume(co)\n    if status then\n        print(value)\n    end\nend"
+    },
+    {
+        "id": 5,
+        "title": "module",
+        "category": "function",
+        "code": "local M = {}\n\nfunction M.greet(name)\n    return string.format(\"Hello, %s!\", name)\nend\n\nfunction M.sum(...)\n    local total = 0\n    for _, v in ipairs({...}) do\n        total = total + v\n    end\n    return total\nend\n\nreturn M"
+    }
+]
