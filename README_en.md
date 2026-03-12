@@ -127,3 +127,8 @@ If you would like to add support for more languages, feel free to fork this repo
 ## License
 
 This project is licensed under the [MIT License](LICENSE). Contributions (Pull Requests / Issues) are always welcome.
+
+## Disclaimer
+
+**Note on Secondary Development**: This project is open-sourced under the MIT License for learning and exchange. If you intend to use this project for secondary development or redistribution, please credit the original source. Open source isn't easy, let's respect the hard work of every developer.
+
