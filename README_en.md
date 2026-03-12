@@ -30,11 +30,11 @@ Orbit Focus is a full-stack cross-platform Pomodoro application built on modern 
 
 | ![Main Clock](assets/screenshots/01_main_clock.png) | ![Timer Mode](assets/screenshots/02_timer_mode.png) |
 |:---:|:---:|
-| Main Interface / Clock | Timer / Countdown Mode |
+| Main Interface / Clock | Focus Timer |
 
 | ![Code Time Dashboard](assets/screenshots/03_code_time_dashboard.png) | ![Typing Practice](assets/screenshots/04_code_typing_practice.png) |
 |:---:|:---:|
-| Coding Dashboard | Code Typing Practice |
+| Coding Dashboard | Code Typing Speed Test |
 
 | ![Statistics Heatmap](assets/screenshots/05_statistics_heatmap.png) | ![Settings Panel](assets/screenshots/06_settings_panel.png) |
 |:---:|:---:|
@@ -42,7 +42,7 @@ Orbit Focus is a full-stack cross-platform Pomodoro application built on modern 
 
 | ![Focus Mode](assets/screenshots/07_timer_focus.png) |
 |:---:|
-| Focus Session Active |
+| Task Management / Todo List |
 
 
 ## Core Features
