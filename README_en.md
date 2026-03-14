@@ -112,24 +112,31 @@ npm run electron:build:linux  # Linux (.deb, .pkg.tar.zst, AppImage)
 ```
 *All output installers will be placed in the `dist-electron/` directory.*
 
-- **Debian/Ubuntu**: `dist-electron/orbit-focus_1.0.0_amd64.deb` (Install with `sudo dpkg -i`)
-- **Arch Linux**: `dist-electron/Orbit Focus-1.0.0.pkg.tar.zst` (Install with `sudo pacman -U`)
-- **AppImage**: `dist-electron/Orbit Focus-1.0.0.AppImage` (Add execute permission and run)
+## Download & Installation
+
+You can download the official installers from the [Releases](https://github.com/linanwanttodo/Orbit-Focus/releases) page. Please follow the instructions below for your platform:
+
+### Linux
+
+| Package Format | Target Systems | Installation / Usage |
+| :--- | :--- | :--- |
+| **.deb** | Debian, Ubuntu, Mint | `sudo dpkg -i orbit-focus_1.0.0_amd64.deb` |
+| **.pkg.tar.zst** | Arch Linux, Manjaro | `sudo pacman -U "Orbit Focus-1.0.0.pkg.tar.zst"` |
+| **.AppImage** | Universal Linux | `chmod +x "Orbit Focus-1.0.0.AppImage"` then run |
 
 ### Windows
 
-1. Download `Orbit-Focus-Setup-1.0.0.exe`.
-2. Double-click to run the installer.
-3. Once installation is complete, the application will launch automatically.
+1. Download the **Orbit-Focus-Setup-1.0.0.exe** installer.
+2. Double-click to run the setup wizard.
+3. Once installed, launch the application from your Desktop or Start menu.
 
 ### macOS
 
-1. Download `Orbit-Focus-1.0.0.dmg`.
-2. Double-click the .dmg file to mount it.
-3. Drag `Orbit Focus` to your `Applications` folder.
-4. Launch Orbit Focus from your Applications or via Spotlight.
-   *Note: You may need to allow the app in "System Settings > Privacy & Security" if it shows a developer verification warning.*
+1. Download the **Orbit-Focus-1.0.0.dmg** disk image.
+2. Double-click to mount the image, then drag **Orbit Focus** to your **Applications** folder.
+3. Launch from Applications. If prompted with a security warning, please allow it in "System Settings > Privacy & Security".
 
+---
 
 ## API Reference (Built-in Service)
 

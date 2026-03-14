@@ -112,24 +112,31 @@ npm run electron:build:linux  # Linux (.deb, .pkg.tar.zst, AppImage)
 ```
 *所有输出的安装包均会放置在 `dist-electron/` 目录下。*
 
-- **Debian/Ubuntu**: `dist-electron/orbit-focus_1.0.0_amd64.deb` (使用 `sudo dpkg -i` 安装)
-- **Arch Linux**: `dist-electron/Orbit Focus-1.0.0.pkg.tar.zst` (使用 `sudo pacman -U` 安装)
-- **通用 Linux**: `dist-electron/Orbit Focus-1.0.0.AppImage` (赋予执行权限后直接运行)
+## 下载与安装 (Installation)
 
-### Windows
+您可以从项目的 [Releases](https://github.com/linanwanttodo/Orbit-Focus/releases) 页面获取以下不同平台的正式安装包，并参考以下说明进行安装：
 
-1. 下载 `Orbit-Focus-Setup-1.0.0.exe`。
-2. 双击运行安装程序。
-3. 安装完成后，应用将自动启动。
+### Linux 平台
 
-### macOS
+| 包格式 | 适配系统 | 安装命令 / 使用方法 |
+| :--- | :--- | :--- |
+| **.deb** | Debian, Ubuntu, Mint | `sudo dpkg -i orbit-focus_1.0.0_amd64.deb` |
+| **.pkg.tar.zst** | Arch Linux, Manjaro | `sudo pacman -U "Orbit Focus-1.0.0.pkg.tar.zst"` |
+| **.AppImage** | 通用 Linux | `chmod +x "Orbit Focus-1.0.0.AppImage"` 然后直接运行 |
 
-1. 下载 `Orbit-Focus-1.0.0.dmg`。
-2. 双击 .dmg 文件以挂载。
-3. 将 `Orbit Focus` 图标拖拽到 `Applications` 文件夹中。
-4. 从“应用程序”或 Spotlight 启动预览。
-   *注意：如果显示开发者验证警告，请在“系统设置 > 隐私与安全”中点击“仍要打开”。*
+### Windows 平台
 
+1. 下载 **Orbit-Focus-Setup-1.0.0.exe** 安装程序。
+2. 双击运行，跟随安装向导完成安装。
+3. 安装完成后，可通过桌面快捷方式启动应用。
+
+### macOS 平台
+
+1. 下载 **Orbit-Focus-1.0.0.dmg** 磁盘镜像。
+2. 双击挂载镜像，将 **Orbit Focus** 图标拖拽至 **Applications** 文件夹。
+3. 在“应用程序”中启动。若遇到身份验证警告，请在“系统设置 > 隐私与安全”中手动允许运行。
+
+---
 
 ## API 参考 (内置服务)
 
