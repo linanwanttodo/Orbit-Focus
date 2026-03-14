@@ -112,9 +112,23 @@ npm run electron:build:linux  # Linux (.deb, .pkg.tar.zst, AppImage)
 ```
 *Все выходные установщики будут помещены в каталог `dist-electron/`.*
 
-- **Debian/Ubuntu**: `dist-electron/orbit-focus_1.0.0_amd64.deb`
-- **Arch Linux**: `dist-electron/Orbit Focus-1.0.0.pkg.tar.zst` (Установите с помощью `pacman -U`)
+- **Debian/Ubuntu**: `dist-electron/orbit-focus_1.0.0_amd64.deb` (Установите с помощью `sudo dpkg -i`)
+- **Arch Linux**: `dist-electron/Orbit Focus-1.0.0.pkg.tar.zst` (Установите с помощью `sudo pacman -U`)
 - **AppImage**: `dist-electron/Orbit Focus-1.0.0.AppImage` (Добавьте права на выполнение и запустите)
+
+### Windows
+
+1. Скачайте `Orbit-Focus-Setup-1.0.0.exe`.
+2. Дважды щелкните, чтобы запустить установщик.
+3. После завершения установки приложение запустится автоматически.
+
+### macOS
+
+1. Скачайте `Orbit-Focus-1.0.0.dmg`.
+2. Дважды щелкните файл .dmg, чтобы смонтировать его.
+3. Перетащите `Orbit Focus` в папку `Applications`.
+4. Запустите Orbit Focus из папки «Программы» или через Spotlight.
+   *Примечание: Если появится предупреждение о проверке разработчика, перейдите в «Системные настройки > Конфиденциальность и безопасность» и нажмите «Все равно открыть».*
 
 
 ## Справочник API (Встроенный сервис)
