@@ -30,7 +30,15 @@
             "output": "dist-electron"
         },
         "files": [
-            "electron/**/*",
+            "dist-electron/**/*",
+            "!dist-electron/*.AppImage",
+            "!dist-electron/*.deb",
+            "!dist-electron/*.pacman",
+            "!dist-electron/*.pkg.tar.zst",
+            "!dist-electron/*.yml",
+            "!dist-electron/*.yaml",
+            "!dist-electron/linux-unpacked",
+            "!dist-electron/linux-unpacked/**/*",
             "client/dist/**/*"
         ],
         "win": {
@@ -44,21 +52,17 @@
         "linux": {
             "target": ["deb", "pacman", "AppImage"],
             "icon": "build/icon.png",
-            "category": "Utility",
-            "desktop": {
-                "Name": "Orbit Focus",
-                "Comment": "A pomodoro timer application to boost productivity",
-                "Categories": "Utility;Office"
-            },
-            "deb": {
-                "depends": ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils", "libatspi2.0-21", "libdrm2", "libgbm1"],
-                "maintainer": "linan <linanwanttodo@gmail.com>",
-                "packageCategory": "utils"
-            },
-            "pacman": {
-                "depends": ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-atk", "libdrm", "mesa"],
-                "maintainer": "linan <linanwanttodo@gmail.com>"
-            }
+            "category": "Utility"
+        },
+        "deb": {
+            "depends": ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils", "libatspi2.0-21", "libdrm2", "libgbm1"],
+            "maintainer": "linan <linanwanttodo@gmail.com>",
+            "packageCategory": "utils"
+        },
+        "pacman": {
+            "artifactName": "${productName}-${version}.pkg.tar.zst",
+            "depends": ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-atk", "libdrm", "mesa"],
+            "maintainer": "linan <linanwanttodo@gmail.com>"
         }
     },
     "keywords": [

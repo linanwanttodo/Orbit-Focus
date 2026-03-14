@@ -6,6 +6,9 @@ dist/
 build/
 dist-electron/
 
+# User data
+data/
+
 # Environment variables
 .env
 .env.local

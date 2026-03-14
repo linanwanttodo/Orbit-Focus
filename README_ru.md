@@ -108,9 +108,14 @@ npm run electron:build
 # Упаковка для определенной платформы
 npm run electron:build:win    # Windows (.exe)
 npm run electron:build:mac    # macOS (.dmg)
-npm run electron:build:linux  # Linux (.deb, .pacman, AppImage)
+npm run electron:build:linux  # Linux (.deb, .pkg.tar.zst, AppImage)
 ```
 *Все выходные установщики будут помещены в каталог `dist-electron/`.*
+
+- **Debian/Ubuntu**: `dist-electron/orbit-focus_1.0.0_amd64.deb`
+- **Arch Linux**: `dist-electron/Orbit Focus-1.0.0.pkg.tar.zst` (Установите с помощью `pacman -U`)
+- **AppImage**: `dist-electron/Orbit Focus-1.0.0.AppImage` (Добавьте права на выполнение и запустите)
+
 
 ## Справочник API (Встроенный сервис)
 

@@ -1,11 +1,22 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-// 数据库文件路径 - 统一使用项目根目录的 data 文件夹
-// __dirname 在编译后指向 dist-electron/server/src 或 server/dist
-// 所以需要用 ../../.. 回到项目根目录
-const dbPath = path.join(__dirname, '../../../data/orbit-focus.db');
+// 判断是否在 Electron 打包后的生产环境中运行（asar 归档内）
+function getDbPath(): string {
+  const isPackaged = __dirname.includes('app.asar');
+  if (isPackaged) {
+    // 生产环境：使用用户主目录下的可写路径
+    const userDataDir = path.join(os.homedir(), '.config', 'orbit-focus');
+    return path.join(userDataDir, 'orbit-focus.db');
+  } else {
+    // 开发环境：使用项目根目录的 data 文件夹
+    return path.join(__dirname, '../../../data/orbit-focus.db');
+  }
+}
+
+const dbPath = getDbPath();
 
 // 确保 data 目录存在
 const dbDir = path.dirname(dbPath);

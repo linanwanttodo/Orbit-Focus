@@ -124,7 +124,9 @@ function createWindow(): void {
         mainWindow.loadURL('http://localhost:3000');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../client/dist/index.html'));
+        // 生产环境：使用 app.getAppPath() 获取 asar 根路径
+        const appRoot = app.getAppPath();
+        mainWindow.loadFile(path.join(appRoot, 'client/dist/index.html'));
     }
 
     mainWindow.once('ready-to-show', () => {

@@ -26,9 +26,10 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       }
     },
+    base: './',
     build: {
       rollupOptions: {
-        input: './src/index.tsx'
+        input: './index.html'
       }
     }
   };
