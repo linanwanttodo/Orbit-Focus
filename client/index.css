@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================
+   GitHub Dark Theme — CSS variables
+   Reference: https://primer.style/design/foundations/color
+   Page background is pure black (#000) for OLED-friendly look.
+   Borders are 1px solid lines using gh-border (#30363d).
+   =================================================================== */
+:root {
+  /* Surfaces (light → dark) */
+  --background-color: #000000;   /* pure black canvas */
+  --card-background:  #0d1117;   /* subtle surface */
+  --surface:          #161b22;   /* elevated surface */
+  --inset:            #010409;
+
+  /* Borders (line-style) */
+  --border-color:     #30363d;   /* default line border */
+  --border-muted:     #21262d;   /* muted line border */
+
+  /* Text */
+  --text-color:       #e6edf3;   /* primary */
+  --text-secondary:   #7d8590;   /* muted */
+  --text-subtle:      #6e7681;   /* disabled / placeholder */
+  --input-background: #0d1117;
+
+  /* Accent (GitHub blue — no purple) */
+  --primary-color:    #58a6ff;
+  --primary-hover:    #1f6feb;
+  --disabled-color:   #6e7681;
+  --error-background: #2d1418;
+  --error-color:      #f85149;
+  --hover-background: rgba(88, 166, 255, 0.1);
+
+  /* Brand accent — used for the work-mode red dot & focus ring */
+  --brand-color:        #f85149;   /* danger.fg */
+  --brand-color-hover:  #da3633;   /* danger.emphasis */
+  --brand-color-soft:   rgba(248, 81, 73, 0.1);
+  --brand-color-shadow: rgba(248, 81, 73, 0.2);
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbar — minimal GitHub-style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--background-color);
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Focus ring (line-style) */
+*:focus-visible {
+  outline: 1px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}

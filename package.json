@@ -1,0 +1,53 @@
+{
+  "name": "orbit-focus",
+  "version": "1.0.0",
+  "description": "Orbit Focus - A full-stack pomodoro timer application",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev:client",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "npm run build:client && wrangler deploy",
+    "cf:deploy:full": "bash setup-cloudflare.sh",
+    "cf:db:init": "wrangler d1 execute orbit-focus-db --remote --file=./api/cloudflare/schema.sql",
+    "cf:db:init:local": "wrangler d1 execute orbit-focus-db --local --file=./api/cloudflare/schema.sql",
+    "cf:tail": "wrangler tail",
+    "setup": "bash setup-cloudflare.sh",
+    "vercel:dev": "vercel dev",
+    "vercel:deploy": "npm run build:client && vercel --prod",
+    "lint": "npm run lint --workspace=client && npm run lint --workspace=server",
+    "lint:fix": "npm run lint:fix --workspace=client && npm run lint:fix --workspace=server",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "pomodoro",
+    "timer",
+    "productivity",
+    "react",
+    "nodejs",
+    "express",
+    "cloudflare",
+    "workers"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260212.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7"
+  },
+  "lint-staged": {
+    "client/src/**/*.{ts,tsx}": "eslint --config client/eslint.config.js",
+    "server/src/**/*.ts": "eslint --config server/eslint.config.mjs",
+    "api/{cloudflare,vercel,shared}/**/*.ts": "eslint --config api/eslint.config.js"
+  }
+}
