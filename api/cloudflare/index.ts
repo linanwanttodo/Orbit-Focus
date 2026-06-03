@@ -1,7 +1,7 @@
-import { jsonResponse, generateId, getNow, corsResponse, safeJsonParse, calculateStreak, getLast7DaysRange, DbTaskRow, DbSessionRow, DbStatsRow, DbDailyRow, DbHeatmapRow } from '../shared/utils';
+import { jsonResponse, generateId, getNow, corsResponse, safeJsonParse, calculateStreak, getLast7DaysRange, getLocalDateString, getLocalDaysAgo, DbTaskRow, DbSessionRow, DbStatsRow, DbDailyRow, DbHeatmapRow } from '../shared/utils';
 
 export interface Env {
-  DB: D1Database;
+  orbit_focus_db: D1Database;
   ASSETS: Fetcher;
 }
 
@@ -9,28 +9,19 @@ let dbInitialized = false;
 
 async function initDatabase(db: D1Database): Promise<void> {
   if (dbInitialized) return;
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT DEFAULT '',
-      is_completed INTEGER DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS sessions (
-      id TEXT PRIMARY KEY,
-      type TEXT NOT NULL,
-      duration INTEGER NOT NULL,
-      start_time TEXT NOT NULL,
-      end_time TEXT,
-      is_completed INTEGER DEFAULT 0,
-      work_time INTEGER DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-  `);
-  dbInitialized = true;
+  try {
+    const result = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'").first();
+    if (result) {
+      dbInitialized = true;
+      return;
+    }
+    await db.prepare("CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT DEFAULT '', is_completed INTEGER DEFAULT 0, order_index INTEGER DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)").run();
+    await db.prepare("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, type TEXT NOT NULL CHECK(type IN ('work', 'break', 'longBreak')), duration INTEGER NOT NULL, start_time TEXT NOT NULL, end_time TEXT, is_completed INTEGER DEFAULT 0, work_time INTEGER DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)").run();
+    dbInitialized = true;
+  } catch (error) {
+    console.error('Database init failed:', error);
+    throw error;
+  }
 }
 
 export default {
@@ -46,7 +37,7 @@ export default {
       }
 
       // Initialize database (only on first request per isolate)
-      await initDatabase(env.DB);
+      await initDatabase(env.orbit_focus_db);
 
       // Health check
       if (path === '/api/health') {
@@ -57,7 +48,7 @@ export default {
       if (path === '/api/tasks') {
         if (method === 'GET') {
           try {
-            const result = await env.DB.prepare('SELECT * FROM tasks ORDER BY created_at DESC').all();
+            const result = await env.orbit_focus_db.prepare('SELECT * FROM tasks ORDER BY created_at DESC').all();
             return jsonResponse((result.results || []).map((r: DbTaskRow) => ({
               id: r.id,
               title: r.title,
@@ -77,7 +68,7 @@ export default {
             const now = getNow();
             const title = String(body.title || '');
             const description = String(body.description || '');
-            await env.DB.prepare(
+            await env.orbit_focus_db.prepare(
               'INSERT INTO tasks (id, title, description, is_completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
             ).bind(id, title, description, 0, now, now).run();
             return jsonResponse({ id, title, description, isCompleted: false, createdAt: now }, 201);
@@ -92,7 +83,7 @@ export default {
         const id = taskMatch[1];
         if (method === 'DELETE') {
           try {
-            await env.DB.prepare('DELETE FROM tasks WHERE id = ?').bind(id).run();
+            await env.orbit_focus_db.prepare('DELETE FROM tasks WHERE id = ?').bind(id).run();
             return jsonResponse({ success: true });
           } catch {
             return jsonResponse({ error: 'Failed to delete task' }, 500);
@@ -102,7 +93,7 @@ export default {
           const { data: body, error } = await safeJsonParse(request);
           if (error) return error;
           try {
-            await env.DB.prepare(
+            await env.orbit_focus_db.prepare(
               'UPDATE tasks SET title = ?, description = ?, is_completed = ?, updated_at = ? WHERE id = ?'
             ).bind(String(body.title || ''), String(body.description || ''), body.isCompleted ? 1 : 0, getNow(), id).run();
             return jsonResponse({ success: true });
@@ -116,7 +107,7 @@ export default {
       if (path === '/api/sessions') {
         if (method === 'GET') {
           try {
-            const result = await env.DB.prepare('SELECT * FROM sessions ORDER BY created_at DESC').all();
+            const result = await env.orbit_focus_db.prepare('SELECT * FROM sessions ORDER BY created_at DESC').all();
             return jsonResponse((result.results || []).map((r: DbSessionRow) => ({
               id: r.id,
               type: r.type,
@@ -136,7 +127,7 @@ export default {
           try {
             const id = generateId('session');
             const now = getNow();
-            await env.DB.prepare(
+            await env.orbit_focus_db.prepare(
               'INSERT INTO sessions (id, type, duration, start_time, end_time, is_completed, work_time, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
             ).bind(id, String(body.type || 'work'), Number(body.duration || 0), String(body.startTime || now), body.endTime ? String(body.endTime) : null, 1, Number(body.workTime || body.duration || 0), now, now).run();
             return jsonResponse({ id, ...body, createdAt: now }, 201);
@@ -155,21 +146,21 @@ export default {
           const oneYearAgo = new Date();
           oneYearAgo.setDate(oneYearAgo.getDate() - 365);
           const [totalResult, weeklyTotalResult, dailyResult, streakResult, heatmapResult] = await Promise.all([
-            env.DB.prepare(
+            env.orbit_focus_db.prepare(
               'SELECT SUM(work_time) as total FROM sessions WHERE is_completed = 1'
             ).first(),
-            env.DB.prepare(
+            env.orbit_focus_db.prepare(
               'SELECT SUM(work_time) as total FROM sessions WHERE is_completed = 1 AND date(start_time) >= ?'
             ).bind(sevenDaysAgo).first(),
-            env.DB.prepare(
+            env.orbit_focus_db.prepare(
               'SELECT date(start_time) as date, SUM(work_time) as work_time FROM sessions WHERE is_completed = 1 AND date(start_time) >= ? GROUP BY date(start_time) ORDER BY date ASC'
             ).bind(sevenDaysAgo).all(),
-            env.DB.prepare(
+            env.orbit_focus_db.prepare(
               "SELECT DISTINCT date(start_time) as date FROM sessions WHERE is_completed = 1 AND type = 'work' ORDER BY date DESC"
             ).all(),
-            env.DB.prepare(
+            env.orbit_focus_db.prepare(
               'SELECT date(start_time) as date, SUM(work_time) as work_time, COUNT(*) as sessions_count FROM sessions WHERE is_completed = 1 AND date(start_time) >= ? GROUP BY date(start_time) ORDER BY date ASC'
-            ).bind(oneYearAgo.toISOString()).all(),
+            ).bind(getLocalDaysAgo(365)).all(),
           ]);
 
           const totalWorkTime = Number((totalResult as unknown as DbStatsRow)?.total || 0);
@@ -190,7 +181,7 @@ export default {
           for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDateString(d);
             dailyStats.push({ date: dateStr, work_time: dailyMap.get(dateStr) || 0 });
           }
 
@@ -213,7 +204,7 @@ export default {
         const id = sessionMatch[1];
         if (method === 'DELETE') {
           try {
-            await env.DB.prepare('DELETE FROM sessions WHERE id = ?').bind(id).run();
+            await env.orbit_focus_db.prepare('DELETE FROM sessions WHERE id = ?').bind(id).run();
             return jsonResponse({ success: true });
           } catch {
             return jsonResponse({ error: 'Failed to delete session' }, 500);
@@ -237,7 +228,7 @@ export default {
               updates.push('updated_at = ?');
               params.push(getNow());
               params.push(id);
-              await env.DB.prepare(`UPDATE sessions SET ${updates.join(', ')} WHERE id = ?`).bind(...params).run();
+              await env.orbit_focus_db.prepare(`UPDATE sessions SET ${updates.join(', ')} WHERE id = ?`).bind(...params).run();
             }
             return jsonResponse({ success: true });
           } catch {

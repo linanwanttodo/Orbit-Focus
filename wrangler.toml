@@ -11,9 +11,9 @@ not_found_handling = "single-page-application"
 port = 8787
 
 [[d1_databases]]
-binding = "DB"
-database_name = "orbit-focus-db"
-database_id = "YOUR_DATABASE_ID_HERE"
+binding = "orbit_focus_db"
+database_name = "orbit_focus_db"
+database_id = "0d7f487a-8a28-4a42-8fd2-635f7582e536"
 
 [vars]
 NODE_ENV = "production"
