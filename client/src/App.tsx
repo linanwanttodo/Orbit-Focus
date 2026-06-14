@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TimerMode, Task, SessionStatsResponse, CalendarMonth, CalendarDay, HeatmapRow, StreakData } from './types';
 import { DEFAULT_TIMES } from './constants';
 import { TaskList } from './components/TaskList';
+import { Logo } from './components/Logo';
 import { useI18n, LanguageSwitcher, Language } from './contexts/I18nContext';
 import { getUserStats } from './services/apiService';
 import { saveSessionData, saveTaskData } from './services/dataSyncService';
@@ -654,7 +655,7 @@ const AppContent: React.FC = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => setCurrentView('home')}
           >
-            <div className="w-4 h-4 rounded-full bg-gh-danger shadow-[0_0_10px_rgba(248,81,73,0.5)]"></div>
+            <Logo size={24} />
             <h1 className="font-bold tracking-wider text-sm text-gh-fg">ORBIT FOCUS</h1>
           </div>
 
