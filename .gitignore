@@ -39,3 +39,10 @@ logs/
 
 # Vercel
 .vercel/
+
+# Runtime data (SQLite database)
+data/
+server/data/
+
+# Server build output
+server/dist/

@@ -3,7 +3,7 @@ main = "api/cloudflare/index.ts"
 compatibility_date = "2025-12-01"
 
 [assets]
-directory = "client/dist"
+directory = "dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 

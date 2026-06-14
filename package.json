@@ -3,30 +3,21 @@
   "version": "1.0.0",
   "description": "Orbit Focus - A full-stack pomodoro timer application",
   "private": true,
-  "workspaces": [
-    "client",
-    "server"
-  ],
   "scripts": {
-    "dev": "npm run dev:client",
-    "dev:client": "npm run dev --workspace=client",
-    "dev:server": "npm run dev --workspace=server",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "npm run build --workspace=client",
-    "build:server": "npm run build --workspace=server",
-    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server",
+    "dev": "concurrently -n client,server -c cyan,yellow \"vite\" \"tsx watch server/src/index.ts\"",
+    "dev:client": "vite",
+    "dev:server": "tsx watch server/src/index.ts",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "cf:dev": "wrangler dev",
-    "cf:deploy": "npm run build:client && wrangler deploy",
-    "cf:deploy:full": "bash setup-cloudflare.sh",
+    "cf:deploy": "vite build && wrangler deploy",
     "cf:db:init": "wrangler d1 execute orbit-focus-db --remote --file=./api/cloudflare/schema.sql",
     "cf:db:init:local": "wrangler d1 execute orbit-focus-db --local --file=./api/cloudflare/schema.sql",
     "cf:tail": "wrangler tail",
-    "setup": "bash setup-cloudflare.sh",
-    "vercel:dev": "vercel dev",
-    "vercel:deploy": "npm run build:client && vercel --prod",
-    "lint": "npm run lint --workspace=client && npm run lint --workspace=server",
-    "lint:fix": "npm run lint:fix --workspace=client && npm run lint:fix --workspace=server",
-    "prepare": "husky"
+    "setup": "bash setup-cloudflare.sh"
   },
   "keywords": [
     "pomodoro",
@@ -40,14 +31,36 @@
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.0",
+    "jsonwebtoken": "^9.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260212.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.0.7"
-  },
-  "lint-staged": {
-    "client/src/**/*.{ts,tsx}": "eslint --config client/eslint.config.js",
-    "server/src/**/*.ts": "eslint --config server/eslint.config.mjs",
-    "api/{cloudflare,vercel,shared}/**/*.ts": "eslint --config api/eslint.config.js"
+    "@eslint/js": "^10.0.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.24",
+    "concurrently": "^10.0.3",
+    "eslint": "^10.4.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.22.4",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.60.0",
+    "vite": "^6.4.3"
   }
 }
