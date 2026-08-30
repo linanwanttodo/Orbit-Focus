@@ -1,0 +1,392 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================
+   Theme CSS Variables
+   =================================================================== */
+
+/* --- Dark Theme (default) --- */
+:root,
+:root[data-theme="dark"] {
+  /* Background — 近黑（降低纯黑对比，更柔和） */
+  --gh-base:           #0b0b0d;
+  --gh-canvas:         #0b0b0d;
+  --gh-surface:        #15151a;
+  --gh-inset:          #0e0e11;
+
+  /* Hover 填充 / 边框 — 仅容器内部 hairline 分隔，任何外轮廓一律无边框 */
+  --gh-hover:          rgba(255, 255, 255, 0.06);
+  --gh-border:         rgba(255, 255, 255, 0.06);
+  --gh-border-muted:   rgba(255, 255, 255, 0.04);
+
+  /* Text — subtle 保证小字号可读（≥4.5:1） */
+  --gh-fg:             #e6e8ee;
+  --gh-muted:          #9aa1b3;
+  --gh-subtle:         #6f7689;
+
+  /* Accent — 保留给图表等装饰场景 */
+  --gh-accent:         #8294b4;
+  --gh-accent-emph:    #6c7fa3;
+
+  /* Status — 功能色 */
+  --gh-success:        #5aa17e;
+  --gh-success-emph:   #4d8c6d;
+  --gh-danger:         #c87070;
+  --gh-danger-emph:    #b36060;
+  --gh-warning:        #c2a05a;
+
+  /* Shadows — 表面色差 + 细阴影表达层级 */
+  --shadow-card:       inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Light Theme --- */
+:root[data-theme="light"] {
+  --gh-base:           #f4f6fb;
+  --gh-canvas:         #f4f6fb;
+  --gh-surface:        #ffffff;
+  --gh-inset:          #e9edf5;
+
+  --gh-hover:          rgba(17, 19, 24, 0.06);
+  --gh-border:         rgba(30, 38, 53, 0.08);
+  --gh-border-muted:   rgba(30, 38, 53, 0.05);
+
+  --gh-fg:             #1e2635;
+  --gh-muted:          #5c6a82;
+  --gh-subtle:         #6e7a92;
+
+  --gh-accent:         #165dff;
+  --gh-accent-emph:    #0e4ce0;
+
+  --gh-success:        #12a66c;
+  --gh-success-emph:   #0f8a5b;
+  --gh-danger:         #d33c3c;
+  --gh-danger-emph:    #b22e2e;
+  --gh-warning:        #9a6700;
+
+  --shadow-card:       0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+/* ===================================================================
+   Base Reset
+   =================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  /* 应用壳布局：根容器固定 100dvh，所有滚动都发生在内部容器。
+     窗口级滚动永久禁用——避免浏览器翻译注入标签等外力把文档撑高产生整页滚动 */
+  overflow: hidden;
+  font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: var(--gh-canvas);
+  color: var(--gh-fg);
+}
+
+#root {
+  /* 100dvh 跟随移动端可视视口，避免地址栏收展时根容器高于视口、整页滚动带走导航 */
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===================================================================
+   Background Layer
+   =================================================================== */
+.background-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.background-layer__color {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===================================================================
+   Scrollbar
+   =================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gh-canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gh-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gh-muted);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gh-border) var(--gh-canvas);
+}
+
+/* ===================================================================
+   Animations
+   =================================================================== */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 尊重系统"减少动态效果"偏好：禁用装饰性/持续动画 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none;
+  }
+
+  .flip-clock .flap-top.flipping,
+  .flip-clock .flap-bottom.flipping {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
+}
+
+/* ===================================================================
+   Flip Clock Styles
+   =================================================================== */
+@font-face {
+  font-family: FlipClockFont;
+  src: url(/gluqlo.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+.fc-root {
+  --fc-count: 3;
+  --base-size: min(calc(60vw / var(--fc-count)), 35vh);
+  --rectsize: var(--base-size);
+  --radius: calc(var(--rectsize) * .0952);
+  --font-size: calc(var(--rectsize) * .88);
+  --spacing: calc(var(--rectsize) * .08);
+  --bg-card: #17171c;
+  --seam: rgba(0, 0, 0, 0.45);
+  --seam-edge: rgba(255, 255, 255, 0.06);
+  --card-edge: rgba(255, 255, 255, 0.07);
+  --colon: var(--gh-muted);
+  --color-font: #c9cdd6;
+  --card-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --flip-shade: .4;
+  display: flex;
+  gap: var(--spacing);
+  align-items: center;
+  justify-content: center;
+  font-family: FlipClockFont, 'Orbitron', 'Courier New', monospace;
+  font-weight: 700;
+}
+
+:root[data-theme="light"] .fc-root {
+  --bg-card: #ffffff;
+  --seam: rgba(0, 0, 0, 0.25);
+  --seam-edge: rgba(0, 0, 0, 0.04);
+  --card-edge: rgba(255, 255, 255, 0.8);
+  --colon: #6e7a92;
+  --color-font: #32383f;
+  --card-shadow: 0 10px 30px rgba(140, 149, 159, 0.35);
+  --flip-shade: .82;
+}
+
+.flip-clock {
+  position: relative;
+  width: var(--rectsize);
+  height: var(--rectsize);
+  background-color: var(--bg-card);
+  border-radius: var(--radius);
+  perspective: 2000px;
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-edge);
+  user-select: none;
+}
+
+.flip-clock .text-wrapper {
+  position: absolute;
+  width: 100%;
+  height: var(--rectsize);
+  font-size: var(--font-size);
+  color: var(--color-font);
+  line-height: var(--rectsize);
+  text-align: center;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.flip-clock .half {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background-color: var(--bg-card);
+  pointer-events: none;
+}
+
+.flip-clock .half.top { top: 0; border-radius: var(--radius) var(--radius) 0 0; }
+.flip-clock .half.top .text-wrapper { top: 0; }
+.flip-clock .half.bottom { bottom: 0; border-radius: 0 0 var(--radius) var(--radius); }
+.flip-clock .half.bottom .text-wrapper { bottom: 0; }
+
+.flip-clock .flap-top,
+.flip-clock .flap-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.flip-clock .flap-top { top: 0; border-radius: var(--radius) var(--radius) 0 0; transform-origin: bottom; background-color: var(--bg-card); }
+.flip-clock .flap-top .text-wrapper { top: 0; }
+.flip-clock .flap-bottom { bottom: 0; border-radius: 0 0 var(--radius) var(--radius); transform-origin: top; transform: rotateX(90deg); background-color: var(--bg-card); }
+.flip-clock .flap-bottom .text-wrapper { bottom: 0; }
+
+.flip-clock .flap-top.flipping { animation: flipTopDown .22s ease-in forwards; }
+.flip-clock .flap-bottom.flipping { animation: flipBottomDown .23s ease-out .22s forwards; }
+
+@keyframes flipTopDown {
+  0% { transform: rotateX(0); filter: brightness(1); }
+  100% { transform: rotateX(-90deg); filter: brightness(var(--flip-shade)); }
+}
+@keyframes flipBottomDown {
+  0% { transform: rotateX(90deg); filter: brightness(var(--flip-shade)); }
+  100% { transform: rotateX(0); filter: brightness(1); }
+}
+
+/* 中缝 — 模拟真实翻页钟折页：通宽凹槽 + 下缘受光边，上下两片明暗有别 */
+.flip-clock .divider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: 2px;
+  background: var(--seam);
+  transform: translateY(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.flip-clock .divider::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 1px;
+  background: var(--seam-edge);
+}
+
+/* 冒号分隔符 — 时/分/秒卡片之间的节奏点 */
+.fc-colon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--rectsize) * 0.12);
+}
+
+.fc-colon span {
+  display: block;
+  width: calc(var(--rectsize) * 0.065);
+  height: calc(var(--rectsize) * 0.065);
+  border-radius: 50%;
+  background: var(--colon);
+}
+
+/* Focus ring — 无障碍焦点环 */
+*:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--gh-fg) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* ===================================================================
+   shadcn/ui 语义变量桥接 — 全部指向现有 --gh-* 色板，单源真相
+   主色单色化：暗色 = 白底黑字，亮色 = 黑底白字
+   =================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --background: var(--gh-canvas);
+  --foreground: var(--gh-fg);
+  --card: var(--gh-surface);
+  --card-foreground: var(--gh-fg);
+  --popover: var(--gh-surface);
+  --popover-foreground: var(--gh-fg);
+  --primary: #f2f4f8;
+  --primary-hover: #dde1e8;
+  --primary-foreground: #0b0b0d;
+  --secondary: var(--gh-inset);
+  --secondary-foreground: var(--gh-fg);
+  --muted: var(--gh-inset);
+  --muted-foreground: var(--gh-muted);
+  --accent: var(--gh-inset);
+  --accent-foreground: var(--gh-fg);
+  --destructive: var(--gh-danger);
+  --destructive-foreground: #f5eeee;
+  --border: var(--gh-border);
+  --input: var(--gh-border);
+  --ring: var(--gh-fg);
+  --radius: 0.75rem;
+}
+
+:root[data-theme="light"] {
+  --background: var(--gh-canvas);
+  --foreground: var(--gh-fg);
+  --card: var(--gh-surface);
+  --card-foreground: var(--gh-fg);
+  --popover: var(--gh-surface);
+  --popover-foreground: var(--gh-fg);
+  --primary: #111318;
+  --primary-hover: #2a3040;
+  --primary-foreground: #ffffff;
+  --secondary: var(--gh-inset);
+  --secondary-foreground: var(--gh-fg);
+  --muted: var(--gh-inset);
+  --muted-foreground: var(--gh-muted);
+  --accent: var(--gh-inset);
+  --accent-foreground: var(--gh-fg);
+  --destructive: var(--gh-danger);
+  --destructive-foreground: #f5eeee;
+  --border: var(--gh-border);
+  --input: var(--gh-border);
+  --ring: var(--gh-fg);
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}

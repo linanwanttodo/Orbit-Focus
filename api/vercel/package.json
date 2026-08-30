@@ -1,0 +1,9 @@
+{
+  "name": "orbit-focus-vercel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@libsql/client": "^0.17.3"
+  }
+}
