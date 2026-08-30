@@ -132,6 +132,16 @@ vercel
 - `DELETE /api/sessions/:id` - 删除会话
 - `GET /api/sessions/stats` - 获取会话统计数据
 
+## 文档
+
+更详细的说明位于 `docs/` 目录：
+
+| 文档 | 内容 |
+|------|------|
+| [本地开发指南](docs/development.md) | 环境搭建、启动、校验、常见问题 |
+| [架构说明](docs/architecture.md) | 前后端设计、API 端点、数据模型 |
+| [部署指南](docs/deployment.md) | Cloudflare Workers / Vercel 部署与自动化 |
+
 ## 环境变量
 
 ### 本地开发
