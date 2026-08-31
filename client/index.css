@@ -87,6 +87,40 @@ body {
   color: var(--gh-fg);
 }
 
+/* ===================================================================
+   整体化：禁用文本选中与长按复制，页面内容不可被摘取
+   =================================================================== */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  /* iOS/Safari：长按不弹出"拷贝/查找"系统菜单 */
+  -webkit-touch-callout: none;
+}
+
+/* 例外：可编辑控件必须保留选中/粘贴能力，否则无法输入任务 */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* ===================================================================
+   整体化：图片视为页面像素的一部分——不可拖走、不可长按查看/下载
+   =================================================================== */
+img,
+video,
+canvas {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+img {
+  /* 屏蔽图片自身的点击/长按手势，事件穿透到底层布局 */
+  pointer-events: none;
+}
+
 #root {
   /* 100dvh 跟随移动端可视视口，避免地址栏收展时根容器高于视口、整页滚动带走导航 */
   height: 100vh;
