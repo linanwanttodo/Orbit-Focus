@@ -8,7 +8,7 @@ set -e
 # ============================================================
 
 WORKER_NAME="orbit-focus"
-DB_NAME="orbit-focus-db"
+DB_NAME="orbit_focus_db"
 SCHEMA_FILE="./api/cloudflare/schema.sql"
 
 echo "🚀 Orbit Focus - Cloudflare 部署脚本"
@@ -56,7 +56,7 @@ else
     awk -v db_id="$DATABASE_ID" -v db_name="$DB_NAME" '
     /^\[\[d1_databases\]\]/ {
         print "[[d1_databases]]"
-        print "binding = \"DB\""
+        print "binding = \"orbit_focus_db\""
         print "database_name = \"" db_name "\""
         print "database_id = \"" db_id "\""
         skip = 1
@@ -74,8 +74,16 @@ echo "📊 初始化数据库 schema..."
 wrangler d1 execute "$DB_NAME" --remote --file="$SCHEMA_FILE"
 echo "✅ 数据库 schema 初始化完成"
 
+# 检查必需的 secrets（Worker 在缺少 JWT_SECRET 时会拒绝提供 API）
+echo "检查 Cloudflare secrets..."
+SECRET_LIST=$(wrangler secret list 2>/dev/null || echo "[]")
+if ! echo "$SECRET_LIST" | grep -q '"JWT_SECRET"'; then
+    echo "缺少 JWT_SECRET，请运行: wrangler secret put JWT_SECRET"
+    echo "（GitHub 登录还需要: wrangler secret put GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET）"
+fi
+
 # 构建前端
-echo "🔨 构建前端..."
+echo "构建前端..."
 npm run build:client
 echo "✅ 前端构建完成"
 
