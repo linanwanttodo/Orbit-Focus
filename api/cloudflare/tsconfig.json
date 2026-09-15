@@ -9,5 +9,5 @@
     "esModuleInterop": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["./**/*.ts"]
+  "include": ["./**/*.ts", "../core/**/*.ts"]
 }
