@@ -9,6 +9,7 @@ build/
 .env
 .env.local
 .env.*.local
+.env.bak.*
 
 # IDE files
 .vscode/
@@ -36,6 +37,8 @@ logs/
 
 # Wrangler
 .wrangler/
+.dev.vars
+.dev.vars.*
 
 # Vercel
 .vercel/
