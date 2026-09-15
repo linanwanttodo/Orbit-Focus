@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Task } from '../types';
-import { saveSessionData } from '../services/apiService';
+import { addFocusSession } from '../services/store';
 
 export interface CountdownState {
   countdownTime: number;
@@ -17,7 +17,7 @@ export interface AppTimerState {
   countdown: CountdownState;
   zenMode: boolean;
   isFullscreen: boolean;
-  currentView: 'home' | 'timer' | 'stats' | 'settings';
+  currentView: 'home' | 'timer' | 'countdown' | 'stats' | 'settings';
   activeTimerTab: 'pomodoro' | 'countdown' | 'todo';
   tasks: Task[];
   timeStyle: ClockStyle;
@@ -31,7 +31,7 @@ export interface TimerActions {
   toggleCountdown: () => void;
   resetCountdown: () => void;
   toggleZenMode: () => void;
-  setCurrentView: (view: 'home' | 'timer' | 'stats' | 'settings') => void;
+  setCurrentView: (view: 'home' | 'timer' | 'countdown' | 'stats' | 'settings') => void;
   setActiveTimerTab: (tab: 'pomodoro' | 'countdown' | 'todo') => void;
   setTasks: (tasks: Task[]) => void;
   setIsFullscreen: (fullscreen: boolean) => void;
@@ -52,7 +52,7 @@ export function useTimerState(): [AppTimerState, TimerActions] {
   const [countdown, setCountdown] = useState<CountdownState>(getInitialCountdownState);
   const [zenMode, setZenMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentView, setCurrentView] = useState<'home' | 'timer' | 'stats' | 'settings'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'timer' | 'countdown' | 'stats' | 'settings'>('home');
   const [activeTimerTab, setActiveTimerTab] = useState<'pomodoro' | 'countdown' | 'todo'>('pomodoro');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeStyle, setTimeStyle] = useState<ClockStyle>('digital');
@@ -127,8 +127,8 @@ export function useTimerState(): [AppTimerState, TimerActions] {
       const duration = prev.countdownTime;
       const startedAt = prev.countdownStartTime?.toISOString() ?? new Date().toISOString();
       if (duration > 0 && prev.countdownStartTime) {
-        void saveSessionData(duration, startedAt).catch((err) =>
-          console.error('保存倒计时会话失败:', err)
+        void addFocusSession(duration, startedAt).catch((err) =>
+          console.error('Failed to save countdown session:', err)
         );
       }
 
@@ -168,8 +168,8 @@ export function useTimerState(): [AppTimerState, TimerActions] {
       const duration = countdown.countdownTime;
       const startedAt = countdown.countdownStartTime?.toISOString() ?? new Date().toISOString();
       if (duration > 0 && countdown.countdownStartTime) {
-        void saveSessionData(duration, startedAt).catch((err) =>
-          console.error('保存倒计时会话失败:', err)
+        void addFocusSession(duration, startedAt).catch((err) =>
+          console.error('Failed to save countdown session:', err)
         );
       }
     }

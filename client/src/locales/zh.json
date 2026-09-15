@@ -36,6 +36,7 @@
   "navigation": {
     "home": "首页",
     "timer": "专注",
+    "countdown": "倒计时",
     "stats": "统计",
     "settings": "设置",
     "more": "更多",
@@ -92,6 +93,20 @@
     "fullscreenHintEnter": "按 F11 进入全屏",
     "fullscreenHintExit": "按 Esc 退出全屏"
   },
+  "countdown": {
+    "title": "重要日期",
+    "description": "记录考试、截止日与目标日，剩余天数一目了然。",
+    "addTitle": "添加日期",
+    "titlePlaceholder": "事件名称",
+    "dateLabel": "目标日期",
+    "add": "添加",
+    "empty": "暂无日期，先在上方添加你的第一个目标。",
+    "invalidInput": "请填写名称并选择日期",
+    "loadFailed": "加载日期列表失败",
+    "today": "今天",
+    "remaining": "剩余 {days} 天",
+    "passed": "已过去 {days} 天"
+  },
   "stats": {
     "title": "您的活动",
     "todayFocus": "今日专注",
@@ -146,6 +161,7 @@
   },
   "auth": {
     "loginTitle": "登录",
+    "logoutTitle": "退出登录",
     "registerTitle": "注册",
     "loginSuccess": "登录成功",
     "registerSuccess": "注册成功",

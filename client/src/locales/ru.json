@@ -36,6 +36,7 @@
   "navigation": {
     "home": "Главная",
     "timer": "Фокус",
+    "countdown": "Отсчёт",
     "stats": "Статистика",
     "settings": "Настройки",
     "more": "Еще",
@@ -92,6 +93,20 @@
     "fullscreenHintEnter": "Нажмите F11 для полного экрана",
     "fullscreenHintExit": "Нажмите Esc для выхода из полного экрана"
   },
+  "countdown": {
+    "title": "Важные даты",
+    "description": "Контролируйте экзамены, дедлайны и вехи — видно, сколько дней осталось.",
+    "addTitle": "Добавить дату",
+    "titlePlaceholder": "Название события",
+    "dateLabel": "Целевая дата",
+    "add": "Добавить",
+    "empty": "Дат пока нет. Добавьте первую веху выше.",
+    "invalidInput": "Введите название и выберите дату",
+    "loadFailed": "Не удалось загрузить список дат",
+    "today": "Сегодня",
+    "remaining": "Осталось дней: {days}",
+    "passed": "Прошло дней: {days}"
+  },
   "stats": {
     "title": "Ваша активность",
     "todayFocus": "Фокус сегодня",
@@ -146,6 +161,7 @@
   },
   "auth": {
     "loginTitle": "Вход",
+    "logoutTitle": "Выйти",
     "registerTitle": "Регистрация",
     "loginSuccess": "Вход выполнен успешно",
     "registerSuccess": "Регистрация успешна",

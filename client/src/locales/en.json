@@ -36,6 +36,7 @@
   "navigation": {
     "home": "Home",
     "timer": "Focus",
+    "countdown": "Countdown",
     "stats": "Stats",
     "settings": "Settings",
     "more": "More",
@@ -92,6 +93,20 @@
     "fullscreenHintEnter": "Press F11 for Fullscreen",
     "fullscreenHintExit": "Press Esc to exit fullscreen"
   },
+  "countdown": {
+    "title": "Important Dates",
+    "description": "Track exams, deadlines and milestones at a glance.",
+    "addTitle": "Add a date",
+    "titlePlaceholder": "Event name",
+    "dateLabel": "Target date",
+    "add": "Add",
+    "empty": "No dates yet. Add your first milestone above.",
+    "invalidInput": "Enter a name and pick a date",
+    "loadFailed": "Failed to load countdowns",
+    "today": "Today",
+    "remaining": "{days} days left",
+    "passed": "{days} days ago"
+  },
   "stats": {
     "title": "Your Activity",
     "todayFocus": "Today's Focus",
@@ -146,6 +161,7 @@
   },
   "auth": {
     "loginTitle": "Login",
+    "logoutTitle": "Sign out",
     "registerTitle": "Register",
     "loginSuccess": "Login successful",
     "registerSuccess": "Registration successful",

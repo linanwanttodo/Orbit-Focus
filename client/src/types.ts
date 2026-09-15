@@ -93,8 +93,33 @@ export interface CalendarMonth {
   weeks: CalendarWeek[];
 }
 
-// --- Locale Types ---
+/** Authenticated user (GitHub identity, issued by the backend as JWT) */
+export interface AuthUser {
+  id: string;
+  login: string;
+  avatarUrl: string;
+}
 
+/** Future countdown entry */
+export interface CountdownItem {
+  id: string;
+  title: string;
+  targetDate: string;
+  createdAt?: string;
+}
+
+/** Session record persisted locally (browser storage) */
+export interface StoredSession {
+  id: string;
+  type: string;
+  duration: number;
+  workTime: number;
+  startTime: string;
+  endTime: string | null;
+  isCompleted: boolean;
+}
+
+// --- Locale Types ---
 /** Translation parameter values */
 export type TranslationParams = Record<string, string | number>;
 

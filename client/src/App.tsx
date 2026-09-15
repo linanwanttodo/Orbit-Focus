@@ -8,7 +8,10 @@ import type { ClockStyle, CountdownState, TimerActions } from './hooks/useTimerS
 import { useI18n, LanguageSwitcher, Language } from './contexts/I18nContext';
 import { BackgroundLayer } from './components/BackgroundLayer';
 import { useTheme } from './contexts/ThemeContext';
-import { getUserStats, saveTaskData } from './services/apiService';
+import { getStats, listTasks, syncTasks } from './services/store';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthButton } from './components/AuthButton';
+import CountdownPage from './components/CountdownPage';
 import { useTimerState } from './hooks/useTimerState';
 
 import { Button } from './components/ui/button';
@@ -16,7 +19,7 @@ import { Badge } from './components/ui/badge';
 import { Slider } from './components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Input } from './components/ui/input';
-import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Flower2, Home, Timer, BarChart3, Settings } from 'lucide-react';
+import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Flower2, Home, Timer, CalendarClock, BarChart3, Settings } from 'lucide-react';
 
 // --- View Components ---
 
@@ -61,6 +64,7 @@ const HomeView: React.FC<{ onStartFocus: () => void }> = ({ onStartFocus }) => {
 
 const StatsView: React.FC = () => {
   const { t, language } = useI18n();
+  const { user } = useAuth();
   const [stats, setStats] = useState<SessionStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,10 +73,10 @@ const StatsView: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const userStats = await getUserStats();
+      const userStats = await getStats();
       setStats(userStats);
     } catch (err) {
-      console.error('获取统计数据失败:', err);
+      console.error('Failed to load statistics:', err);
       setError(err instanceof Error ? err.message : t('stats.loadFailed'));
       setStats({
         todayFocus: 0,
@@ -89,7 +93,7 @@ const StatsView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchStats();
@@ -737,6 +741,7 @@ const CountdownView: React.FC<{
 
 const AppContent: React.FC = () => {
   const { t, language } = useI18n();
+  const { user, isReady } = useAuth();
   const [appState, appActions] = useTimerState();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -794,6 +799,24 @@ const AppContent: React.FC = () => {
     };
   }, [setAppIsFullscreen]);
 
+  // Load tasks from the store (cloud or local) on mount and whenever the
+  // auth state settles, so the todo tab is no longer write-only.
+  useEffect(() => {
+    if (!isReady) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const stored = await listTasks();
+        if (!cancelled) setTasks(stored);
+      } catch (error) {
+        console.error('Failed to load tasks:', error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isReady, setTasks]);
+
   const handleTaskChange = useCallback(async (taskUpdater: React.SetStateAction<Task[]>) => {
     // Resolve the actual Task[] from the updater
     const resolvedTasks: Task[] = typeof taskUpdater === 'function'
@@ -801,22 +824,8 @@ const AppContent: React.FC = () => {
       : taskUpdater;
     setTasks(resolvedTasks);
 
-    const updatedTasks = [...resolvedTasks];
-    for (let i = 0; i < updatedTasks.length; i++) {
-      const task = updatedTasks[i];
-      try {
-        const saved = await saveTaskData(task.id, task.text, task.completed);
-        if (saved && saved.id && saved.id !== task.id) {
-          updatedTasks[i] = { ...task, id: saved.id };
-        }
-      } catch (error) {
-        console.error('保存任务数据失败:', error);
-      }
-    }
-
-    if (updatedTasks.some((t, i) => t.id !== resolvedTasks[i]?.id)) {
-      setTasks(updatedTasks);
-    }
+    // Persist the diff (optimistic UI: state already updated above)
+    void syncTasks(tasks, resolvedTasks);
   }, [setTasks, tasks]);
 
   const formatRealTime = (date: Date) => {
@@ -881,12 +890,13 @@ const AppContent: React.FC = () => {
 
         <Tabs
           value={currentView}
-          onValueChange={(v) => setCurrentView(v as 'home' | 'timer' | 'stats' | 'settings')}
+          onValueChange={(v) => setCurrentView(v as 'home' | 'timer' | 'countdown' | 'stats' | 'settings')}
         >
           <TabsList className="bg-transparent">
             {[
               { id: 'home', label: t('navigation.home'), icon: Home },
               { id: 'timer', label: t('navigation.timer'), icon: Timer },
+              { id: 'countdown', label: t('navigation.countdown'), icon: CalendarClock },
               { id: 'stats', label: t('navigation.stats'), icon: BarChart3 },
               { id: 'settings', label: t('navigation.settings'), icon: Settings }
             ].map((item) => (
@@ -904,7 +914,10 @@ const AppContent: React.FC = () => {
           </TabsList>
         </Tabs>
 
-        <LanguageSwitcher />
+        <div className="flex items-center gap-1">
+          <AuthButton />
+          <LanguageSwitcher />
+        </div>
       </nav>
 
       {/* fixed 导航栏的占位，同时为全屏态隐藏 */}
@@ -916,6 +929,7 @@ const AppContent: React.FC = () => {
             <HomeView onStartFocus={() => setCurrentView('timer')} />
           </div>
         )}
+        {currentView === 'countdown' && <CountdownPage />}
         {currentView === 'stats' && <StatsView />}
         {currentView === 'settings' && (
           <SettingsView
@@ -1010,5 +1024,9 @@ const AppContent: React.FC = () => {
 };
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }

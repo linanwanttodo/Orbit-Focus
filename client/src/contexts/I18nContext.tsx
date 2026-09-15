@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Globe, Check } from 'lucide-react';
 
@@ -96,8 +96,8 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     });
   }, [defaultLanguage]);
 
-  // 切换语言
-  const setLanguage = async (lang: Language) => {
+  // 切换语言（useCallback 保持引用稳定，避免消费者 useEffect 无限重建）
+  const setLanguage = useCallback(async (lang: Language) => {
     if (lang === language) return;
 
     setIsLoading(true);
@@ -111,10 +111,10 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [language]);
 
   // 翻译函数
-  const t = (key: string, params?: Record<string, string | number>): string => {
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     const keys = key.split('.');
     let value: string | TranslationData = translations;
 
@@ -139,10 +139,10 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     }
 
     return value;
-  };
+  }, [translations]);
 
   // 格式化日期
-  const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
+  const formatDate = useCallback((date: Date, options?: Intl.DateTimeFormatOptions): string => {
     const defaultOptions: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'short',
@@ -157,10 +157,10 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
       ...defaultOptions,
       ...options,
     });
-  };
+  }, [language]);
 
   // 格式化时间
-  const formatTime = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
+  const formatTime = useCallback((date: Date, options?: Intl.DateTimeFormatOptions): string => {
     const defaultOptions: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
       minute: '2-digit',
@@ -175,15 +175,27 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
       ...defaultOptions,
       ...options,
     });
-  };
+  }, [language]);
 
   // 格式化数字
-  const formatNumber = (num: number, options?: Intl.NumberFormatOptions): string => {
+  const formatNumber = useCallback((num: number, options?: Intl.NumberFormatOptions): string => {
     let locale = 'en-US';
     if (language === 'zh') locale = 'zh-CN';
     if (language === 'ru') locale = 'ru-RU';
     return num.toLocaleString(locale, options);
-  };
+  }, [language]);
+
+  const contextValue = useMemo<I18nContextType>(
+    () => ({
+      language,
+      setLanguage,
+      t,
+      formatDate,
+      formatTime,
+      formatNumber,
+    }),
+    [language, setLanguage, t, formatDate, formatTime, formatNumber]
+  );
 
   // 如果正在加载，显示加载状态
   if (isLoading) {
@@ -193,15 +205,6 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
       </div>
     );
   }
-
-  const contextValue: I18nContextType = {
-    language,
-    setLanguage,
-    t,
-    formatDate,
-    formatTime,
-    formatNumber,
-  };
 
   return (
     <I18nContext.Provider value={contextValue}>
