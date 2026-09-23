@@ -15,7 +15,6 @@ export type ClockStyle = 'digital' | 'flip';
 
 export interface AppTimerState {
   countdown: CountdownState;
-  zenMode: boolean;
   isFullscreen: boolean;
   currentView: 'home' | 'timer' | 'countdown' | 'stats' | 'settings';
   activeTimerTab: 'pomodoro' | 'countdown' | 'todo';
@@ -30,7 +29,6 @@ export interface TimerActions {
   setCountdownInputHours: (hours: number) => void;
   toggleCountdown: () => void;
   resetCountdown: () => void;
-  toggleZenMode: () => void;
   setCurrentView: (view: 'home' | 'timer' | 'countdown' | 'stats' | 'settings') => void;
   setActiveTimerTab: (tab: 'pomodoro' | 'countdown' | 'todo') => void;
   setTasks: (tasks: Task[]) => void;
@@ -50,7 +48,6 @@ const getInitialCountdownState = (): CountdownState => ({
 
 export function useTimerState(): [AppTimerState, TimerActions] {
   const [countdown, setCountdown] = useState<CountdownState>(getInitialCountdownState);
-  const [zenMode, setZenMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'timer' | 'countdown' | 'stats' | 'settings'>('home');
   const [activeTimerTab, setActiveTimerTab] = useState<'pomodoro' | 'countdown' | 'todo'>('pomodoro');
@@ -150,10 +147,6 @@ export function useTimerState(): [AppTimerState, TimerActions] {
     }));
   }, []);
 
-  const toggleZenMode = useCallback(() => {
-    setZenMode((prev) => !prev);
-  }, []);
-
   // Countdown Timer Effect
   useEffect(() => {
     let interval: number | null = null;
@@ -180,7 +173,6 @@ export function useTimerState(): [AppTimerState, TimerActions] {
 
   const state: AppTimerState = {
     countdown,
-    zenMode,
     isFullscreen,
     currentView,
     activeTimerTab,
@@ -195,7 +187,6 @@ export function useTimerState(): [AppTimerState, TimerActions] {
     setCountdownInputHours,
     toggleCountdown,
     resetCountdown,
-    toggleZenMode,
     setCurrentView,
     setActiveTimerTab,
     setTasks,

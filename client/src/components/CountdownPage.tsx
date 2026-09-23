@@ -1,11 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarClock, Check, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { CountdownItem } from '../types';
 import { useI18n } from '../contexts/I18nContext';
 import { useAuth } from '../contexts/AuthContext';
 import { deleteCountdown, listCountdowns, saveCountdown } from '../services/store';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { DateTimePicker } from './DateTimePicker';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -49,13 +58,10 @@ function useMinuteTick(): Date {
 function formatTargetDate(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return dateStr;
-  return date.toLocaleString(locale, {
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
   });
 }
 
@@ -68,13 +74,21 @@ const CountdownPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [newTitle, setNewTitle] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDate, setEditDate] = useState('');
+  // One dialog handles both create (editingItem = null) and edit.
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CountdownItem | null>(null);
+  const [formTitle, setFormTitle] = useState('');
+  const [formDate, setFormDate] = useState<Date | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const locale = language === 'zh' ? 'zh-CN' : language === 'ru' ? 'ru-RU' : 'en-US';
+
+  // Store target dates as local "YYYY-MM-DDT00:00" (midnight). Keeping the
+  // time suffix ensures new Date() parses it as local, not UTC, so the
+  // calendar day never shifts across time zones.
+  const toLocalDateValue = (date: Date): string =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T00:00`;
 
   const reload = useCallback(async () => {
     setIsLoading(true);
@@ -105,57 +119,65 @@ const CountdownPage: React.FC = () => {
     });
   }, [items, now]);
 
-  const handleAdd = async () => {
-    const title = newTitle.trim();
-    if (!title || !newDate) {
-      setError(t('countdown.invalidInput'));
+  const openCreate = () => {
+    setEditingItem(null);
+    setFormTitle('');
+    setFormDate(new Date());
+    setFormError(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (item: CountdownItem) => {
+    const parsed = new Date(item.targetDate);
+    setEditingItem(item);
+    setFormTitle(item.title);
+    setFormDate(Number.isNaN(parsed.getTime()) ? null : parsed);
+    setFormError(null);
+    setDialogOpen(true);
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) setFormError(null);
+  };
+
+  const handleSubmit = async () => {
+    const title = formTitle.trim();
+    if (!title || !formDate) {
+      setFormError(t('countdown.invalidInput'));
       return;
     }
-    const item: CountdownItem = {
-      id: `cd_${crypto.randomUUID()}`,
-      title,
-      targetDate: newDate,
-    };
-    setItems((prev) => [...prev, item]);
-    setNewTitle('');
-    setNewDate('');
-    setError(null);
+    const targetDate = toLocalDateValue(formDate);
+    setIsSubmitting(true);
     try {
-      await saveCountdown(item);
-    } catch (err) {
-      console.error('Failed to save countdown:', err);
-      setError(err instanceof Error ? err.message : t('countdown.loadFailed'));
-      void reload();
-    }
-  };
-
-  const startEdit = (item: CountdownItem) => {
-    setEditingId(item.id);
-    setEditTitle(item.title);
-    setEditDate(item.targetDate.slice(0, 16));
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditTitle('');
-    setEditDate('');
-  };
-
-  const confirmEdit = async () => {
-    if (!editingId) return;
-    const title = editTitle.trim();
-    if (!title || !editDate) {
-      setError(t('countdown.invalidInput'));
-      return;
-    }
-    const updated: CountdownItem = { ...items.find((c) => c.id === editingId), id: editingId, title, targetDate: editDate };
-    setItems((prev) => prev.map((c) => (c.id === editingId ? updated : c)));
-    cancelEdit();
-    try {
-      await saveCountdown(updated);
-    } catch (err) {
-      console.error('Failed to update countdown:', err);
-      void reload();
+      if (editingItem) {
+        const updated: CountdownItem = { ...editingItem, title, targetDate };
+        setItems((prev) => prev.map((c) => (c.id === editingItem.id ? updated : c)));
+        setDialogOpen(false);
+        try {
+          await saveCountdown(updated);
+        } catch (err) {
+          console.error('Failed to update countdown:', err);
+          void reload();
+        }
+      } else {
+        const item: CountdownItem = {
+          id: `cd_${crypto.randomUUID()}`,
+          title,
+          targetDate,
+        };
+        setItems((prev) => [...prev, item]);
+        setDialogOpen(false);
+        try {
+          await saveCountdown(item);
+        } catch (err) {
+          console.error('Failed to save countdown:', err);
+          setError(err instanceof Error ? err.message : t('countdown.loadFailed'));
+          void reload();
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -186,43 +208,27 @@ const CountdownPage: React.FC = () => {
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6 pb-24">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="pb-2">
-            <h2 className="text-lg font-semibold text-gh-fg tracking-tight">{t('countdown.title')}</h2>
-            <p className="text-gh-muted text-xs mt-1">{t('countdown.description')}</p>
+          <div className="flex items-start justify-between gap-4 pb-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gh-fg tracking-tight">{t('countdown.title')}</h2>
+              <p className="text-gh-muted text-xs mt-1">{t('countdown.description')}</p>
+            </div>
+            <Button
+              size="icon"
+              onClick={openCreate}
+              aria-label={t('countdown.add')}
+              title={t('countdown.add')}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
 
-          {/* Add form */}
-          <div className="bg-gh-surface rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <CalendarClock className="h-4 w-4 text-gh-muted" aria-hidden="true" />
-              <h3 className="text-gh-fg font-medium text-sm">{t('countdown.addTitle')}</h3>
+          {error && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder={t('countdown.titlePlaceholder')}
-                maxLength={200}
-                className="flex-1"
-              />
-              <Input
-                type="datetime-local"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                className="sm:w-64"
-                aria-label={t('countdown.dateLabel')}
-              />
-              <Button onClick={() => void handleAdd()} disabled={!newTitle.trim() || !newDate}>
-                <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
-                {t('countdown.add')}
-              </Button>
-            </div>
-            {error && (
-              <div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Cards grid, same rounded card language as the stats view */}
           {isLoading ? (
@@ -233,79 +239,93 @@ const CountdownPage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedItems.map((item) => {
-                const isEditing = editingId === item.id;
-                return (
-                  <div key={item.id} className="bg-gh-surface rounded-2xl p-5 flex flex-col gap-3 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="text-gh-fg font-medium text-sm truncate" title={item.title}>
-                        {isEditing ? '' : item.title}
-                      </div>
-                      {!isEditing && (
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => startEdit(item)}
-                            aria-label={t('common.edit')}
-                            title={t('common.edit')}
-                          >
-                            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => void handleDelete(item.id)}
-                            aria-label={t('common.delete')}
-                            title={t('common.delete')}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      )}
+              {sortedItems.map((item) => (
+                <div key={item.id} className="bg-gh-surface rounded-2xl p-5 flex flex-col gap-3 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-gh-fg font-medium text-sm truncate" title={item.title}>
+                      {item.title}
                     </div>
-
-                    {isEditing ? (
-                      <div className="flex flex-col gap-2">
-                        <Input
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          placeholder={t('countdown.titlePlaceholder')}
-                          maxLength={200}
-                        />
-                        <Input
-                          type="datetime-local"
-                          value={editDate}
-                          onChange={(e) => setEditDate(e.target.value)}
-                          aria-label={t('countdown.dateLabel')}
-                        />
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => void confirmEdit()}>
-                            <Check className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
-                            {t('common.save')}
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={cancelEdit}>
-                            {t('common.cancel')}
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {renderProgress(item)}
-                        <div className="text-xs text-gh-muted font-mono">
-                          {formatTargetDate(item.targetDate, locale)}
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => openEdit(item)}
+                        aria-label={t('common.edit')}
+                        title={t('common.edit')}
+                      >
+                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => void handleDelete(item.id)}
+                        aria-label={t('common.delete')}
+                        title={t('common.delete')}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
-                );
-              })}
+
+                  {renderProgress(item)}
+                  <div className="text-xs text-gh-muted font-mono">
+                    {formatTargetDate(item.targetDate, locale)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Create / edit dialog: the only place to fill in countdown fields */}
+      <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
+        <DialogContent aria-describedby={undefined} className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingItem ? t('countdown.editTitle') : t('countdown.addNew')}</DialogTitle>
+            <DialogDescription>{t('countdown.description')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="countdown-title" className="text-xs font-medium text-gh-muted">
+                {t('countdown.title')}
+              </label>
+              <Input
+                id="countdown-title"
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                placeholder={t('countdown.titlePlaceholder')}
+                maxLength={200}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span id="countdown-date-label" className="text-xs font-medium text-gh-muted">
+                {t('countdown.dateLabel')}
+              </span>
+              <div aria-labelledby="countdown-date-label">
+                <DateTimePicker value={formDate} onChange={setFormDate} />
+              </div>
+            </div>
+            {formError && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                {formError}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={() => void handleSubmit()} disabled={isSubmitting}>
+              {editingItem ? t('common.save') : t('common.add')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

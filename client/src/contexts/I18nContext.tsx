@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, ReactNode } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, Check } from 'lucide-react';
+import { Menu, Check } from 'lucide-react';
 
 // 支持的语言
 export type Language = 'en' | 'zh' | 'ru';
@@ -226,7 +225,7 @@ export const useI18n = (): I18nContextType => {
 // 桌面端（≥sm）：分段按钮胶囊；移动端（<sm）：地球图标 + 下拉菜单，避免与导航争宽溢出
 export const LanguageSwitcher: React.FC = () => {
   const { language, setLanguage } = useI18n();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const options = [
@@ -235,16 +234,16 @@ export const LanguageSwitcher: React.FC = () => {
     { code: 'ru' as const, label: 'Русский' },
   ];
 
-  // 移动端菜单：点击外部 / Esc 关闭
+  // 关闭：点击菜单外部或按 Esc
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!open) return;
     const handlePointerDown = (e: Event) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMobileOpen(false);
+        setOpen(false);
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMobileOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     };
     document.addEventListener('mousedown', handlePointerDown);
     document.addEventListener('touchstart', handlePointerDown);
@@ -254,68 +253,48 @@ export const LanguageSwitcher: React.FC = () => {
       document.removeEventListener('touchstart', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mobileOpen]);
+  }, [open]);
 
   return (
-    <>
-      {/* 桌面端：分段按钮 */}
-      <Tabs
-        value={language}
-        onValueChange={(v) => setLanguage(v as 'en' | 'zh' | 'ru')}
-        className="hidden sm:block"
+    <div ref={menuRef} className="relative">
+      {/* 汉堡菜单按钮：桌面与移动共用 */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Language"
+        title="Language"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gh-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <TabsList className="h-8 px-1">
-          {options.map((option) => (
-            <TabsTrigger
-              key={option.code}
-              value={option.code}
-              className="h-6 px-3 text-xs"
-            >
-              {option.code === 'en' ? 'EN' : option.code === 'zh' ? '中文' : 'RU'}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      {/* 移动端：图标 + 弹出菜单 */}
-      <div ref={menuRef} className="relative sm:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-haspopup="menu"
-          aria-expanded={mobileOpen}
-          aria-label="Language"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gh-muted transition-colors hover:bg-gh-hover hover:text-gh-fg"
+        <Menu className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 min-w-[8.5rem] rounded-xl border border-gh-border bg-gh-surface py-1.5 animate-in fade-in duration-150"
         >
-          <Globe className="h-4 w-4" />
-        </button>
-        {mobileOpen && (
-          <div
-            role="menu"
-            className="absolute right-0 top-full mt-2 min-w-[8.5rem] rounded-xl bg-gh-surface py-1.5 animate-in fade-in duration-150"
-          >
-            {options.map((option) => (
-              <button
-                key={option.code}
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setLanguage(option.code);
-                  setMobileOpen(false);
-                }}
-                className={`flex w-full items-center justify-between gap-3 px-3.5 py-2 text-sm transition-colors ${
-                  option.code === language
-                    ? 'bg-gh-hover font-medium text-gh-fg'
-                    : 'text-gh-muted hover:bg-gh-hover hover:text-gh-fg'
-                }`}
-              >
-                {option.label}
-                {option.code === language && <Check className="h-3.5 w-3.5" />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+          {options.map((option) => (
+            <button
+              key={option.code}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setLanguage(option.code);
+                setOpen(false);
+              }}
+              className={`flex w-full items-center justify-between gap-3 px-3.5 py-2 text-sm ${
+                option.code === language
+                  ? 'bg-gh-inset font-medium text-gh-fg'
+                  : 'text-gh-muted'
+              }`}
+            >
+              {option.label}
+              {option.code === language && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };

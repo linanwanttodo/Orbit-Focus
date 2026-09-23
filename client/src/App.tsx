@@ -19,7 +19,7 @@ import { Badge } from './components/ui/badge';
 import { Slider } from './components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Input } from './components/ui/input';
-import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Flower2, Home, Timer, CalendarClock, BarChart3, Settings } from 'lucide-react';
+import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Home, Timer, CalendarClock, BarChart3, Settings } from 'lucide-react';
 
 // --- View Components ---
 
@@ -749,7 +749,6 @@ const AppContent: React.FC = () => {
 
   const {
     countdown,
-    zenMode,
     currentView,
     activeTimerTab,
     tasks,
@@ -758,7 +757,6 @@ const AppContent: React.FC = () => {
   } = appState;
 
   const {
-    toggleZenMode,
     setCurrentView,
     setActiveTimerTab,
     setTasks,
@@ -915,8 +913,8 @@ const AppContent: React.FC = () => {
         </Tabs>
 
         <div className="flex items-center gap-1">
-          <AuthButton />
           <LanguageSwitcher />
+          <AuthButton />
         </div>
       </nav>
 
@@ -972,16 +970,6 @@ const AppContent: React.FC = () => {
                   ))}
                 </TabsList>
               </Tabs>
-
-              {/* 禅静模式切换按钮 */}
-              <Button
-                variant={zenMode ? 'default' : 'outline'}
-                size="icon"
-                onClick={toggleZenMode}
-                title={zenMode ? t('timer.exitZenMode') : t('timer.enterZenMode')}
-              >
-                <Flower2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
 
