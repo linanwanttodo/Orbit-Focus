@@ -1,7 +1,15 @@
+export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
+export type TaskPriority = 'high' | 'medium' | 'low';
+
 export interface Task {
   id: string;
   text: string;
   completed: boolean;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string | null;
+  orderIndex: number;
 }
 
 // --- API Response Types ---
@@ -21,6 +29,10 @@ export interface ApiTask {
   id: string;
   title: string;
   description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string | null;
+  orderIndex: number;
   isCompleted: boolean;
   createdAt: string;
 }
@@ -46,6 +58,8 @@ export interface ApiSession {
   workTime: number;
   startTime: string;
   endTime: string | null;
+  localDate: string;
+  timezone: string;
   isCompleted: boolean;
 }
 
@@ -116,6 +130,8 @@ export interface StoredSession {
   workTime: number;
   startTime: string;
   endTime: string | null;
+  localDate: string;
+  timezone: string;
   isCompleted: boolean;
 }
 

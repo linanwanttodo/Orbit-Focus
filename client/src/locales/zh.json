@@ -36,6 +36,8 @@
   "navigation": {
     "home": "首页",
     "timer": "专注",
+    "focus": "专注",
+    "future": "未来",
     "countdown": "倒计时",
     "stats": "统计",
     "settings": "设置",
@@ -59,6 +61,7 @@
     "tabs": {
       "pomodoro": "时间",
       "countdown": "倒计时",
+      "future": "未来",
       "todo": "待办"
     },
     "title": "轨道专注",
@@ -106,6 +109,40 @@
     "today": "今天",
     "remaining": "剩余 {days} 天",
     "passed": "已过去 {days} 天"
+  },
+  "board": {
+    "title": "任务看板",
+    "description": "拖动任务卡片调整状态，或点击卡片编辑详情。",
+    "newTask": "新建任务",
+    "addTask": "添加任务",
+    "editTask": "编辑任务",
+    "createTask": "创建任务",
+    "formDescription": "设置任务内容、状态、优先级和截止日期。",
+    "taskTitle": "任务标题",
+    "statusLabel": "状态",
+    "priorityLabel": "优先级",
+    "dueDate": "截止日期",
+    "taskDescription": "任务描述",
+    "titleRequired": "请输入任务标题",
+    "noDueDate": "无截止日期",
+    "emptyColumn": "拖动任务到此列",
+    "totalTasks": "总任务数",
+    "activeTasks": "进行中",
+    "completedTasks": "已完成",
+    "overdueTasks": "逾期任务",
+    "edit": "编辑任务",
+    "delete": "删除任务",
+    "status": {
+      "todo": "待办",
+      "progress": "进行中",
+      "review": "审阅中",
+      "done": "已完成"
+    },
+    "priority": {
+      "high": "高优先级",
+      "medium": "中优先级",
+      "low": "低优先级"
+    }
   },
   "stats": {
     "title": "您的活动",
@@ -198,6 +235,10 @@
     "timeStyleDescription": "选择当前时间的显示方式。",
     "countdownStyle": "倒计时样式",
     "countdownStyleDescription": "选择倒计时的显示方式。",
+    "todoView": "待办视图",
+    "todoViewDescription": "选择待办页面的展示方式。",
+    "todoBoard": "任务看板",
+    "todoList": "简单清单",
     "themeMode": "主题模式",
     "themeModeDescription": "在深色和浅色外观之间切换。",
     "dark": "深色",

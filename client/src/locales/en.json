@@ -36,6 +36,8 @@
   "navigation": {
     "home": "Home",
     "timer": "Focus",
+    "focus": "Focus",
+    "future": "Future",
     "countdown": "Countdown",
     "stats": "Stats",
     "settings": "Settings",
@@ -59,6 +61,7 @@
     "tabs": {
       "pomodoro": "Time",
       "countdown": "Countdown",
+      "future": "Future",
       "todo": "TODO"
     },
     "title": "Orbit Focus",
@@ -106,6 +109,40 @@
     "today": "Today",
     "remaining": "{days} days left",
     "passed": "{days} days ago"
+  },
+  "board": {
+    "title": "Task Board",
+    "description": "Drag cards to change status, or select a card to edit details.",
+    "newTask": "New task",
+    "addTask": "Add task",
+    "editTask": "Edit task",
+    "createTask": "Create task",
+    "formDescription": "Set the task details, status, priority, and due date.",
+    "taskTitle": "Task title",
+    "statusLabel": "Status",
+    "priorityLabel": "Priority",
+    "dueDate": "Due date",
+    "taskDescription": "Description",
+    "titleRequired": "Enter a task title",
+    "noDueDate": "No due date",
+    "emptyColumn": "Drop a task here",
+    "totalTasks": "Total tasks",
+    "activeTasks": "In progress",
+    "completedTasks": "Completed",
+    "overdueTasks": "Overdue",
+    "edit": "Edit task",
+    "delete": "Delete task",
+    "status": {
+      "todo": "To do",
+      "progress": "In progress",
+      "review": "In review",
+      "done": "Done"
+    },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   },
   "stats": {
     "title": "Your Activity",
@@ -198,6 +235,10 @@
     "timeStyleDescription": "Choose how the current time is displayed.",
     "countdownStyle": "Countdown style",
     "countdownStyleDescription": "Choose how the countdown is displayed.",
+    "todoView": "Todo view",
+    "todoViewDescription": "Choose how the todo page is displayed.",
+    "todoBoard": "Task board",
+    "todoList": "Simple list",
     "themeMode": "Theme Mode",
     "themeModeDescription": "Switch between dark and light appearance",
     "dark": "Dark",

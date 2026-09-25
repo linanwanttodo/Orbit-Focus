@@ -14,13 +14,17 @@ import type {
   DbStatsRow,
   DbTaskRow,
   SqlValue,
+  TaskPriority,
+  TaskStatus,
 } from './types';
 import { signJwt, signState, verifyJwt, verifyState } from './jwt';
 import { buildAuthorizeUrl, exchangeCodeForToken, fetchGitHubProfile } from './github';
-import { calculateStreak, fillLast7Days, getLast7DaysRange, getLocalDaysAgo } from './stats';
+import { calculateStreak, fillLast7Days, getLast7DaysRange, getLocalDateString, getLocalDaysAgo } from './stats';
 
 const ID_PATTERN = /^[A-Za-z0-9_.-]{1,64}$/;
 const SESSION_TYPES = new Set(['work', 'break', 'longBreak']);
+const TASK_STATUSES = new Set<TaskStatus>(['todo', 'progress', 'review', 'done']);
+const TASK_PRIORITIES = new Set<TaskPriority>(['high', 'medium', 'low']);
 
 interface ApiBody {
   [key: string]: unknown;
@@ -37,6 +41,21 @@ function str(value: unknown, fallback = ''): string {
 function num(value: unknown, fallback = 0): number {
   const parsed = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function validDateOnly(value: unknown): value is string | null {
+  if (value === undefined || value === null || value === '') return true;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function normalizedDueDate(value: unknown): string | null {
+  return typeof value === 'string' && value ? value : null;
+}
+
+function validDateTime(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && !Number.isNaN(new Date(value).getTime());
 }
 
 function jsonResponse(data: unknown, status = 200): Response {
@@ -152,7 +171,11 @@ function mapTask(row: DbTaskRow) {
     id: row.id,
     title: row.title,
     description: row.description,
-    isCompleted: row.is_completed === 1,
+    status: row.status,
+    priority: row.priority,
+    dueDate: row.due_date,
+    orderIndex: row.order_index,
+    isCompleted: row.status === 'done',
     createdAt: row.created_at,
   };
 }
@@ -162,9 +185,11 @@ function mapSession(row: DbSessionRow) {
     id: row.id,
     type: row.type,
     duration: row.duration,
-    workTime: row.work_time || row.duration,
+    workTime: row.work_time,
     startTime: row.start_time,
     endTime: row.end_time,
+    localDate: row.local_date,
+    timezone: row.timezone,
     isCompleted: row.is_completed === 1,
   };
 }
@@ -273,17 +298,42 @@ async function handleTasks(
       if (!body) return errorResponse(400, 'Invalid JSON body');
       const title = str(body.title).trim();
       if (!title || title.length > 500) return errorResponse(400, 'Title is required (max 500 characters)');
+      const description = str(body.description);
+      if (description.length > 2000) return errorResponse(400, 'Description is too long (max 2000 characters)');
+      const status = body.status === undefined ? 'todo' : str(body.status);
+      if (!TASK_STATUSES.has(status as TaskStatus)) return errorResponse(400, 'Invalid task status');
+      const priority = body.priority === undefined ? 'medium' : str(body.priority);
+      if (!TASK_PRIORITIES.has(priority as TaskPriority)) return errorResponse(400, 'Invalid task priority');
+      const dueDate = normalizedDueDate(body.dueDate);
+      if (!validDateOnly(dueDate)) return errorResponse(400, 'dueDate must be a valid YYYY-MM-DD date');
       const id = body.id !== undefined ? str(body.id) : `task_${cryptoId()}`;
       if (!validId(id)) return errorResponse(400, 'Invalid id');
+      const orderIndex = body.orderIndex === undefined ? 0 : Math.trunc(num(body.orderIndex));
       const now = nowIso();
       await db.run(
-        `INSERT INTO tasks (id, user_id, title, description, is_completed, order_index, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, 0, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET title = excluded.title, updated_at = excluded.updated_at
-         WHERE tasks.user_id = excluded.user_id`,
-        [id, user.id, title, str(body.description).slice(0, 2000), body.isCompleted ? 1 : 0, now, now]
+        `INSERT INTO tasks (id, user_id, title, description, status, priority, due_date, order_index, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, id) DO UPDATE SET
+           title = excluded.title,
+           description = excluded.description,
+           status = excluded.status,
+           priority = excluded.priority,
+           due_date = excluded.due_date,
+           order_index = excluded.order_index,
+           updated_at = excluded.updated_at`,
+        [id, user.id, title, description, status, priority, dueDate, orderIndex, now, now]
       );
-      return jsonResponse({ id, title, description: str(body.description), isCompleted: Boolean(body.isCompleted), createdAt: now }, 201);
+      return jsonResponse({
+        id,
+        title,
+        description,
+        status,
+        priority,
+        dueDate,
+        orderIndex,
+        isCompleted: status === 'done',
+        createdAt: now,
+      }, 201);
     }
     return null;
   }
@@ -308,16 +358,35 @@ async function handleTasks(
         params.push(title);
       }
       if (body.description !== undefined) {
+        const description = str(body.description);
+        if (description.length > 2000) return errorResponse(400, 'Description is too long (max 2000 characters)');
         updates.push('description = ?');
-        params.push(str(body.description).slice(0, 2000));
+        params.push(description);
       }
-      if (body.isCompleted !== undefined) {
-        updates.push('is_completed = ?');
-        params.push(body.isCompleted ? 1 : 0);
+      if (body.status !== undefined) {
+        const status = str(body.status);
+        if (!TASK_STATUSES.has(status as TaskStatus)) return errorResponse(400, 'Invalid task status');
+        updates.push('status = ?');
+        params.push(status);
+      } else if (body.isCompleted !== undefined) {
+        updates.push('status = ?');
+        params.push(body.isCompleted ? 'done' : 'todo');
+      }
+      if (body.priority !== undefined) {
+        const priority = str(body.priority);
+        if (!TASK_PRIORITIES.has(priority as TaskPriority)) return errorResponse(400, 'Invalid task priority');
+        updates.push('priority = ?');
+        params.push(priority);
+      }
+      if (body.dueDate !== undefined) {
+        const dueDate = normalizedDueDate(body.dueDate);
+        if (!validDateOnly(dueDate)) return errorResponse(400, 'dueDate must be a valid YYYY-MM-DD date');
+        updates.push('due_date = ?');
+        params.push(dueDate);
       }
       if (body.orderIndex !== undefined) {
         updates.push('order_index = ?');
-        params.push(num(body.orderIndex));
+        params.push(Math.trunc(num(body.orderIndex)));
       }
       if (updates.length === 0) return jsonResponse({ success: true });
       updates.push('updated_at = ?');
@@ -339,45 +408,47 @@ async function handleSessions(
   const path = url.pathname;
 
   if (path === '/api/sessions/stats' && request.method === 'GET') {
-    // Use substr() instead of date() so the same SQL runs on SQLite/D1 and
-    // PostgreSQL unchanged (start_time is stored as ISO-8601 text).
-    const { sevenDaysAgo } = getLast7DaysRange();
-    const heatmapFrom = getLocalDaysAgo(365);
+    const requestedToday = url.searchParams.get('today');
+    const today = requestedToday || getLocalDateString();
+    if (!validDateOnly(today)) return errorResponse(400, 'today must be a valid YYYY-MM-DD date');
+
+    const { sevenDaysAgo } = getLast7DaysRange(today);
+    const heatmapFrom = getLocalDaysAgo(365, today);
     const [totalResult, weeklyTotalResult, dailyResult, streakResult, heatmapResult] = await Promise.all([
       db.first('SELECT SUM(work_time) as total FROM sessions WHERE user_id = ? AND is_completed = 1', [user.id]),
       db.first(
-        'SELECT SUM(work_time) as total FROM sessions WHERE user_id = ? AND is_completed = 1 AND substr(start_time, 1, 10) >= ?',
+        'SELECT SUM(work_time) as total FROM sessions WHERE user_id = ? AND is_completed = 1 AND local_date >= ?',
         [user.id, sevenDaysAgo]
       ),
       db.all(
-        'SELECT substr(start_time, 1, 10) as date, SUM(work_time) as work_time FROM sessions WHERE user_id = ? AND is_completed = 1 AND substr(start_time, 1, 10) >= ? GROUP BY substr(start_time, 1, 10) ORDER BY substr(start_time, 1, 10) ASC',
+        'SELECT local_date as date, SUM(work_time) as work_time FROM sessions WHERE user_id = ? AND is_completed = 1 AND local_date >= ? GROUP BY local_date ORDER BY local_date ASC',
         [user.id, sevenDaysAgo]
       ),
       db.all(
-        "SELECT DISTINCT substr(start_time, 1, 10) as date FROM sessions WHERE user_id = ? AND is_completed = 1 AND type = 'work' ORDER BY substr(start_time, 1, 10) DESC",
+        "SELECT DISTINCT local_date as date FROM sessions WHERE user_id = ? AND is_completed = 1 AND type = 'work' ORDER BY local_date DESC",
         [user.id]
       ),
       db.all(
-        'SELECT substr(start_time, 1, 10) as date, SUM(work_time) as work_time, COUNT(*) as sessions_count FROM sessions WHERE user_id = ? AND is_completed = 1 AND substr(start_time, 1, 10) >= ? GROUP BY substr(start_time, 1, 10) ORDER BY substr(start_time, 1, 10) ASC',
+        'SELECT local_date as date, SUM(work_time) as work_time, COUNT(*) as sessions_count FROM sessions WHERE user_id = ? AND is_completed = 1 AND local_date >= ? GROUP BY local_date ORDER BY local_date ASC',
         [user.id, heatmapFrom]
       ),
     ]);
 
     const totalWorkTime = num((totalResult as DbStatsRow | null)?.total);
     const weeklyWorkTime = num((weeklyTotalResult as DbStatsRow | null)?.total);
-    const streak = calculateStreak((streakResult as unknown as { date: string }[]) || []);
-    const heatmapData = (heatmapResult as unknown as DbHeatmapRow[]).map((r) => ({
-      date: r.date,
-      work_time: num(r.work_time),
-      sessions_count: num(r.sessions_count),
+    const streak = calculateStreak((streakResult as unknown as { date: string }[]) || [], today);
+    const heatmapData = (heatmapResult as unknown as DbHeatmapRow[]).map((row) => ({
+      date: row.date,
+      work_time: num(row.work_time),
+      sessions_count: num(row.sessions_count),
     }));
-    const dailyStats = fillLast7Days((dailyResult as unknown as DbDailyRow[]) || []);
+    const dailyStats = fillLast7Days((dailyResult as unknown as DbDailyRow[]) || [], today);
 
     return jsonResponse({
       todayFocus: Math.round((dailyStats[6]?.work_time || 0) / 60),
       weeklyTotal: Math.round(weeklyWorkTime / 60),
       totalDuration: Math.round(totalWorkTime / 60),
-      weeklyData: dailyStats.map((d) => Math.round(d.work_time / 60)),
+      weeklyData: dailyStats.map((day) => Math.round(day.work_time / 60)),
       heatmapData,
       streak,
     });
@@ -396,21 +467,31 @@ async function handleSessions(
       if (!body) return errorResponse(400, 'Invalid JSON body');
       const type = str(body.type, 'work');
       if (!SESSION_TYPES.has(type)) return errorResponse(400, 'Invalid session type');
-      const duration = num(body.duration);
+      const duration = Math.trunc(num(body.duration));
       if (duration < 0 || duration > 24 * 3600) return errorResponse(400, 'Invalid duration');
       const id = body.id !== undefined ? str(body.id) : `session_${cryptoId()}`;
       if (!validId(id)) return errorResponse(400, 'Invalid id');
+      const localDate = str(body.localDate);
+      const timezone = str(body.timezone).trim();
+      if (!validDateOnly(localDate)) return errorResponse(400, 'localDate must be a valid YYYY-MM-DD date');
+      if (!timezone || timezone.length > 64) return errorResponse(400, 'timezone is required');
       const now = nowIso();
       const startTime = str(body.startTime, now);
+      if (!validDateTime(startTime)) return errorResponse(400, 'startTime must be a valid date-time string');
       const endTime = body.endTime ? str(body.endTime) : null;
-      const workTime = num(body.workTime, duration);
+      if (endTime && !validDateTime(endTime)) return errorResponse(400, 'endTime must be a valid date-time string');
+      const workTime = body.workTime === undefined ? duration : Math.trunc(num(body.workTime));
+      if (workTime < 0 || workTime > 24 * 3600 || workTime > duration) {
+        return errorResponse(400, 'Invalid workTime');
+      }
+      const isCompleted = body.isCompleted !== false;
       await db.run(
-        `INSERT INTO sessions (id, user_id, type, duration, start_time, end_time, is_completed, work_time, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO NOTHING`,
-        [id, user.id, type, duration, startTime, endTime, body.isCompleted === false ? 0 : 1, workTime, now, now]
+        `INSERT INTO sessions (id, user_id, type, duration, work_time, start_time, end_time, local_date, timezone, is_completed, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, id) DO NOTHING`,
+        [id, user.id, type, duration, workTime, startTime, endTime, localDate, timezone, isCompleted ? 1 : 0, now, now]
       );
-      return jsonResponse({ id, type, duration, workTime, startTime, endTime, isCompleted: body.isCompleted !== false }, 201);
+      return jsonResponse({ id, type, duration, workTime, startTime, endTime, localDate, timezone, isCompleted }, 201);
     }
     return null;
   }
@@ -428,15 +509,38 @@ async function handleSessions(
       if (!body) return errorResponse(400, 'Invalid JSON body');
       const updates: string[] = [];
       const params: SqlValue[] = [];
-      if (body.duration !== undefined) { updates.push('duration = ?'); params.push(num(body.duration)); }
+      if (body.duration !== undefined) {
+        const duration = Math.trunc(num(body.duration));
+        if (duration < 0 || duration > 24 * 3600) return errorResponse(400, 'Invalid duration');
+        updates.push('duration = ?'); params.push(duration);
+      }
       if (body.type !== undefined) {
         if (!SESSION_TYPES.has(str(body.type))) return errorResponse(400, 'Invalid session type');
         updates.push('type = ?'); params.push(str(body.type));
       }
-      if (body.startTime !== undefined) { updates.push('start_time = ?'); params.push(str(body.startTime)); }
-      if (body.endTime !== undefined) { updates.push('end_time = ?'); params.push(str(body.endTime) || null); }
+      if (body.startTime !== undefined) {
+        if (!validDateTime(body.startTime)) return errorResponse(400, 'Invalid startTime');
+        updates.push('start_time = ?'); params.push(str(body.startTime));
+      }
+      if (body.endTime !== undefined) {
+        if (body.endTime && !validDateTime(body.endTime)) return errorResponse(400, 'Invalid endTime');
+        updates.push('end_time = ?'); params.push(str(body.endTime) || null);
+      }
+      if (body.localDate !== undefined) {
+        if (!validDateOnly(body.localDate)) return errorResponse(400, 'Invalid localDate');
+        updates.push('local_date = ?'); params.push(str(body.localDate));
+      }
+      if (body.timezone !== undefined) {
+        const timezone = str(body.timezone).trim();
+        if (!timezone || timezone.length > 64) return errorResponse(400, 'Invalid timezone');
+        updates.push('timezone = ?'); params.push(timezone);
+      }
       if (body.isCompleted !== undefined) { updates.push('is_completed = ?'); params.push(body.isCompleted ? 1 : 0); }
-      if (body.workTime !== undefined) { updates.push('work_time = ?'); params.push(num(body.workTime)); }
+      if (body.workTime !== undefined) {
+        const workTime = Math.trunc(num(body.workTime));
+        if (workTime < 0 || workTime > 24 * 3600) return errorResponse(400, 'Invalid workTime');
+        updates.push('work_time = ?'); params.push(workTime);
+      }
       if (updates.length > 0) {
         updates.push('updated_at = ?');
         params.push(nowIso(), id, user.id);
@@ -480,8 +584,7 @@ async function handleCountdowns(
       await db.run(
         `INSERT INTO countdowns (id, user_id, title, target_date, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET title = excluded.title, target_date = excluded.target_date, updated_at = excluded.updated_at
-         WHERE countdowns.user_id = excluded.user_id`,
+         ON CONFLICT(user_id, id) DO UPDATE SET title = excluded.title, target_date = excluded.target_date, updated_at = excluded.updated_at`,
         [id, user.id, title, targetDate, now, now]
       );
       return jsonResponse({ id, title, targetDate, createdAt: now }, 201);

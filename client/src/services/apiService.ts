@@ -90,10 +90,26 @@ export async function fetchTasksCloud(): Promise<ApiTask[]> {
   return data || [];
 }
 
-export async function upsertTaskCloud(task: { id: string; title: string; completed: boolean }): Promise<void> {
+export async function upsertTaskCloud(task: {
+  id: string;
+  text: string;
+  description: string;
+  status: string;
+  priority: string;
+  dueDate: string | null;
+  orderIndex: number;
+}): Promise<void> {
   await request('/tasks', {
     method: 'POST',
-    body: JSON.stringify({ id: task.id, title: task.title, isCompleted: task.completed }),
+    body: JSON.stringify({
+      id: task.id,
+      title: task.text,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      orderIndex: task.orderIndex,
+    }),
   });
 }
 
@@ -113,13 +129,15 @@ export async function saveSessionCloud(session: StoredSession): Promise<void> {
       workTime: session.workTime,
       startTime: session.startTime,
       endTime: session.endTime,
+      localDate: session.localDate,
+      timezone: session.timezone,
       isCompleted: session.isCompleted,
     }),
   });
 }
 
-export async function fetchStatsCloud(): Promise<SessionStatsResponse> {
-  const data = await request<Partial<SessionStatsResponse>>('/sessions/stats');
+export async function fetchStatsCloud(today: string): Promise<SessionStatsResponse> {
+  const data = await request<Partial<SessionStatsResponse>>(`/sessions/stats?today=${encodeURIComponent(today)}`);
   return {
     todayFocus: data?.todayFocus ?? 0,
     weeklyTotal: data?.weeklyTotal ?? 0,

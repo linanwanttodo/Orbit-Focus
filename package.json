@@ -15,14 +15,15 @@
     "lint:fix": "eslint . --fix",
     "validate": "tsc --noEmit && tsc -p tsconfig.server.json && tsc -p api/cloudflare/tsconfig.json && eslint client/src server/src api",
     "validate:client": "tsc --noEmit && eslint client/src --ext ts,tsx",
-    "cf:dev": "wrangler dev",
-    "cf:deploy": "vite build && wrangler deploy",
-    "cf:db:init": "wrangler d1 execute orbit_focus_db --remote --file=./api/cloudflare/schema.sql",
-    "cf:db:init:local": "wrangler d1 execute orbit_focus_db --local --file=./api/cloudflare/schema.sql",
-    "cf:tail": "wrangler tail",
+    "cf:dev": "npx wrangler dev",
+    "cf:deploy": "vite build && npx wrangler deploy",
+    "cf:db:init": "npx wrangler d1 execute orbit_focus_db --remote --file=./api/cloudflare/schema.sql",
+    "cf:db:init:local": "npx wrangler d1 execute orbit_focus_db --local --file=./api/cloudflare/schema.sql",
+    "cf:tail": "npx wrangler tail",
     "setup": "bash setup-cloudflare.sh",
     "setup:server": "bash setup-server.sh",
-    "start:server": "tsx server/src/index.ts"
+    "start:server": "tsx server/src/index.ts",
+    "test": "node --import tsx --test tests/*.test.ts"
   },
   "keywords": [
     "pomodoro",
@@ -54,6 +55,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.6.0",
+    "tsx": "^4.22.4",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
@@ -73,7 +75,6 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.19",
-    "tsx": "^4.22.4",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.60.0",
     "vite": "^6.4.3"

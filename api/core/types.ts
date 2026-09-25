@@ -1,5 +1,4 @@
 // Shared types for the framework-agnostic API core.
-// Imported by the Cloudflare Worker adapter and the local Express adapter.
 
 export interface CoreEnv {
   /** Secret used to sign application JWTs (HS256). */
@@ -34,6 +33,9 @@ export interface AuthUser {
   avatarUrl: string;
 }
 
+export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
+export type TaskPriority = 'high' | 'medium' | 'low';
+
 // --- Row shapes returned by the database ---
 
 export interface DbTaskRow {
@@ -41,7 +43,10 @@ export interface DbTaskRow {
   user_id: string;
   title: string;
   description: string;
-  is_completed: number;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  order_index: number;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +58,8 @@ export interface DbSessionRow {
   duration: number;
   start_time: string;
   end_time: string | null;
+  local_date: string;
+  timezone: string;
   is_completed: number;
   work_time: number;
   created_at: string;

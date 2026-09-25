@@ -1,0 +1,18 @@
+services:
+  orbit-focus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orbit-focus
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      SQLITE_PATH: /app/data/orbit-focus.db
+    volumes:
+      - ./data:/app/data
+    init: true

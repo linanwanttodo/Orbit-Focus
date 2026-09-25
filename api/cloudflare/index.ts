@@ -2,7 +2,7 @@
 // the framework-agnostic API core in ../core.
 
 import { handleApi } from '../core/handler';
-import { applyMigrations } from '../core/schema';
+import { initializeSchema } from '../core/schema';
 import type { CoreEnv, DbAdapter, Row } from '../core/types';
 
 export interface Env {
@@ -14,7 +14,7 @@ export interface Env {
   PUBLIC_ORIGIN?: string;
 }
 
-let schemaReady = false;
+let schemaReady: Promise<void> | null = null;
 
 function d1Adapter(db: D1Database): DbAdapter {
   return {
@@ -51,9 +51,12 @@ export default {
 
     try {
       if (!schemaReady) {
-        await applyMigrations(db, 'sqlite');
-        schemaReady = true;
+        schemaReady = initializeSchema(db).catch((error) => {
+          schemaReady = null;
+          throw error;
+        });
       }
+      await schemaReady;
     } catch (error) {
       console.error('[OrbitFocus][cloudflare] schema init failed:', error);
       return new Response(JSON.stringify({ error: 'Database initialization failed' }), {

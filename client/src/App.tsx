@@ -12,14 +12,16 @@ import { getStats, listTasks, syncTasks } from './services/store';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthButton } from './components/AuthButton';
 import CountdownPage from './components/CountdownPage';
+import { TaskBoard } from './components/TaskBoard';
 import { useTimerState } from './hooks/useTimerState';
+import { useClockOrientation } from './lib/orientation';
 
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
 import { Slider } from './components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Input } from './components/ui/input';
-import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Home, Timer, CalendarClock, BarChart3, Settings } from 'lucide-react';
+import { Maximize2, Minimize2, Play, Pause, RotateCcw, Moon, Sun, Home, Timer, BarChart3, Settings } from 'lucide-react';
 
 // --- View Components ---
 
@@ -456,9 +458,11 @@ const STYLES: ClockStyle[] = ['digital', 'flip'];
 const SettingsView: React.FC<{
   timeStyle: ClockStyle;
   countdownStyle: ClockStyle;
+  todoViewMode: 'board' | 'list';
   onTimeStyleChange: (style: ClockStyle) => void;
   onCountdownStyleChange: (style: ClockStyle) => void;
-}> = ({ timeStyle, countdownStyle, onTimeStyleChange, onCountdownStyleChange }) => {
+  onTodoViewModeChange: (mode: 'board' | 'list') => void;
+}> = ({ timeStyle, countdownStyle, todoViewMode, onTimeStyleChange, onCountdownStyleChange, onTodoViewModeChange }) => {
   const { t } = useI18n();
   const { theme, setThemeMode } = useTheme();
 
@@ -516,6 +520,30 @@ const SettingsView: React.FC<{
             </div>
           </div>
 
+          {/* Todo View */}
+          <div className="bg-gh-surface rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 lg:py-3 border-b border-gh-border-muted">
+              <h3 className="text-gh-fg font-medium text-sm">{t('settings.todoView')}</h3>
+              <p className="text-gh-muted text-xs mt-1">{t('settings.todoViewDescription')}</p>
+            </div>
+            <div className="p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant={todoViewMode === 'board' ? 'default' : 'outline'}
+                  onClick={() => onTodoViewModeChange('board')}
+                >
+                  {t('settings.todoBoard')}
+                </Button>
+                <Button
+                  variant={todoViewMode === 'list' ? 'default' : 'outline'}
+                  onClick={() => onTodoViewModeChange('list')}
+                >
+                  {t('settings.todoList')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Theme: Dark/Light Mode */}
           <div className="bg-gh-surface rounded-2xl overflow-hidden">
             <div className="px-5 py-4 lg:py-3 border-b border-gh-border-muted">
@@ -563,13 +591,15 @@ const formatTime = (seconds: number) => {
 };
 
 const renderStyle = (style: ClockStyle, value: string) => {
-  switch (style) {
-    case 'flip':
-      return <FlipClock value={value} className="drop-shadow-2xl" />;
-    case 'digital':
-    default:
-      return <div className="text-[min(17.6vw,30.8vh)] leading-none font-bold font-mono tabular-nums tracking-tight text-gh-fg">{value}</div>;
-  }
+  return (
+    <div className={`clock-frame clock-frame--${style}`}>
+      {style === 'flip' ? (
+        <FlipClock value={value} className="drop-shadow-2xl" />
+      ) : (
+        <div className="clock-digital font-bold font-mono tabular-nums tracking-tight text-gh-fg">{value}</div>
+      )}
+    </div>
+  );
 };
 
 const CountdownView: React.FC<{
@@ -746,6 +776,14 @@ const AppContent: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const { rotation: clockRotation, enableSystemLandscape, releaseSystemLandscape } = useClockOrientation();
+  const [todoViewMode, setTodoViewMode] = useState<'board' | 'list'>(() => {
+    try {
+      return localStorage.getItem('orbit-focus-v2-todo-view') === 'list' ? 'list' : 'board';
+    } catch {
+      return 'board';
+    }
+  });
 
   const {
     countdown,
@@ -797,6 +835,20 @@ const AppContent: React.FC = () => {
     };
   }, [setAppIsFullscreen]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('orbit-focus-v2-todo-view', todoViewMode);
+    } catch {
+      // Keep the selected view for this session when storage is unavailable.
+    }
+  }, [todoViewMode]);
+
+  useEffect(() => {
+    if (currentView !== 'focus' || (activeTimerTab !== 'pomodoro' && activeTimerTab !== 'countdown')) {
+      releaseSystemLandscape();
+    }
+  }, [currentView, activeTimerTab, releaseSystemLandscape]);
+
   // Load tasks from the store (cloud or local) on mount and whenever the
   // auth state settles, so the todo tab is no longer write-only.
   useEffect(() => {
@@ -822,8 +874,15 @@ const AppContent: React.FC = () => {
       : taskUpdater;
     setTasks(resolvedTasks);
 
-    // Persist the diff (optimistic UI: state already updated above)
-    void syncTasks(tasks, resolvedTasks);
+    const result = await syncTasks(tasks, resolvedTasks);
+    if (!result.ok) {
+      setGlobalError(result.errors.join('; '));
+      try {
+        setTasks(await listTasks());
+      } catch (error) {
+        console.error('Failed to reload tasks after sync failure:', error);
+      }
+    }
   }, [setTasks, tasks]);
 
   const formatRealTime = (date: Date) => {
@@ -848,6 +907,7 @@ const AppContent: React.FC = () => {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
+      void enableSystemLandscape();
       document.documentElement.requestFullscreen().catch((e) => {
         console.error(`Error attempting to enable fullscreen mode: ${e.message} (${e.name})`);
       });
@@ -888,13 +948,16 @@ const AppContent: React.FC = () => {
 
         <Tabs
           value={currentView}
-          onValueChange={(v) => setCurrentView(v as 'home' | 'timer' | 'countdown' | 'stats' | 'settings')}
+          onValueChange={(v) => {
+            const nextView = v as 'home' | 'focus' | 'stats' | 'settings';
+            setCurrentView(nextView);
+            if (nextView === 'focus') void enableSystemLandscape();
+          }}
         >
           <TabsList className="bg-transparent">
             {[
               { id: 'home', label: t('navigation.home'), icon: Home },
-              { id: 'timer', label: t('navigation.timer'), icon: Timer },
-              { id: 'countdown', label: t('navigation.countdown'), icon: CalendarClock },
+              { id: 'focus', label: t('navigation.focus'), icon: Timer },
               { id: 'stats', label: t('navigation.stats'), icon: BarChart3 },
               { id: 'settings', label: t('navigation.settings'), icon: Settings }
             ].map((item) => (
@@ -924,23 +987,25 @@ const AppContent: React.FC = () => {
       <main className="flex-1 w-full flex flex-col relative overflow-hidden">
         {currentView === 'home' && (
           <div className="flex-1 overflow-y-auto">
-            <HomeView onStartFocus={() => setCurrentView('timer')} />
+            <HomeView onStartFocus={() => setCurrentView('focus')} />
           </div>
         )}
-        {currentView === 'countdown' && <CountdownPage />}
         {currentView === 'stats' && <StatsView />}
         {currentView === 'settings' && (
           <SettingsView
             timeStyle={timeStyle}
             countdownStyle={countdownStyle}
+            todoViewMode={todoViewMode}
             onTimeStyleChange={setTimeStyle}
             onCountdownStyleChange={setCountdownStyle}
+            onTodoViewModeChange={setTodoViewMode}
           />
         )}
         <div
-          className={`flex-1 flex flex-col items-center justify-center animate-in fade-in duration-300 relative ${currentView === 'timer' ? 'flex' : 'hidden'}`}
+          className={`flex-1 flex flex-col items-center justify-center animate-in fade-in duration-300 relative ${currentView === 'focus' ? 'flex' : 'hidden'}`}
         >
-          <div className="absolute top-4 left-6 z-20 hidden md:flex items-center gap-3 group">
+          {(activeTimerTab === 'pomodoro' || activeTimerTab === 'countdown') && (
+            <div className="absolute right-4 top-20 z-20 flex items-center gap-3 group md:left-6 md:right-auto md:top-4">
             <Button
               variant="secondary"
               size="icon"
@@ -949,17 +1014,25 @@ const AppContent: React.FC = () => {
             >
               {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </Button>
-            <Badge variant="secondary" className="text-xs font-medium">
+            <Badge variant="secondary" className="hidden text-xs font-medium md:inline-flex">
               {isFullscreen ? t('timer.fullscreenHintExit') : t('timer.fullscreenHintEnter')}
             </Badge>
-          </div>
+            </div>
+          )}
 
           {/* 标签栏 - 绝对定位到顶部 */}
-          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 ${currentView === 'timer' ? 'block' : 'hidden'}`}>
+          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 ${currentView === 'focus' ? 'block' : 'hidden'}`}>
             <div className="flex items-center gap-4">
-              <Tabs value={activeTimerTab} onValueChange={(v) => setActiveTimerTab(v as 'pomodoro' | 'countdown' | 'todo')}>
+              <Tabs
+                value={activeTimerTab}
+                onValueChange={(v) => {
+                  const nextTab = v as 'pomodoro' | 'countdown' | 'future' | 'todo';
+                  setActiveTimerTab(nextTab);
+                  if (nextTab === 'pomodoro') void enableSystemLandscape();
+                }}
+              >
                 <TabsList>
-                  {(['pomodoro', 'countdown', 'todo'] as const).map(tab => (
+                  {(['pomodoro', 'countdown', 'future', 'todo'] as const).map(tab => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
@@ -974,11 +1047,15 @@ const AppContent: React.FC = () => {
           </div>
 
           {/* 主内容 - 完全居中 */}
-          <div className={`w-full h-full flex items-center justify-center ${currentView === 'timer' ? 'flex' : 'hidden'}`}>
+          <div className={`w-full h-full flex items-center justify-center ${currentView === 'focus' ? 'flex' : 'hidden'}`}>
             {activeTimerTab === 'pomodoro' && (
-              <div className="flex flex-col items-center justify-center animate-in fade-in duration-500 mb-16">
-                <div className="flex flex-col items-center">
-                  <div className="text-gh-muted text-base md:text-2xl font-medium tracking-wide mb-6">
+              <div
+                className={`clock-page ${clockRotation !== 0 ? 'clock-page--rotated' : ''}`}
+                data-rotation={clockRotation}
+                style={{ '--clock-rotation': `${clockRotation}deg` } as React.CSSProperties}
+              >
+                <div className="clock-page__content">
+                  <div className="mb-6 text-center text-base font-medium tracking-wide text-gh-muted md:text-2xl">
                     {formatDate(currentTime)}
                   </div>
                   {renderStyle(timeStyle, formatRealTime(currentTime))}
@@ -994,12 +1071,20 @@ const AppContent: React.FC = () => {
               />
             )}
 
+            {activeTimerTab === 'future' && (
+              <CountdownPage />
+            )}
+
             {activeTimerTab === 'todo' && (
-              <div className="w-full max-w-4xl mx-auto">
-                <div className="w-full bg-transparent overflow-hidden flex flex-col" style={{ height: isFullscreen ? 'calc(100vh - 250px)' : 'calc(100vh - 330px)' }}>
-                  <TaskList tasks={tasks} setTasks={handleTaskChange} isSaving={false} />
+              todoViewMode === 'board' ? (
+                <TaskBoard tasks={tasks} onTasksChange={handleTaskChange} />
+              ) : (
+                <div className="w-full max-w-4xl mx-auto">
+                  <div className="w-full bg-transparent overflow-hidden flex flex-col" style={{ height: isFullscreen ? 'calc(100vh - 250px)' : 'calc(100vh - 330px)' }}>
+                    <TaskList tasks={tasks} setTasks={handleTaskChange} isSaving={false} />
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
         </div>

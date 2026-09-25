@@ -151,7 +151,7 @@ else
   ask DATABASE_URL "PostgreSQL 连接串 (DATABASE_URL)" "$DATABASE_URL_DEFAULT"
   say "测试 PostgreSQL 连接..."
   if test_postgres "$DATABASE_URL"; then
-    say "[通过] PostgreSQL 连接成功，schema 将在服务启动时自动迁移"
+    say "[通过] PostgreSQL 连接成功，服务启动时将初始化最新 schema"
   else
     say "[失败] 无法连接该 PostgreSQL。请确认地址、账号、库名，或改选 SQLite 后重新运行。"
     exit 1
