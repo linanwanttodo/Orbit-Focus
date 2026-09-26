@@ -24,7 +24,7 @@ export interface AppTimerState {
   countdown: CountdownState;
   isFullscreen: boolean;
   currentView: 'home' | 'focus' | 'stats' | 'settings';
-  activeTimerTab: 'pomodoro' | 'countdown' | 'future' | 'todo';
+  activeTimerTab: 'clock' | 'countdown' | 'future' | 'todo';
   tasks: Task[];
   timeStyle: ClockStyle;
   countdownStyle: ClockStyle;
@@ -37,7 +37,7 @@ export interface TimerActions {
   toggleCountdown: () => void;
   resetCountdown: () => void;
   setCurrentView: (view: 'home' | 'focus' | 'stats' | 'settings') => void;
-  setActiveTimerTab: (tab: 'pomodoro' | 'countdown' | 'future' | 'todo') => void;
+  setActiveTimerTab: (tab: 'clock' | 'countdown' | 'future' | 'todo') => void;
   setTasks: (tasks: Task[]) => void;
   setIsFullscreen: (fullscreen: boolean) => void;
   setTimeStyle: (style: ClockStyle) => void;
@@ -123,7 +123,7 @@ export function useTimerState(): [AppTimerState, TimerActions] {
   const [countdown, setCountdown] = useState<CountdownState>(readPersistedCountdown);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'focus' | 'stats' | 'settings'>('home');
-  const [activeTimerTab, setActiveTimerTab] = useState<'pomodoro' | 'countdown' | 'future' | 'todo'>('pomodoro');
+  const [activeTimerTab, setActiveTimerTab] = useState<'clock' | 'countdown' | 'future' | 'todo'>('clock');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeStyle, setTimeStyle] = useState<ClockStyle>('digital');
   const [countdownStyle, setCountdownStyle] = useState<ClockStyle>('digital');

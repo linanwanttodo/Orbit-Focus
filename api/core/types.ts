@@ -33,8 +33,7 @@ export interface AuthUser {
   avatarUrl: string;
 }
 
-export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
-export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskStatus = 'todo' | 'progress' | 'done';
 
 // --- Row shapes returned by the database ---
 
@@ -44,8 +43,6 @@ export interface DbTaskRow {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  due_date: string | null;
   order_index: number;
   created_at: string;
   updated_at: string;

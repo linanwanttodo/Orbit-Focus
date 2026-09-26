@@ -20,9 +20,7 @@ const TABLES: string[] = [
     user_id TEXT NOT NULL,
     title TEXT NOT NULL CHECK (length(title) BETWEEN 1 AND 500),
     description TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'progress', 'review', 'done')),
-    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('high', 'medium', 'low')),
-    due_date TEXT,
+    status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'progress', 'done')),
     order_index INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
@@ -31,7 +29,7 @@ const TABLES: string[] = [
   `CREATE TABLE IF NOT EXISTS sessions (
     id TEXT NOT NULL,
     user_id TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('work', 'break', 'longBreak')),
+    type TEXT NOT NULL CHECK (type IN ('work')),
     duration INTEGER NOT NULL CHECK (duration BETWEEN 0 AND 86400),
     work_time INTEGER NOT NULL DEFAULT 0 CHECK (work_time BETWEEN 0 AND 86400),
     start_time TEXT NOT NULL,
@@ -56,7 +54,6 @@ const TABLES: string[] = [
 
 const INDEXES: string[] = [
   'CREATE INDEX IF NOT EXISTS idx_tasks_user_status_order ON tasks(user_id, status, order_index)',
-  'CREATE INDEX IF NOT EXISTS idx_tasks_user_due_date ON tasks(user_id, due_date)',
   'CREATE INDEX IF NOT EXISTS idx_sessions_user_local_date ON sessions(user_id, local_date)',
   'CREATE INDEX IF NOT EXISTS idx_sessions_user_start_time ON sessions(user_id, start_time)',
   'CREATE INDEX IF NOT EXISTS idx_sessions_user_type ON sessions(user_id, type)',

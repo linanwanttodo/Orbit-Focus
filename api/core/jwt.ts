@@ -1,5 +1,5 @@
 // JSON Web Token (HS256) sign/verify implemented with Web Crypto, so the same
-// code runs on Cloudflare Workers, Vercel Edge and Node.js 18+.
+// code runs on Cloudflare Workers and Node.js 18+.
 
 import type { AuthUser } from './types';
 

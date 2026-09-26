@@ -95,8 +95,6 @@ export async function upsertTaskCloud(task: {
   text: string;
   description: string;
   status: string;
-  priority: string;
-  dueDate: string | null;
   orderIndex: number;
 }): Promise<void> {
   await request('/tasks', {
@@ -106,8 +104,6 @@ export async function upsertTaskCloud(task: {
       title: task.text,
       description: task.description,
       status: task.status,
-      priority: task.priority,
-      dueDate: task.dueDate,
       orderIndex: task.orderIndex,
     }),
   });

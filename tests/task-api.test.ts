@@ -49,8 +49,6 @@ test('persists task board fields when the same task id is updated', async () => 
       title: 'Ship the board',
       description: 'Implement the new task board',
       status: 'todo',
-      priority: 'high',
-      dueDate: '2026-10-01',
     });
     assert.equal(created.status, 201);
 
@@ -59,8 +57,6 @@ test('persists task board fields when the same task id is updated', async () => 
       title: 'Ship the board',
       description: 'Implement the new task board',
       status: 'progress',
-      priority: 'medium',
-      dueDate: '2026-10-02',
       orderIndex: 3,
     });
     assert.equal(updated.status, 201);
@@ -71,11 +67,9 @@ test('persists task board fields when the same task id is updated', async () => 
     assert.deepEqual(
       {
         status: listed.data[0].status,
-        priority: listed.data[0].priority,
-        dueDate: listed.data[0].dueDate,
         orderIndex: listed.data[0].orderIndex,
       },
-      { status: 'progress', priority: 'medium', dueDate: '2026-10-02', orderIndex: 3 }
+      { status: 'progress', orderIndex: 3 }
     );
   } finally {
     await database.close();
@@ -93,13 +87,11 @@ test('isolates tasks by user while allowing the same client id for two users', a
       id: 'shared-id',
       title: 'A task',
       status: 'todo',
-      priority: 'low',
     });
     await apiRequest(database.adapter, tokenB, 'POST', '/api/tasks', {
       id: 'shared-id',
       title: 'B task',
       status: 'done',
-      priority: 'high',
     });
 
     const listA = await apiRequest(database.adapter, tokenA, 'GET', '/api/tasks');

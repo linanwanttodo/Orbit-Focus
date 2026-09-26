@@ -14,7 +14,6 @@ import type {
   DbStatsRow,
   DbTaskRow,
   SqlValue,
-  TaskPriority,
   TaskStatus,
 } from './types';
 import { signJwt, signState, verifyJwt, verifyState } from './jwt';
@@ -22,9 +21,8 @@ import { buildAuthorizeUrl, exchangeCodeForToken, fetchGitHubProfile } from './g
 import { calculateStreak, fillLast7Days, getLast7DaysRange, getLocalDateString, getLocalDaysAgo } from './stats';
 
 const ID_PATTERN = /^[A-Za-z0-9_.-]{1,64}$/;
-const SESSION_TYPES = new Set(['work', 'break', 'longBreak']);
-const TASK_STATUSES = new Set<TaskStatus>(['todo', 'progress', 'review', 'done']);
-const TASK_PRIORITIES = new Set<TaskPriority>(['high', 'medium', 'low']);
+const SESSION_TYPES = new Set(['work']);
+const TASK_STATUSES = new Set<TaskStatus>(['todo', 'progress', 'done']);
 
 interface ApiBody {
   [key: string]: unknown;
@@ -48,10 +46,6 @@ function validDateOnly(value: unknown): value is string | null {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
-}
-
-function normalizedDueDate(value: unknown): string | null {
-  return typeof value === 'string' && value ? value : null;
 }
 
 function validDateTime(value: unknown): value is string {
@@ -172,8 +166,6 @@ function mapTask(row: DbTaskRow) {
     title: row.title,
     description: row.description,
     status: row.status,
-    priority: row.priority,
-    dueDate: row.due_date,
     orderIndex: row.order_index,
     isCompleted: row.status === 'done',
     createdAt: row.created_at,
@@ -302,34 +294,26 @@ async function handleTasks(
       if (description.length > 2000) return errorResponse(400, 'Description is too long (max 2000 characters)');
       const status = body.status === undefined ? 'todo' : str(body.status);
       if (!TASK_STATUSES.has(status as TaskStatus)) return errorResponse(400, 'Invalid task status');
-      const priority = body.priority === undefined ? 'medium' : str(body.priority);
-      if (!TASK_PRIORITIES.has(priority as TaskPriority)) return errorResponse(400, 'Invalid task priority');
-      const dueDate = normalizedDueDate(body.dueDate);
-      if (!validDateOnly(dueDate)) return errorResponse(400, 'dueDate must be a valid YYYY-MM-DD date');
       const id = body.id !== undefined ? str(body.id) : `task_${cryptoId()}`;
       if (!validId(id)) return errorResponse(400, 'Invalid id');
       const orderIndex = body.orderIndex === undefined ? 0 : Math.trunc(num(body.orderIndex));
       const now = nowIso();
       await db.run(
-        `INSERT INTO tasks (id, user_id, title, description, status, priority, due_date, order_index, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO tasks (id, user_id, title, description, status, order_index, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id, id) DO UPDATE SET
            title = excluded.title,
            description = excluded.description,
            status = excluded.status,
-           priority = excluded.priority,
-           due_date = excluded.due_date,
            order_index = excluded.order_index,
            updated_at = excluded.updated_at`,
-        [id, user.id, title, description, status, priority, dueDate, orderIndex, now, now]
+        [id, user.id, title, description, status, orderIndex, now, now]
       );
       return jsonResponse({
         id,
         title,
         description,
         status,
-        priority,
-        dueDate,
         orderIndex,
         isCompleted: status === 'done',
         createdAt: now,
@@ -371,18 +355,6 @@ async function handleTasks(
       } else if (body.isCompleted !== undefined) {
         updates.push('status = ?');
         params.push(body.isCompleted ? 'done' : 'todo');
-      }
-      if (body.priority !== undefined) {
-        const priority = str(body.priority);
-        if (!TASK_PRIORITIES.has(priority as TaskPriority)) return errorResponse(400, 'Invalid task priority');
-        updates.push('priority = ?');
-        params.push(priority);
-      }
-      if (body.dueDate !== undefined) {
-        const dueDate = normalizedDueDate(body.dueDate);
-        if (!validDateOnly(dueDate)) return errorResponse(400, 'dueDate must be a valid YYYY-MM-DD date');
-        updates.push('due_date = ?');
-        params.push(dueDate);
       }
       if (body.orderIndex !== undefined) {
         updates.push('order_index = ?');

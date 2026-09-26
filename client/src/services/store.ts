@@ -3,7 +3,6 @@ import {
   SessionStatsResponse,
   StoredSession,
   Task,
-  TaskPriority,
   TaskStatus,
 } from '../types';
 import { calculateLocalStats } from '../lib/stats';
@@ -68,23 +67,17 @@ function writeJson(key: string, value: unknown): void {
 
 function normalizeTask(value: Partial<Task>): Task {
   const status: TaskStatus =
-    value.status === 'progress' || value.status === 'review' || value.status === 'done' || value.status === 'todo'
+    value.status === 'progress' || value.status === 'done' || value.status === 'todo'
       ? value.status
       : value.completed
         ? 'done'
         : 'todo';
-  const priority: TaskPriority =
-    value.priority === 'high' || value.priority === 'low' || value.priority === 'medium'
-      ? value.priority
-      : 'medium';
   return {
     id: String(value.id || ''),
     text: String(value.text || ''),
     completed: status === 'done',
     description: String(value.description || ''),
     status,
-    priority,
-    dueDate: typeof value.dueDate === 'string' && value.dueDate ? value.dueDate : null,
     orderIndex: Number.isFinite(value.orderIndex) ? Number(value.orderIndex) : 0,
   };
 }
@@ -112,8 +105,6 @@ export async function listTasks(): Promise<Task[]> {
     text: task.title,
     description: task.description,
     status: task.status,
-    priority: task.priority,
-    dueDate: task.dueDate,
     orderIndex: task.orderIndex,
     completed: task.isCompleted,
   }));
@@ -147,8 +138,6 @@ function tasksEqual(a: Task, b: Task): boolean {
   return a.text === b.text &&
     a.description === b.description &&
     a.status === b.status &&
-    a.priority === b.priority &&
-    a.dueDate === b.dueDate &&
     a.orderIndex === b.orderIndex;
 }
 

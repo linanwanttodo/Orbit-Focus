@@ -54,7 +54,7 @@ const HomeView: React.FC<{ onStartFocus: () => void }> = ({ onStartFocus }) => {
       <div className="w-full max-w-sm sm:max-w-lg lg:max-w-[600px] lg:h-[min(600px,calc(100dvh-260px))] flex items-center justify-center lg:justify-end lg:-mr-[clamp(0px,calc((100vw-1232px)/2-24px),140px)]">
         <img
           src="/home-dial.webp"
-          alt="Tomato time"
+          alt=""
           className="w-full lg:w-auto lg:max-h-full rounded-3xl ring-1 ring-gh-border"
           draggable={false}
         />
@@ -844,7 +844,7 @@ const AppContent: React.FC = () => {
   }, [todoViewMode]);
 
   useEffect(() => {
-    if (currentView !== 'focus' || (activeTimerTab !== 'pomodoro' && activeTimerTab !== 'countdown')) {
+    if (currentView !== 'focus' || (activeTimerTab !== 'clock' && activeTimerTab !== 'countdown')) {
       releaseSystemLandscape();
     }
   }, [currentView, activeTimerTab, releaseSystemLandscape]);
@@ -1004,7 +1004,7 @@ const AppContent: React.FC = () => {
         <div
           className={`flex-1 flex flex-col items-center justify-center animate-in fade-in duration-300 relative ${currentView === 'focus' ? 'flex' : 'hidden'}`}
         >
-          {(activeTimerTab === 'pomodoro' || activeTimerTab === 'countdown') && (
+          {(activeTimerTab === 'clock' || activeTimerTab === 'countdown') && (
             <div className="absolute right-4 top-20 z-20 flex items-center gap-3 group md:left-6 md:right-auto md:top-4">
             <Button
               variant="secondary"
@@ -1026,13 +1026,13 @@ const AppContent: React.FC = () => {
               <Tabs
                 value={activeTimerTab}
                 onValueChange={(v) => {
-                  const nextTab = v as 'pomodoro' | 'countdown' | 'future' | 'todo';
+                  const nextTab = v as 'clock' | 'countdown' | 'future' | 'todo';
                   setActiveTimerTab(nextTab);
-                  if (nextTab === 'pomodoro') void enableSystemLandscape();
+                  if (nextTab === 'clock') void enableSystemLandscape();
                 }}
               >
                 <TabsList>
-                  {(['pomodoro', 'countdown', 'future', 'todo'] as const).map(tab => (
+                  {(['clock', 'countdown', 'future', 'todo'] as const).map(tab => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
@@ -1048,7 +1048,7 @@ const AppContent: React.FC = () => {
 
           {/* 主内容 - 完全居中 */}
           <div className={`w-full h-full flex items-center justify-center ${currentView === 'focus' ? 'flex' : 'hidden'}`}>
-            {activeTimerTab === 'pomodoro' && (
+            {activeTimerTab === 'clock' && (
               <div
                 className={`clock-page ${clockRotation !== 0 ? 'clock-page--rotated' : ''}`}
                 data-rotation={clockRotation}

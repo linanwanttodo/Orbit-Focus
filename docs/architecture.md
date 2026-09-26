@@ -51,9 +51,7 @@ id, login, avatar_url, created_at, updated_at
 (user_id, id)       复合主键
 title               1-500 字符
 description         最多 2000 字符
-status              todo / progress / review / done
-priority            high / medium / low
-due_date            YYYY-MM-DD，可为空
+status              todo / progress / done
 order_index         排序
 created_at, updated_at
 ```
@@ -129,10 +127,10 @@ created_at, updated_at
 
 - `倒计时`是计时器中的自定义倒计时
 - `未来`是原有重要日期/目标日提醒
-- `待办`默认显示四列任务看板
+- `待办`默认显示三列任务看板
 - 设置中的“待办视图”可以在任务看板和简单清单之间切换
 
-任务看板列：待办、进行中、审阅中、已完成。看板支持新建、编辑、删除、优先级、与原待办页面一致的主题化原生日期输入框、状态选择和拖拽改状态。任务卡片只显示日历图标，颜色跟随当前主题的前景色。
+任务看板列：待办、进行中、已完成。看板支持新建、编辑、删除和拖拽改状态。新建与编辑表单只收集标题和描述，任务状态由它所在的列决定：列头的加号按该列创建，拖到别的列即改状态。
 
 手机和平板进入“时间”页时，会优先尝试请求系统横屏锁定；不支持时监听 `deviceorientation`，按设备倾斜方向旋转时钟内容，离开时间/倒计时页时释放横屏锁定。桌面端保持原有横向布局。
 

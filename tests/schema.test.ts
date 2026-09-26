@@ -23,9 +23,11 @@ test('initializes the fresh application schema and user-scoped indexes', async (
     assert.ok(indexNames.includes('idx_sessions_user_local_date'));
 
     const taskColumns = await database.adapter.all('PRAGMA table_info(tasks)');
-    assert.ok(taskColumns.some((column) => column.name === 'status'));
-    assert.ok(taskColumns.some((column) => column.name === 'priority'));
-    assert.ok(taskColumns.some((column) => column.name === 'due_date'));
+    const columnNames = taskColumns.map((column) => String(column.name));
+    assert.ok(columnNames.includes('status'));
+    assert.ok(columnNames.includes('order_index'));
+    assert.ok(!columnNames.includes('priority'));
+    assert.ok(!columnNames.includes('due_date'));
 
     const sessionColumns = await database.adapter.all('PRAGMA table_info(sessions)');
     assert.ok(sessionColumns.some((column) => column.name === 'local_date'));

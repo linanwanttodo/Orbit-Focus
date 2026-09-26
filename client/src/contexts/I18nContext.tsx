@@ -4,7 +4,7 @@ import { Menu, Check } from 'lucide-react';
 // 支持的语言
 export type Language = 'en' | 'zh' | 'ru';
 
-// 翻译数据接口 — nested record for JSON locale files
+// 翻译数据接口 - nested record for JSON locale files
 interface TranslationData {
   [key: string]: string | TranslationData;
 }

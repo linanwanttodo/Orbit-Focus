@@ -1,5 +1,4 @@
-export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
-export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskStatus = 'todo' | 'progress' | 'done';
 
 export interface Task {
   id: string;
@@ -7,8 +6,6 @@ export interface Task {
   completed: boolean;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  dueDate: string | null;
   orderIndex: number;
 }
 
@@ -30,8 +27,6 @@ export interface ApiTask {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  dueDate: string | null;
   orderIndex: number;
   isCompleted: boolean;
   createdAt: string;
@@ -82,7 +77,7 @@ export interface SessionStatsResponse {
   todayFocus: number;        // minutes focused today
   weeklyTotal: number;      // minutes focused in the last 7 days
   totalDuration: number;    // minutes focused all-time
-  weeklyData: number[];     // minutes per day, last 7 days (oldest → newest)
+  weeklyData: number[];     // minutes per day, last 7 days (oldest to newest)
   heatmapData: HeatmapRow[];// last 365 days of activity
   streak: StreakData;       // current / max / totalDays
 }

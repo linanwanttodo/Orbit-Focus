@@ -28,8 +28,6 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, setTasks, isSaving })
       completed: false,
       description: '',
       status: 'todo',
-      priority: 'medium',
-      dueDate: null,
       orderIndex: 0,
     };
     setTasks((prev) => [...prev, newTask]);

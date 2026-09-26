@@ -27,8 +27,6 @@ test('reports cloud task sync failures instead of silently swallowing them', asy
       completed: false,
       description: '',
       status: 'todo',
-      priority: 'medium',
-      dueDate: null,
       orderIndex: 0,
     }]);
 

@@ -80,7 +80,7 @@ export function toPositionalParams(sql: string): string {
   return out;
 }
 
-function maskConnectionString(connectionString: string): string {
+export function maskConnectionString(connectionString: string): string {
   try {
     const parsed = new URL(connectionString);
     if (parsed.password) parsed.password = '****';
