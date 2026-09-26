@@ -1,214 +1,160 @@
 # 架构说明
 
-本文档描述 Orbit Focus 的整体架构、认证设计、前后端结构与数据模型。
-
 ## 总体结构
 
-```
-浏览器（React SPA）
+```text
+浏览器 React SPA
     |
-    |  REST /api/*  （登录后携带 Authorization: Bearer <JWT>）
+    | REST /api/*，登录后 Authorization: Bearer <JWT>
     v
-API 核心 api/core/handler.ts（平台无关，同一份代码两种运行时）
-    ├── Cloudflare Workers：api/cloudflare/index.ts（D1 -> DbAdapter）
-    └── 自托管 Express：server/src/index.ts
-         └── server/src/database.ts 驱动工厂：
-             DB_CLIENT=sqlite    -> better-sqlite3 -> DbAdapter
-             DB_CLIENT=postgres  -> pg（? 自动转 $n 占位符）-> DbAdapter
+api/core/handler.ts（平台无关业务核心）
+    ├── Cloudflare Workers + D1：api/cloudflare/index.ts
+    └── Express + SQLite/PostgreSQL：server/src/index.ts
+            └── server/src/database.ts（DbAdapter 驱动工厂）
 ```
 
-关键抽象是 `DbAdapter` 接口（`api/core/types.ts`）：
+前端由 Vite 构建并由两种后端适配方式提供：
 
-```ts
-interface DbAdapter {
-  all(sql, params?): Promise<Row[]>;
-  first(sql, params?): Promise<Row | null>;
-  run(sql, params?): Promise<void>;
-}
-```
+- Cloudflare Worker 通过 `[assets]` 托管 `dist/`
+- Express 通过 `express.static` 托管 `dist/`
 
-业务代码只写一份；新增平台时实现 `DbAdapter`，新增数据库引擎时在 `server/src/database.ts` 加一个驱动分支（约束：SQL 只用 SQLite/D1 与 PostgreSQL 的公共子集，占位符统一 `?`）。Vercel 实现已移除（无状态 Serverless 不适合本地文件数据库持久化）。
+## 数据模式
 
-静态资源：本地由 Vite 托管；线上由 Worker 的 `[assets]` 绑定托管 `dist/`，非 `/api` 请求透传给 ASSETS，SPA 路由回退由 `not_found_handling = "single-page-application"` 完成。
+### 游客模式
 
-## 认证与数据模式
+未登录时数据只保存在浏览器版本化 localStorage 中，不发送 API 请求。应用首次使用新版本时会清理旧格式的 Orbit Focus 数据。
 
-### GitHub OAuth 流程
+### 登录模式
 
-1. 前端跳转 `GET /api/auth/github`
-2. Worker 签发短期 HMAC `state` 令牌，写入 `HttpOnly; SameSite=Lax` 回调路径 Cookie 后重定向到 GitHub 授权页
-3. 回调 `GET /api/auth/github/callback`：`state` 必须与浏览器 Cookie 中的值一致（防登录 CSRF），再校验签名 / 有效期，用 `code` 换 access token，读取 GitHub 资料
-4. 服务端签发应用 JWT（HS256，Web Crypto 实现，7 天有效期），重定向 `/auth-done#token=...`
-5. 前端 `AuthContext` 一次性从 URL 片段取出令牌存入 localStorage，并把地址栏改回 `/`
+登录后使用 GitHub OAuth：
 
-JWT 载荷仅含用户 ID / login / 头像；所有数据接口以 `sub`（GitHub 用户 ID）作为 `user_id` 做行级隔离。
+1. 浏览器跳转 `/api/auth/github`
+2. 服务端生成签名 state，并写入 HttpOnly Cookie
+3. GitHub 回调校验 state、Cookie 和授权码
+4. 服务端签发 7 天有效的 HS256 JWT
+5. 前端从 `/auth-done#token=...` 接收令牌并保存
+6. 任务、未来日期和专注记录通过 `user_id` 隔离
 
-### 游客模式（client/src/services/store.ts）
+## 全新数据库基线
 
-- 未登录时一切数据只读写 localStorage，不发送任何 API 请求
-- 首次登录时 `migrateLocalDataToCloud()` 将任务 / 会话 / 日期一次性上传（客户端 ID 作为主键，upsert 幂等），成功后清空本地副本
-- 游客统计由 `client/src/lib/stats.ts` 在本地计算，登录用户由 `GET /api/sessions/stats` 服务端聚合
-
-### 安全设计
-
-- 缺少 `JWT_SECRET` 时：Worker 返回 503 拒绝服务；Express 在 `NODE_ENV=production` 下启动即抛错；开发模式使用每次启动随机生成的临时密钥（仓库中不存在任何硬编码回退密钥）
-- OAuth `state` 通过 httpOnly Cookie 绑定发起授权的浏览器，攻击者无法把受害者静默登录到自己的账号（否则可借首登迁移窃取受害者本地数据）
-- SQL 全部参数化；动态 UPDATE 语句只拼接白名单列名
-- 资源 ID 校验 `^[A-Za-z0-9_.-]{1,64}$`；所有读写语句强制 `WHERE ... AND user_id = ?`；upsert 的 DO UPDATE 分支带 `WHERE <table>.user_id = excluded.user_id`，用他人 id 提交写入被拒绝
-- 输入限制：任务标题 500 字符、日期标题 200 字符、会话时长 0-24h、类型枚举
-- 统计 SQL 只用 `substr` 等跨方言函数，保证 SQLite/D1/PostgreSQL 行为一致
-- 已知边界：令牌存 localStorage（XSS 风险面）、有效期 7 天无撤销机制、无服务端频率限制；多用户公开部署前建议补 WAF / rate limiting
-
-## 前端（client/）
-
-| 项 | 说明 |
-|----|------|
-| 框架 | React 18 + TypeScript |
-| 构建 | Vite 6 |
-| 样式 | Tailwind CSS 3 + shadcn/ui 组件 |
-| 入口 | `index.html` → `client/src/index.tsx` |
-
-```
-client/src/
-├── App.tsx                  # 根组件（AuthProvider 包裹）：视图切换、导航、全局错误
-├── components/              # FlipClock、TaskList、CountdownPage、AuthButton、ui/*
-├── contexts/
-│   ├── AuthContext.tsx      # 登录态、OAuth 回跳令牌接收、首登迁移
-│   ├── I18nContext.tsx      # 多语言（zh / en / ru），值均 memoize
-│   └── ThemeContext.tsx     # 深浅主题，localStorage 持久化
-├── hooks/useTimerState.ts   # 计时状态机；会话结束经 store 落盘
-├── lib/stats.ts             # 游客模式本地统计
-├── services/
-│   ├── apiService.ts        # HTTP 封装：自动附带 Bearer、统一 ApiError
-│   └── store.ts             # 双模式数据层（云端 / localStorage）
-└── types.ts                 # 共享类型
-```
-
-设计要点：
-
-- **视图划分**：首页 / 专注（番茄、倒计时、待办子标签）/ 重要日期 / 统计 / 设置，状态驱动，无路由库。
-- **设计令牌**：颜色统一走 `--gh-*` CSS 变量（`client/index.css`），无渐变、无 hover 特效。
-- **计时精度**：倒计时基于绝对开始时间而非纯递减，减少后台标签页漂移。
-- **乐观更新**：任务 / 日期变更先更新 UI，再异步经 `store` 同步，失败回滚重拉。
-
-## 后端核心（api/core/）
-
-| 文件 | 职责 |
-|------|------|
-| `handler.ts` | 路由分发、鉴权、任务 / 会话 / 日期 / 统计业务 |
-| `jwt.ts` | HS256 签发校验、OAuth state 签发校验（Web Crypto） |
-| `github.ts` | 授权 URL、code 换 token、读取用户资料（fetch） |
-| `stats.ts` | 连续天数、近 7 天填充等纯函数（本地时区 YYYY-MM-DD） |
-| `schema.ts` | 带方言的有序迁移：`MIGRATIONS` 列表 + `applyMigrations(db, dialect)`，已应用记录存 `schema_migrations` 表；新增字段 = 追加一条迁移 |
-| `types.ts` | `CoreEnv` / `DbAdapter` / 行类型 |
-
-适配层：
-
-- `api/cloudflare/index.ts`：D1 -> `DbAdapter`；`/api` 前缀进核心，其余透传 ASSETS；首请求懒执行 `applyMigrations(db, 'sqlite')`；无 `JWT_SECRET` 时 503。
-- `server/src/index.ts`：Express 请求转 Web `Request` 交给同一 `handleApi`；`express.text` 保证原样转发 body；启动时加载 `server/.env`、按 `DB_CLIENT` 选择驱动并执行迁移；密钥缺失时生产拒绝启动、开发用随机临时密钥。
-- `server/src/database.ts`：驱动工厂（SQLite / PostgreSQL），PostgreSQL 侧把 `?` 占位符重写为 `$n`。
-
-## API 端点
-
-除 `/api/health` 与 `/api/auth/*` 外全部要求 `Authorization: Bearer <JWT>`，否则 401。
-
-### 认证
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/auth/github` | 302 跳 GitHub（未配置凭据返回 501） |
-| GET | `/api/auth/github/callback` | 换 token，302 到 `/auth-done#token=` |
-| GET | `/api/auth/me` | 当前用户 |
-
-### 任务 `/api/tasks`
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/` | 当前用户任务列表 |
-| POST | `/` | upsert（客户端可指定 `id`；`ON CONFLICT(id) DO UPDATE`） |
-| PUT | `/:id` | 更新 |
-| DELETE | `/:id` | 删除 |
-
-### 会话 `/api/sessions`
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/` | 会话列表 |
-| POST | `/` | 记录会话（客户端 `id` 幂等，`ON CONFLICT DO NOTHING`） |
-| PUT | `/:id` / DELETE `/:id` | 更新 / 删除 |
-| GET | `/stats` | 今日专注 / 周合计 / 周数据 / 热力图 / streak（`{current,max,totalDays}`，均为当前用户数据） |
-
-### 重要日期 `/api/countdowns`
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/` | 列表（按目标日期升序） |
-| POST | `/` | upsert（`targetDate` 必须为合法日期串） |
-| PUT | `/:id` / DELETE `/:id` | 更新 / 删除 |
-
-## 数据模型
-
-所有业务表含 `user_id`（游客模式不写库）。表结构以 `api/core/schema.ts` 的 `MIGRATIONS` 为唯一来源，由 `applyMigrations` 在启动时按 `schema_migrations` 记账表增量执行；`api/cloudflare/schema.sql` 仅用于全新 D1 一次性初始化（内容与迁移保持一致）。
+当前版本不保留旧数据库和旧游客数据，因此没有历史迁移表。`api/core/schema.ts` 的 `initializeSchema()` 执行最新的幂等建表语句，`api/cloudflare/schema.sql` 是同一结构的 D1 初始化脚本。
 
 ### users
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | TEXT PK | GitHub 用户 ID（字符串化） |
-| login | TEXT | GitHub 用户名 |
-| avatar_url | TEXT | 头像地址 |
-| created_at / updated_at | TEXT | ISO 时间戳 |
+```text
+id, login, avatar_url, created_at, updated_at
+```
 
 ### tasks
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | TEXT PK | 客户端生成（`task_` 前缀） |
-| user_id | TEXT | 所属用户 |
-| title / description | TEXT | 标题（<=500）/ 描述（<=2000） |
-| is_completed | INTEGER | 0/1 |
-| order_index | INTEGER | 排序 |
-| created_at / updated_at | TEXT | ISO 时间戳 |
+```text
+(user_id, id)       复合主键
+title               1-500 字符
+description         最多 2000 字符
+status              todo / progress / review / done
+priority            high / medium / low
+due_date            YYYY-MM-DD，可为空
+order_index         排序
+created_at, updated_at
+```
+
+简单清单和任务看板使用同一张任务表。简单清单的完成状态对应 `status = done`。
 
 ### sessions
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | TEXT PK | 客户端生成，幂等键 |
-| user_id | TEXT | 所属用户 |
-| type | TEXT | work / break / longBreak（CHECK 约束） |
-| duration | INTEGER | 计划秒数 |
-| start_time / end_time | TEXT | 起止时间 |
-| is_completed | INTEGER | 0/1 |
-| work_time | INTEGER | 实际专注秒数 |
-| created_at / updated_at | TEXT | ISO 时间戳 |
+```text
+(user_id, id)       复合主键
+type                work / break / longBreak
+duration            计划秒数
+work_time           实际记录秒数
+start_time, end_time
+local_date          浏览器本地自然日 YYYY-MM-DD
+timezone            浏览器 IANA 时区
+is_completed
+created_at, updated_at
+```
+
+统计以 `local_date` 为准，而不是以 Cloudflare/Docker 服务器时区或 UTC 日期为准。
 
 ### countdowns
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | TEXT PK | 客户端生成（`cd_` 前缀） |
-| user_id | TEXT | 所属用户 |
-| title | TEXT | 事件名（<=200） |
-| target_date | TEXT | 目标日期时间串 |
-| created_at / updated_at | TEXT | ISO 时间戳 |
+“未来”页面使用独立的目标日期表，按 `(user_id, id)` 隔离。
 
-索引：`tasks/sessions/countdowns` 均有 `user_id` 索引；会话另有 `created_at` / `type` / `start_time` 索引。
+### 初始化时机
 
-历史遗留数据（重构前无 `user_id` 的行）迁移后 `user_id = ''`，不归属任何登录用户，任何接口均不可见。
+- Express 启动时执行一次
+- Cloudflare Worker 首次 API 请求时执行一次
+- 进程重启会安全地重复执行 `CREATE ... IF NOT EXISTS`
+- 旧数据库不会被自动升级；需要删除并按新 schema 重新创建
 
-### schema_migrations
+## API
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | TEXT PK | 迁移标识，如 `0001_init` |
-| applied_at | TEXT | ISO 时间戳 |
+除健康检查和认证入口外，接口都要求 Bearer JWT。
 
-### 如何给数据表加字段
+- `GET /api/health`
+- `GET /api/auth/github`
+- `GET /api/auth/github/callback`
+- `GET /api/auth/me`
+- `GET/POST/PUT/DELETE /api/tasks`
+- `GET/POST/PUT/DELETE /api/sessions`
+- `GET /api/sessions/stats?today=YYYY-MM-DD`
+- `GET/POST/PUT/DELETE /api/countdowns`
 
-1. 在 `api/core/schema.ts` 的 `MIGRATIONS` 末尾追加一条迁移（id 递增编号，如 `0003_add_task_priority`），为 `sqlite` 与 `postgres` 两个方言分别给出 `ALTER TABLE ... ADD COLUMN` 语句（PostgreSQL 可用 `IF NOT EXISTS` 保持幂等）。
-2. 在 `api/core/handler.ts` 相应读写路径中使用新列（列名变更需同步更新白名单与 `map*` 函数，前端 `client/src/types.ts` 的 API 类型同步）。
-3. 全新 D1 初始化用的 `api/cloudflare/schema.sql` 同步补充列，并把新迁移 id 追加到文件末尾的 `INSERT OR IGNORE INTO schema_migrations`。
-4. 运行 `npm run validate`；已有部署的 SQLite / PostgreSQL 库在服务重启时自动完成升级，无需手工迁移。
+所有 SQL 使用参数化查询。动态更新字段使用固定白名单，所有业务读写都带 `user_id` 条件。
 
-不要修改或删除已经发布过的迁移语句——它们已在其他环境的数据库上执行过。
+## 计时器
+
+计时器使用绝对 `deadline`：
+
+- 每次 tick 根据 `Date.now()` 计算剩余秒数
+- 活动状态和 deadline 保存到 localStorage
+- 页面刷新后恢复运行或暂停状态
+- 只有自然完成才写入一个 session
+- 暂停、继续和重置不写入 session
+- session 使用完成时浏览器的本地日期和时区
+
+## 前端视图
+
+顶部导航：
+
+```text
+首页 | 专注 | 统计 | 设置
+```
+
+专注页二级导航：
+
+```text
+时间 | 倒计时 | 未来 | 待办
+```
+
+- `倒计时`是计时器中的自定义倒计时
+- `未来`是原有重要日期/目标日提醒
+- `待办`默认显示四列任务看板
+- 设置中的“待办视图”可以在任务看板和简单清单之间切换
+
+任务看板列：待办、进行中、审阅中、已完成。看板支持新建、编辑、删除、优先级、与原待办页面一致的主题化原生日期输入框、状态选择和拖拽改状态。任务卡片只显示日历图标，颜色跟随当前主题的前景色。
+
+手机和平板进入“时间”页时，会优先尝试请求系统横屏锁定；不支持时监听 `deviceorientation`，按设备倾斜方向旋转时钟内容，离开时间/倒计时页时释放横屏锁定。桌面端保持原有横向布局。
+
+## Docker
+
+Docker 私有化部署使用同一个 API 核心：
+
+```text
+前端 dist/ + Express + SQLite（默认）
+```
+
+也可以通过 `DB_CLIENT=postgres` 使用 PostgreSQL。详见 [Docker 私有化部署](docker-deployment.md)。
+
+## Cloudflare
+
+Cloudflare 继续使用 Worker + D1。由于本次是全新数据库基线，部署前应删除旧的空 D1 数据库并重新创建，再执行新的 `schema.sql`。Worker secrets 使用 `wrangler secret put` 设置，不写入 `wrangler.toml`。
+
+## 安全边界
+
+- 缺少 `JWT_SECRET` 时 Worker 返回 503，生产 Express 拒绝启动
+- OAuth state 与 HttpOnly Cookie 绑定
+- 任务、会话和未来日期均按 `user_id` 隔离
+- ID、枚举、日期和长度在 API 层校验
+- JWT 当前保存在 localStorage，已知 XSS 风险面
+- 当前没有令牌撤销机制和服务端频率限制，公网部署应在反向代理或 Cloudflare 层增加防护

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+data/
+server/data/
+.git/
+.github/
+.playwright-cli/
+.env
+.env.*
+.dev.vars
+.wrangler/
+*.log

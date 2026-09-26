@@ -36,6 +36,8 @@
   "navigation": {
     "home": "Главная",
     "timer": "Фокус",
+    "focus": "Фокус",
+    "future": "Будущее",
     "countdown": "Отсчёт",
     "stats": "Статистика",
     "settings": "Настройки",
@@ -59,6 +61,7 @@
     "tabs": {
       "pomodoro": "Время",
       "countdown": "Отсчёт",
+      "future": "Будущее",
       "todo": "ЗАДАЧИ"
     },
     "title": "Orbit Focus",
@@ -106,6 +109,40 @@
     "today": "Сегодня",
     "remaining": "Осталось дней: {days}",
     "passed": "Прошло дней: {days}"
+  },
+  "board": {
+    "title": "Доска задач",
+    "description": "Перетаскивайте карточки для смены статуса или редактируйте задачу.",
+    "newTask": "Новая задача",
+    "addTask": "Добавить задачу",
+    "editTask": "Редактировать задачу",
+    "createTask": "Создать задачу",
+    "formDescription": "Укажите описание, статус, приоритет и срок задачи.",
+    "taskTitle": "Название задачи",
+    "statusLabel": "Статус",
+    "priorityLabel": "Приоритет",
+    "dueDate": "Срок",
+    "taskDescription": "Описание",
+    "titleRequired": "Введите название задачи",
+    "noDueDate": "Без срока",
+    "emptyColumn": "Перетащите задачу сюда",
+    "totalTasks": "Всего задач",
+    "activeTasks": "В работе",
+    "completedTasks": "Готово",
+    "overdueTasks": "Просрочено",
+    "edit": "Редактировать задачу",
+    "delete": "Удалить задачу",
+    "status": {
+      "todo": "К выполнению",
+      "progress": "В работе",
+      "review": "На проверке",
+      "done": "Готово"
+    },
+    "priority": {
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий"
+    }
   },
   "stats": {
     "title": "Ваша активность",
@@ -198,6 +235,10 @@
     "timeStyleDescription": "Выберите отображение текущего времени.",
     "countdownStyle": "Стиль отсчёта",
     "countdownStyleDescription": "Выберите отображение обратного отсчёта.",
+    "todoView": "Вид задач",
+    "todoViewDescription": "Выберите отображение страницы задач.",
+    "todoBoard": "Доска задач",
+    "todoList": "Простой список",
     "themeMode": "Тема",
     "themeModeDescription": "Переключение между тёмным и светлым оформлением.",
     "dark": "Тёмная",

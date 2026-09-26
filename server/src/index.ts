@@ -10,7 +10,7 @@ import { randomBytes } from 'crypto';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import { applyMigrations } from '../../api/core/schema';
+import { initializeSchema } from '../../api/core/schema';
 import { handleApi } from '../../api/core/handler';
 import type { CoreEnv } from '../../api/core/types';
 import { createDatabase } from './database';
@@ -42,7 +42,7 @@ function resolveJwtSecret(): string {
 }
 
 const database = await createDatabase();
-await applyMigrations(database.adapter, database.dialect);
+await initializeSchema(database.adapter);
 
 const coreEnv: CoreEnv = {
   jwtSecret: resolveJwtSecret(),

@@ -18,9 +18,9 @@ function localDaysAgo(n: number): string {
 }
 
 function daysBetweenDates(a: string, b: string): number {
-  const dateA = new Date(a + 'T00:00:00');
-  const dateB = new Date(b + 'T00:00:00');
-  return Math.floor(Math.abs(dateA.getTime() - dateB.getTime()) / (1000 * 60 * 60 * 24));
+  const dateA = new Date(`${a}T00:00:00.000Z`);
+  const dateB = new Date(`${b}T00:00:00.000Z`);
+  return Math.round(Math.abs(dateA.getTime() - dateB.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 interface DayAggregate {
@@ -35,7 +35,7 @@ function aggregateByDay(sessions: StoredSession[]): Map<string, DayAggregate> {
     if (!session.isCompleted) continue;
     const started = new Date(session.startTime);
     if (Number.isNaN(started.getTime())) continue;
-    const date = localDateString(started);
+    const date = session.localDate || localDateString(started);
     const entry = map.get(date) || { workTime: 0, sessionsCount: 0, hasWork: false };
     entry.workTime += session.workTime || 0;
     entry.sessionsCount += 1;

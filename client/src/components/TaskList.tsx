@@ -26,6 +26,11 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, setTasks, isSaving })
       id: `task_${crypto.randomUUID()}`,
       text: trimmed,
       completed: false,
+      description: '',
+      status: 'todo',
+      priority: 'medium',
+      dueDate: null,
+      orderIndex: 0,
     };
     setTasks((prev) => [...prev, newTask]);
     setInputValue('');
@@ -34,7 +39,11 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, setTasks, isSaving })
 
   const toggleTask = useCallback((id: string, checked: boolean) => {
     setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, completed: checked } : task))
+      prev.map((task) =>
+        task.id === id
+          ? { ...task, completed: checked, status: checked ? 'done' : 'todo' }
+          : task
+      )
     );
   }, [setTasks]);
 

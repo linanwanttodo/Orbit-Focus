@@ -206,7 +206,7 @@ const CountdownPage: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-6 pb-24">
+      <div className="flex-1 overflow-y-auto px-6 pb-24 pt-20">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-start justify-between gap-4 pb-2">
             <div>
