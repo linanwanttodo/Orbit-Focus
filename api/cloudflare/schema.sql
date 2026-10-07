@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS sessions (
   PRIMARY KEY (user_id, id)
 );
 
+CREATE TABLE IF NOT EXISTS credentials (
+  qq TEXT NOT NULL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  email TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_credentials_user_id ON credentials(user_id);
+
 CREATE TABLE IF NOT EXISTS countdowns (
   id TEXT NOT NULL,
   user_id TEXT NOT NULL,

@@ -1,15 +1,16 @@
 import React from 'react';
-import { LogIn } from 'lucide-react';
 import { Button } from './ui/button';
+import { AuthDialog } from './AuthDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 
 // Login/logout control shown in the top navigation.
-// Signed in: avatar with the GitHub login, click to sign out.
-// Signed out: login icon, click to start the GitHub OAuth flow.
+// Signed in: avatar with the account name, click to sign out.
+// Signed out: opens the sign-in dialog, which offers a QQ account and keeps
+// the GitHub OAuth option that already existed.
 export const AuthButton: React.FC = () => {
   const { t } = useI18n();
-  const { user, login, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   if (user) {
     return (
@@ -34,15 +35,5 @@ export const AuthButton: React.FC = () => {
     );
   }
 
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={login}
-      title={t('auth.loginTitle')}
-      aria-label={t('auth.loginTitle')}
-    >
-      <LogIn className="h-4 w-4" />
-    </Button>
-  );
+  return <AuthDialog triggerLabel={t('auth.loginTitle')} />;
 };

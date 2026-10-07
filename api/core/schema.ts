@@ -50,9 +50,20 @@ const TABLES: string[] = [
     updated_at TEXT NOT NULL,
     PRIMARY KEY (user_id, id)
   )`,
+  // QQ-only accounts: the numeric QQ id is the account subject, and the
+  // mailbox <qq>@qq.com is derived from it rather than stored twice.
+  `CREATE TABLE IF NOT EXISTS credentials (
+    qq TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    email TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
 ];
 
 const INDEXES: string[] = [
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_credentials_user_id ON credentials(user_id)',
   'CREATE INDEX IF NOT EXISTS idx_tasks_user_status_order ON tasks(user_id, status, order_index)',
   'CREATE INDEX IF NOT EXISTS idx_sessions_user_local_date ON sessions(user_id, local_date)',
   'CREATE INDEX IF NOT EXISTS idx_sessions_user_start_time ON sessions(user_id, start_time)',

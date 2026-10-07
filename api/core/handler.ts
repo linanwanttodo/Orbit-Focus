@@ -19,6 +19,7 @@ import type {
 import { signJwt, signState, verifyJwt, verifyState } from './jwt';
 import { buildAuthorizeUrl, exchangeCodeForToken, fetchGitHubProfile } from './github';
 import { calculateStreak, fillLast7Days, getLast7DaysRange, getLocalDateString, getLocalDaysAgo } from './stats';
+import { handleLogin, handleRegister } from './local-account-routes';
 
 const ID_PATTERN = /^[A-Za-z0-9_.-]{1,64}$/;
 const SESSION_TYPES = new Set(['work']);
@@ -258,6 +259,15 @@ async function handleAuth(request: Request, url: URL, env: CoreEnv, db: DbAdapte
     await upsertUser(db, user);
     const token = await signJwt(user, env.jwtSecret);
     return respond(redirectResponse(`${originOf(request, env)}/auth-done#token=${encodeURIComponent(token)}`));
+  }
+
+  // QQ-email accounts. Registered alongside GitHub login, not instead of it.
+  if (path === '/api/auth/register' && request.method === 'POST') {
+    return handleRegister(request, env, db, (user) => upsertUser(db, user));
+  }
+
+  if (path === '/api/auth/login' && request.method === 'POST') {
+    return handleLogin(request, env, db, (user) => upsertUser(db, user));
   }
 
   if (path === '/api/auth/me') {

@@ -13,12 +13,13 @@ test('initializes the fresh application schema and user-scoped indexes', async (
       "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
     );
     const tableNames = tables.map((row) => String(row.name));
-    assert.deepEqual(tableNames, ['countdowns', 'sessions', 'tasks', 'users']);
+    assert.deepEqual(tableNames, ['countdowns', 'credentials', 'sessions', 'tasks', 'users']);
 
     const indexes = await database.adapter.all(
       "SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_%' ORDER BY name"
     );
     const indexNames = indexes.map((row) => String(row.name));
+    assert.ok(indexNames.includes('idx_credentials_user_id'));
     assert.ok(indexNames.includes('idx_tasks_user_status_order'));
     assert.ok(indexNames.includes('idx_sessions_user_local_date'));
 

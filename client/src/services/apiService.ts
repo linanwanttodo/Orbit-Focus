@@ -161,3 +161,98 @@ export async function upsertCountdownCloud(item: CountdownItem): Promise<void> {
 export async function deleteCountdownCloud(id: string): Promise<void> {
   await request(`/countdowns/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
+
+/**
+ * Machine-readable reason codes returned by the QQ credential endpoints.
+ * Kept as a union so the UI cannot silently ignore a new server code.
+ */
+export type AuthReason =
+  | 'qqRequired'
+  | 'qqNotNumeric'
+  | 'qqTooShort'
+  | 'qqTooLong'
+  | 'emailRequired'
+  | 'emailNotQq'
+  | 'emailMismatch'
+  | 'passwordTooShort'
+  | 'passwordTooLong'
+  | 'alreadyRegistered';
+
+export interface AuthResult {
+  token: string;
+  user: AuthUser;
+}
+
+/**
+ * Flat rather than a discriminated union: this project's tsconfig does not
+ * enable strictNullChecks, so narrowing on a boolean literal discriminant
+ * does not work. Callers test `ok` and read the other fields directly.
+ */
+export interface AuthOutcome {
+  ok: boolean;
+  /** HTTP status, or 0 when the request never reached the server. */
+  status: number;
+  /** Server-supplied failure code, or null when there is none. */
+  reason: AuthReason | null;
+  token: string | null;
+  user: AuthUser | null;
+}
+
+/**
+ * Credential endpoints answer with a failure `reason` code that must survive
+ * to the form, so they bypass `request()` (which flattens errors to a message)
+ * and report the whole body instead.
+ */
+async function postAuth(
+  endpoint: string,
+  body: { qq: string; email?: string; password: string }
+): Promise<AuthOutcome> {
+  let response: Response;
+  try {
+    response = await fetch(API_BASE_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    return { ok: false, status: 0, reason: null, token: null, user: null };
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | (Partial<AuthResult> & { reason?: string })
+    | null;
+
+  if (!response.ok || !payload?.token || !payload.user) {
+    return {
+      ok: false,
+      status: response.status,
+      reason: (payload?.reason as AuthReason) || null,
+      token: null,
+      user: null,
+    };
+  }
+  return {
+    ok: true,
+    status: response.status,
+    reason: null,
+    token: payload.token,
+    user: payload.user,
+  };
+}
+
+/** Register a QQ account. On success the caller should store the token. */
+export async function registerQqAccount(input: {
+  qq: string;
+  email: string;
+  password: string;
+}): Promise<AuthOutcome> {
+  return postAuth('/auth/register', input);
+}
+
+/** Log in with a QQ number (a full mailbox is also accepted server-side). */
+export async function loginWithQqAccount(input: {
+  qq: string;
+  password: string;
+}): Promise<AuthOutcome> {
+  return postAuth('/auth/login', input);
+}

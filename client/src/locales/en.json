@@ -104,8 +104,29 @@
     "minutes": "minutes"
   },
   "auth": {
-    "loginTitle": "Login",
-    "logoutTitle": "Sign out"
+    "loginTitle": "Sign in",
+    "logoutTitle": "Sign out",
+    "registerTitle": "Sign up",
+    "description": "Sign in or sign up with your QQ email",
+    "qqNumber": "QQ number",
+    "qqEmail": "QQ email",
+    "password": "Password",
+    "continueWithGitHub": "Continue with GitHub",
+    "error": {
+      "qqRequired": "Enter your QQ number",
+      "qqNotNumeric": "The QQ number may only contain digits",
+      "qqTooShort": "The QQ number must be at least 5 digits",
+      "qqTooLong": "The QQ number may be at most 11 digits",
+      "emailRequired": "Enter your QQ email",
+      "emailNotQq": "Only QQ mailboxes are supported (xxx@qq.com)",
+      "emailMismatch": "The QQ email must match the QQ number",
+      "passwordTooShort": "The password must be at least 8 characters",
+      "passwordTooLong": "The password is too long",
+      "alreadyRegistered": "This QQ number is already registered. Please sign in.",
+      "rateLimited": "Too many attempts. Try again later.",
+      "network": "Could not reach the server. Check your connection.",
+      "generic": "Something went wrong. Try again later."
+    }
   },
   "errors": {
     "serverError": "Server error",

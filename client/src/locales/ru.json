@@ -105,7 +105,28 @@
   },
   "auth": {
     "loginTitle": "Вход",
-    "logoutTitle": "Выйти"
+    "logoutTitle": "Выйти",
+    "registerTitle": "Регистрация",
+    "description": "Войдите или зарегистрируйтесь с почтой QQ",
+    "qqNumber": "Номер QQ",
+    "qqEmail": "Почта QQ",
+    "password": "Пароль",
+    "continueWithGitHub": "Продолжить через GitHub",
+    "error": {
+      "qqRequired": "Введите номер QQ",
+      "qqNotNumeric": "Номер QQ может содержать только цифры",
+      "qqTooShort": "Номер QQ должен содержать не менее 5 цифр",
+      "qqTooLong": "Номер QQ может содержать не более 11 цифр",
+      "emailRequired": "Введите почту QQ",
+      "emailNotQq": "Поддерживается только почта QQ (xxx@qq.com)",
+      "emailMismatch": "Почта QQ должна совпадать с номером QQ",
+      "passwordTooShort": "Пароль должен содержать не менее 8 символов",
+      "passwordTooLong": "Пароль слишком длинный",
+      "alreadyRegistered": "Этот номер QQ уже зарегистрирован. Войдите в аккаунт.",
+      "rateLimited": "Слишком много попыток. Повторите позже.",
+      "network": "Не удалось связаться с сервером. Проверьте соединение.",
+      "generic": "Что-то пошло не так. Повторите позже."
+    }
   },
   "errors": {
     "serverError": "Ошибка сервера",

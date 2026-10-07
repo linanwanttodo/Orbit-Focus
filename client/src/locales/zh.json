@@ -105,7 +105,28 @@
   },
   "auth": {
     "loginTitle": "登录",
-    "logoutTitle": "退出登录"
+    "logoutTitle": "退出登录",
+    "registerTitle": "注册",
+    "description": "使用 QQ 邮箱注册或登录",
+    "qqNumber": "QQ 号",
+    "qqEmail": "QQ 邮箱",
+    "password": "密码",
+    "continueWithGitHub": "使用 GitHub 登录",
+    "error": {
+      "qqRequired": "请输入 QQ 号",
+      "qqNotNumeric": "QQ 号只能包含数字",
+      "qqTooShort": "QQ 号至少 5 位",
+      "qqTooLong": "QQ 号最多 11 位",
+      "emailRequired": "请输入 QQ 邮箱",
+      "emailNotQq": "仅支持 QQ 邮箱（xxx@qq.com）",
+      "emailMismatch": "QQ 邮箱必须与 QQ 号一致",
+      "passwordTooShort": "密码至少 8 位",
+      "passwordTooLong": "密码过长",
+      "alreadyRegistered": "该 QQ 号已注册，请直接登录",
+      "rateLimited": "尝试过于频繁，请稍后再试",
+      "network": "无法连接服务器，请检查网络",
+      "generic": "操作失败，请稍后再试"
+    }
   },
   "errors": {
     "serverError": "服务器错误",
