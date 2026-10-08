@@ -5,8 +5,13 @@ server/data/
 .git/
 .github/
 .playwright-cli/
-.env
-.env.*
-.dev.vars
+# Every env file at any depth. A bare ".env" only matches the context root,
+# so "server/.env" (which carries the dev JWT_SECRET) used to ship inside the
+# image and silently became the production signing key.
+**/.env
+**/.env.*
+**/.dev.vars
+# ...but the documented templates carry no secrets, keep shipping them.
+!**/*.example
 .wrangler/
 *.log

@@ -11,6 +11,9 @@ build/
 .env.*.local
 .env.bak.*
 
+# Production env holds real secrets: commit only the .example template
+.env.production
+
 # IDE files
 .vscode/
 .idea/
