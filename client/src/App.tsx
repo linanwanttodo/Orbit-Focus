@@ -10,7 +10,6 @@ import { BackgroundLayer } from './components/BackgroundLayer';
 import { useTheme } from './contexts/ThemeContext';
 import { getStats, listTasks, syncTasks } from './services/store';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AuthButton } from './components/AuthButton';
 import CountdownPage from './components/CountdownPage';
 import { TaskBoard } from './components/TaskBoard';
 import { useTimerState } from './hooks/useTimerState';
@@ -55,7 +54,7 @@ const HomeView: React.FC<{ onStartFocus: () => void }> = ({ onStartFocus }) => {
         <img
           src="/home-dial.webp"
           alt=""
-          className="w-full lg:w-auto lg:max-h-full rounded-3xl ring-1 ring-gh-border"
+          className="w-full lg:w-auto lg:max-h-full"
           draggable={false}
         />
       </div>
@@ -977,7 +976,6 @@ const AppContent: React.FC = () => {
 
         <div className="flex items-center gap-1">
           <LanguageSwitcher />
-          <AuthButton />
         </div>
       </nav>
 
