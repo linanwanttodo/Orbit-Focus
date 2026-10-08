@@ -20,13 +20,18 @@ api/core/handler.ts（平台无关业务核心）
 
 ## 数据模式
 
-### 游客模式
+### 浏览器本地模式（当前发布形态）
 
-未登录时数据只保存在浏览器版本化 localStorage 中，不发送 API 请求。应用首次使用新版本时会清理旧格式的 Orbit Focus 数据。
+当前版本**不向用户暴露登录入口**，所有数据只保存在浏览器版本化 localStorage 中，
+不发送任何 API 请求。应用首次使用新版本时会清理旧格式的 Orbit Focus 数据。
 
-### 登录模式
+### 云端模式（代码保留，界面入口已关闭）
 
-登录后使用 GitHub OAuth：
+后端接口与前端登录逻辑都完整保留，随时可以重新启用。启用方式：在
+`client/src/App.tsx` 的顶部导航里重新渲染 `<AuthButton />`（`AuthDialog` 自带
+触发器，登录/注册流程无需改动）。两条认证路径：
+
+**GitHub OAuth**
 
 1. 浏览器跳转 `/api/auth/github`
 2. 服务端生成签名 state，并写入 HttpOnly Cookie
@@ -34,6 +39,16 @@ api/core/handler.ts（平台无关业务核心）
 4. 服务端签发 7 天有效的 HS256 JWT
 5. 前端从 `/auth-done#token=...` 接收令牌并保存
 6. 任务、未来日期和专注记录通过 `user_id` 隔离
+
+**QQ 号 + 密码**
+
+`POST /api/auth/register` 创建账号，`POST /api/auth/login` 登录；两者都返回同一种
+JWT。账号主体是数字 QQ 号，邮箱 `<qq>@qq.com` 由号码派生（`api/core/local-auth.ts`），
+密码用 PBKDF2-SHA256 12 万轮加盐存储（`api/core/password.ts`），凭据接口按
+IP 限流（`api/core/rate-limit.ts`）。
+
+两条路径登录成功后都会把浏览器本地数据一次性迁移到云端
+（`client/src/services/store.ts` 的 `migrateLocalDataToCloud()`）。
 
 ## 全新数据库基线
 
@@ -62,7 +77,7 @@ created_at, updated_at
 
 ```text
 (user_id, id)       复合主键
-type                work / break / longBreak
+type                work（当前 schema 只允许 work，CHECK 约束限制）
 duration            计划秒数
 work_time           实际记录秒数
 start_time, end_time
@@ -93,6 +108,8 @@ created_at, updated_at
 - `GET /api/auth/github`
 - `GET /api/auth/github/callback`
 - `GET /api/auth/me`
+- `POST /api/auth/register`（QQ 号 + 密码注册）
+- `POST /api/auth/login`（QQ 号或邮箱 + 密码登录）
 - `GET/POST/PUT/DELETE /api/tasks`
 - `GET/POST/PUT/DELETE /api/sessions`
 - `GET /api/sessions/stats?today=YYYY-MM-DD`

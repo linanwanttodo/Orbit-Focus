@@ -1,11 +1,20 @@
 # Orbit Focus - 全栈专注计时与任务看板
 
-Orbit Focus 是一个 React + TypeScript 全栈生产力应用，包含专注倒计时、未来日期提醒、任务看板、统计和 GitHub 登录。
+<p align="center">
+  <a href="README.md">中文</a> · <a href="README.en.md">English</a>
+</p>
 
-数据支持两种模式：
+<p align="center">
+  <img src="client/public/home-dial.webp" alt="Orbit Focus 番茄钟" width="220">
+</p>
 
-- 游客模式：数据只保存在浏览器本地
-- 登录模式：数据保存到 Cloudflare D1 或 Docker 使用的 SQLite/PostgreSQL
+Orbit Focus 是一个 React + TypeScript 全栈生产力应用，包含专注倒计时、未来日期提醒、任务看板、统计，以及代码中已实现、界面入口当前关闭的账号登录。
+
+当前发布版本**只使用浏览器本地存储**：数据保存在版本化 localStorage 中，不向服务器
+发送任何请求。后端接口和前端登录逻辑完整保留在仓库里（`api/core/`、`AuthContext`、
+`AuthDialog`），只是界面上的登录入口已关闭，后续配置好认证后再重新启用。
+
+云端的 GitHub OAuth 与 QQ 号密码登录代码同样保留在仓库中。
 
 ## 技术栈
 
@@ -54,8 +63,8 @@ Orbit Focus 是一个 React + TypeScript 全栈生产力应用，包含专注倒
 - 任务描述、拖拽改状态
 - 今日专注、周总计、连续天数、年度热力图
 - 统计按用户浏览器时区的自然日计算
-- GitHub 登录和游客本地模式
-- Cloudflare D1 部署
+- 纯浏览器本地存储，无需登录即可使用
+- 后端已实现 GitHub OAuth 与 QQ 号密码登录（界面入口当前关闭）
 - Docker 私有化部署
 
 ## 本地开发
@@ -69,7 +78,9 @@ npm run dev
 
 访问 `http://localhost:5173`。
 
-不配置 GitHub OAuth 也可以使用游客模式。需要稳定登录态时，在 `server/.env` 设置 `JWT_SECRET`。
+应用开箱即用，无需任何后端配置。若要重新启用登录，按
+[架构说明](docs/architecture.md) 在 `App.tsx` 恢复 `<AuthButton />`，并在
+`server/.env` 设置 `JWT_SECRET`（Cloudflare 侧用 `wrangler secret put`）。
 
 ## 校验和测试
 
